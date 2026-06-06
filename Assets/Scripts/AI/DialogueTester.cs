@@ -4,7 +4,7 @@ using UnityEngine;
 public class DialogueTester : MonoBehaviour
 {
     public TMP_Text dialogueText;
-
+    
     private OllamaManager ollama;
 
     private void Start()
