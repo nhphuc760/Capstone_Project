@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -37,7 +38,13 @@ public class OllamaManager : MonoBehaviour
         string prompt,
         Action<string> callback)
     {
-        Debug.Log("========== OLLAMA REQUEST ==========");
+        Stopwatch stopwatch =
+            new Stopwatch();
+
+        stopwatch.Start();
+
+        UnityEngine.Debug.Log(
+            "========== OLLAMA REQUEST ==========");
 
         OllamaRequest request =
             new OllamaRequest
@@ -50,8 +57,11 @@ public class OllamaManager : MonoBehaviour
         string json =
             JsonUtility.ToJson(request);
 
-        Debug.Log("JSON SENT:");
-        Debug.Log(json);
+        UnityEngine.Debug.Log(
+            "JSON SENT:");
+
+        UnityEngine.Debug.Log(
+            json);
 
         UnityWebRequest webRequest =
             new UnityWebRequest(
@@ -71,22 +81,32 @@ public class OllamaManager : MonoBehaviour
             "Content-Type",
             "application/json");
 
-        Debug.Log("Sending Request...");
+        UnityEngine.Debug.Log(
+            "Sending Request...");
 
         yield return webRequest.SendWebRequest();
 
-        Debug.Log("Request Finished");
+        stopwatch.Stop();
 
-        Debug.Log("Result:");
-        Debug.Log(webRequest.result);
+        UnityEngine.Debug.Log(
+            "Request Finished");
 
-        Debug.Log("Response Code:");
-        Debug.Log(webRequest.responseCode);
+        UnityEngine.Debug.Log(
+            $"AI Response Time: {stopwatch.ElapsedMilliseconds} ms");
+
+        UnityEngine.Debug.Log(
+            $"Result: {webRequest.result}");
+
+        UnityEngine.Debug.Log(
+            $"Response Code: {webRequest.responseCode}");
 
         if (webRequest.downloadHandler != null)
         {
-            Debug.Log("RAW RESPONSE:");
-            Debug.Log(webRequest.downloadHandler.text);
+            UnityEngine.Debug.Log(
+                "RAW RESPONSE:");
+
+            UnityEngine.Debug.Log(
+                webRequest.downloadHandler.text);
         }
 
         if (webRequest.result ==
@@ -98,26 +118,38 @@ public class OllamaManager : MonoBehaviour
                     JsonUtility.FromJson<OllamaResponse>(
                         webRequest.downloadHandler.text);
 
-                Debug.Log("PARSED RESPONSE:");
-                Debug.Log(response.response);
+                if (response == null)
+                {
+                    UnityEngine.Debug.LogError(
+                        "Response NULL");
+
+                    yield break;
+                }
+
+                UnityEngine.Debug.Log(
+                    "PARSED RESPONSE:");
+
+                UnityEngine.Debug.Log(
+                    response.response);
 
                 callback?.Invoke(
                     response.response);
             }
             catch (Exception e)
             {
-                Debug.LogError(
+                UnityEngine.Debug.LogError(
                     "JSON PARSE ERROR");
 
-                Debug.LogError(e);
+                UnityEngine.Debug.LogError(
+                    e);
             }
         }
         else
         {
-            Debug.LogError(
+            UnityEngine.Debug.LogError(
                 "REQUEST FAILED");
 
-            Debug.LogError(
+            UnityEngine.Debug.LogError(
                 webRequest.error);
         }
     }
