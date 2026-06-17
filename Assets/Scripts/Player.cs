@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Fusion;
 
 [Flags]
 public enum CharacterState 
@@ -23,6 +24,7 @@ public class Player : MonoBehaviour
     //IHealthSystem playerHealth;
     private void Awake()
     {
+
     }
 
 
