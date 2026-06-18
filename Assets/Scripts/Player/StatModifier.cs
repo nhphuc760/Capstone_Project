@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 [Serializable]
-public abstract class StatModifier
+public class StatModifier
 {
     public enum ModifyLayer 
     {
