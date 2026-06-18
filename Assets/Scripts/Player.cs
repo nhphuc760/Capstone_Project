@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using Fusion;
-
 [Flags]
 public enum CharacterState 
 {
@@ -16,35 +12,9 @@ public enum CharacterState
 
 public class Player : MonoBehaviour
 {
-    [HideInInspector]
-    public CharacterState unitState;
-    [SerializeField] CharacterStats dataBase;
-    Dictionary<StatType, float> statCharacter = new();
-    public StatModifier statModifier;
-    //IHealthSystem playerHealth;
+   
     private void Awake()
     {
 
-    }
-
-
-
-    //public void ApplyResultInteraction(InteractionData interactionData)
-    //{
-    //    switch (interactionData.EffectType) 
-    //    {
-    //        case EffectInteract.ModifyHealth:
-    //            break;
-    //        case EffectInteract.ModifyCurrency:
-    //            break;
-    //        case EffectInteract.AddInventoryItem:
-    //            break;
-    //        case EffectInteract.AddBuff:
-    //            break;
-    //    }
-
-    //}
-
-    
-
+    }       
 }

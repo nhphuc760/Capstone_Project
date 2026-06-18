@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: MyUtils::AbilityData
   label: Fireball
   effects:
-  - rid: 6800426985953427531
-  - rid: 6800426985953427528
+  - rid: 6800427059819315273
+  - rid: 6800427059819315274
   references:
     version: 2
     RefIds:
-    - rid: 6800426985953427528
+    - rid: 6800427059819315273
       type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
       data:
         amount: 0
-    - rid: 6800426985953427531
+    - rid: 6800427059819315274
       type: {class: KnockbackEffect, ns: , asm: Assembly-CSharp}
       data:
         force: 0
