@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public interface IBuffEffect
 {
     float Value { get; }

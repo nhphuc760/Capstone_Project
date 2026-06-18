@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using TriInspector;
 using UnityEngine;
 
+
 [CreateAssetMenu(fileName = "CharacterStats", menuName = "ScriptableObjects/CharacterStats")]
+[DrawWithTriInspector]
 public class CharacterStats : ScriptableObject
 {
-
     public List<Stat> stats;
     private void OnEnable()
     {
         if(stats == null) stats = new List<Stat>();
-    }
+     }
     //private void OnValidate()
     //{         
     //    var stat = stats.LastOrDefault();

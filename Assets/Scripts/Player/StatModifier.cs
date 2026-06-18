@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 
 [Serializable]
-public class StatModifier
+public abstract class StatModifier
 {
+    public StatModifier()
+    {
+        
+    }
     public enum ModifyLayer 
     {
         Add,
@@ -34,5 +38,3 @@ public class StatModifier
         }
     }    
 }
-
-
