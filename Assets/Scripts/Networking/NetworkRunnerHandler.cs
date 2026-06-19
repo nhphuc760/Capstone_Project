@@ -7,6 +7,8 @@ using Cysharp.Threading.Tasks;
 using Fusion.Sockets;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using Firebase.Firestore;
+using Firebase.Extensions;
 public class NetworkRunnerHandler : MonoBehaviour
 {
     [SerializeField]
@@ -56,7 +58,6 @@ public class NetworkRunnerHandler : MonoBehaviour
     }
     public void CreateSession()
     {
-
     }
 
     async UniTask InitialRunner()
@@ -92,7 +93,7 @@ public class NetworkRunnerHandler : MonoBehaviour
     }
 
 
-
+    
 
 
 }
