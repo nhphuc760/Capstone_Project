@@ -74,7 +74,7 @@ public class Test : MonoBehaviour
                 { "avatarlink", url}
             };
 
-            await SaveLoadFirebase.SetValue($"Users/{FirebaseAuth.DefaultInstance.CurrentUser.UserId}/", data);
+            await FirebaseManager.SetValue($"Users/{FirebaseAuth.DefaultInstance.CurrentUser.UserId}/", data);
             //Update avatar
             //Hàm SetUrl image lên firebase
         }
@@ -99,7 +99,7 @@ public class Test : MonoBehaviour
     }
     public async void LoadImage()
     {
-        var url = await SaveLoadFirebase.GetValue($"Users/{userID.text}");
+        var url = await FirebaseManager.GetValue($"Users/{userID.text}");
         if (url != default)
         {
             url.TryGetValue<string>("avatarlink", out string urlvalue);

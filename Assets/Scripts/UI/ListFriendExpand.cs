@@ -6,7 +6,8 @@ public class ListFriendExpand : MonoBehaviour
     EventBinding<UIEvent.OnClickFriendList> onClickFriendList;
     private void Awake()
     {
-        onClickFriendList = new EventBinding<UIEvent.OnClickFriendList>();
+        onClickFriendList = new EventBinding<UIEvent.OnClickFriendList>(OnClickFriendList);
+        EventBus<UIEvent.OnClickFriendList>.Register(onClickFriendList);
     }
     void Start()
     {
@@ -32,5 +33,8 @@ public class ListFriendExpand : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
-
+    private void OnDestroy()
+    {
+        EventBus<UIEvent.OnClickFriendList>.Deregister(onClickFriendList);
+    }
 }

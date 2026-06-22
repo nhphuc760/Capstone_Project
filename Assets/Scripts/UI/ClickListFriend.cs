@@ -9,6 +9,7 @@ public class ClickListFriend : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         onCloseFriendList = new EventBinding<UIEvent.CloseFriendList>(FriendListClose);
+        EventBus<UIEvent.CloseFriendList>.Register(onCloseFriendList);
     }  
 
     public void OnPointerClick(PointerEventData eventData)
@@ -29,5 +30,9 @@ public class ClickListFriend : MonoBehaviour, IPointerClickHandler
     void Hide()
     {
         transform.parent.gameObject.SetActive(false);
+    }
+    private void OnDestroy()
+    {
+        EventBus<UIEvent.CloseFriendList>.Deregister(onCloseFriendList);
     }
 }

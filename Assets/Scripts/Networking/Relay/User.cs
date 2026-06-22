@@ -6,6 +6,8 @@ public struct User
 {
     [FirestoreProperty]
     public string Name { get; set; }
+    [FirestoreProperty] 
+    public string Tag{ get; set; }
     [FirestoreProperty]
     public UserStatus Status { get; set; }
     [FirestoreProperty] 
