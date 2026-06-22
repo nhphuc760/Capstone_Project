@@ -1,19 +1,24 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Firebase.Auth;
 using SFB;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Test : MonoBehaviour
 {
     bool isChanging = false;
+    [SerializeField] Image RawImage;
+    [SerializeField] TMP_InputField userID;
 
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && !isChanging)
-        {
-            OnChangeAvatarButtonClicked();
-        }
+        //if (Mouse.current.leftButton.wasPressedThisFrame && !isChanging)
+        //{
+        //    OnChangeAvatarButtonClicked();
+        //}      
     }
 
     public async void OnChangeAvatarButtonClicked()
@@ -55,16 +60,21 @@ public class Test : MonoBehaviour
 
         // 5. Chờ hành động upload lên Server
         Debug.Log("Đang upload ảnh lên server...");
-        string url = await ImgbbUploader.UploadAvatarBytesAsync(uploadBytes);       
+        string url = await ImgbbUploader.UploadAvatarBytesAsync(uploadBytes);
 
-        if(string.IsNullOrEmpty(url))
+        if (string.IsNullOrEmpty(url))
         {
-            Debug.Log("Lưu ảnh thất bại");           
+            Debug.Log("Lưu ảnh thất bại");
         }
         else
         {
             Debug.Log("Tải ảnh thành công: " + url);
-            await SaveLoadFirebase.SetValue<string>($"Users/{FirebaseAuth}");
+            var data = new Dictionary<string, object>
+            {
+                { "avatarlink", url}
+            };
+
+            await SaveLoadFirebase.SetValue($"Users/{FirebaseAuth.DefaultInstance.CurrentUser.UserId}/", data);
             //Update avatar
             //Hàm SetUrl image lên firebase
         }
@@ -86,5 +96,14 @@ public class Test : MonoBehaviour
             return true;
         }
         return false;
+    }
+    public async void LoadImage()
+    {
+        var url = await SaveLoadFirebase.GetValue($"Users/{userID.text}");
+        if (url != default)
+        {
+            url.TryGetValue<string>("avatarlink", out string urlvalue);
+            //ImgbbUploader.GetAvatar(urlvalue);
+        }
     }
 }

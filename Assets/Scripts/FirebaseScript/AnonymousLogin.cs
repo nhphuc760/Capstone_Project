@@ -1,4 +1,5 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Firebase;
 using Firebase.Auth;
 using Firebase.Extensions;
 using TMPro;
@@ -7,6 +8,25 @@ using UnityEngine;
 public class AnonymousLogin : MonoBehaviour
 {
     public GameObject loginBTN, successLoginPopup;
+
+
+    private async void Start()
+    {
+        // Bước 1: Kiểm tra các dependency (thư viện hệ thống phụ thuộc) trên thiết bị
+        var status = await FirebaseApp.CheckAndFixDependenciesAsync();
+        if (status == DependencyStatus.Available)
+        {
+            FirebaseApp app = FirebaseApp.DefaultInstance;
+            Debug.Log("Firebase đã khởi tạo thành công và sẵn sàng sử dụng!");
+            await AnonymousLoginBTN();
+        }
+        else
+        {
+            // Thất bại (Có thể do thiết bị thiếu Google Play Services và không thể tự fix)
+            Debug.LogError($"Không thể khởi tạo Firebase: {status}");
+        }      
+
+    }
 
     public async void Login()
     {
@@ -35,7 +55,7 @@ public class AnonymousLogin : MonoBehaviour
             print("User ID: " + result.User.UserId);
             //print("User Name: " + result.User.DisplayName);
             //can save user id in playerprefs
-            GuestLoginSuccess(result.User.UserId);
+            //GuestLoginSuccess(result.User.UserId);
         });
     }
 

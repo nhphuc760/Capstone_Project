@@ -53,7 +53,7 @@ public static class ImgbbUploader
         }
     }
 
-    public static async void LoadAvatar(string url, Image image)
+    public static async UniTask<Sprite> GetAvatar(string url)
     {
         UnityWebRequest request =
        UnityWebRequestTexture.GetTexture(url);
@@ -62,7 +62,7 @@ public static class ImgbbUploader
         if (request.result != UnityWebRequest.Result.Success)
         {
             Debug.Log("Lỗi Load avatar: " + request.error);
-            return;
+            return null;
         }
         Texture2D texture =
             DownloadHandlerTexture
@@ -79,7 +79,7 @@ public static class ImgbbUploader
                 ),
                 new Vector2(0.5f, 0.5f)
             );
-        image.sprite = sprite;
+        return sprite;
     }
 }
 
