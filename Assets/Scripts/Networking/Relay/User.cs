@@ -2,7 +2,7 @@ using Firebase.Firestore;
 using UnityEngine;
 
 [FirestoreData]
-public struct User
+public class User
 {
     [FirestoreProperty]
     public string Name { get; set; }

@@ -27,8 +27,7 @@ public class NetworkRunnerHandler : MonoBehaviour
             return;
         }
         Ins = this;
-    }
-
+    }    
 
     public async UniTask<StartGameResult> StartSession( string sessionName, int playerCount, Scene sceneStart, byte[] connectionToken = default,  Dictionary<string, SessionProperty> sessionProperties = null, System.Action<NetworkRunner> onGameStarted = null, System.Action<NetworkRunner> hostmigrationResume = null, string customLobbyName = "Standard" )
     {

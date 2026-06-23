@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Firebase.Auth;
 using SFB;
 using TMPro;
@@ -10,9 +11,6 @@ using UnityEngine.UI;
 public class Test : MonoBehaviour
 {
     bool isChanging = false;
-    [SerializeField] Image RawImage;
-    [SerializeField] TMP_InputField userID;
-
     private void Update()
     {
         //if (Mouse.current.leftButton.wasPressedThisFrame && !isChanging)
@@ -74,7 +72,7 @@ public class Test : MonoBehaviour
                 { "avatarlink", url}
             };
 
-            await FirebaseManager.SetValue($"Users/{FirebaseAuth.DefaultInstance.CurrentUser.UserId}/", data);
+            await FirebaseManager.FireStore.SetValue($"Users/{FirebaseManager.UserID}/", data);
             //Update avatar
             //Hàm SetUrl image lên firebase
         }
@@ -96,14 +94,5 @@ public class Test : MonoBehaviour
             return true;
         }
         return false;
-    }
-    public async void LoadImage()
-    {
-        var url = await FirebaseManager.GetValue($"Users/{userID.text}");
-        if (url != default)
-        {
-            url.TryGetValue<string>("avatarlink", out string urlvalue);
-            //ImgbbUploader.GetAvatar(urlvalue);
-        }
     }
 }

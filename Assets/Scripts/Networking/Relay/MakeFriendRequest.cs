@@ -20,4 +20,5 @@ public enum MakeFriendStatus
     Pending,
     Approved,
     Rejected,
+
 }
