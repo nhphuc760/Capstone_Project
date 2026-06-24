@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Firebase.Firestore;
-using Unity.VisualScripting;
 using UnityEngine;
 using System.Linq;
 
@@ -31,6 +30,13 @@ public class NetworkDataManager : MonoBehaviour
         
     }
 
+
+    async UniTask UpdateStatus()
+    {
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Presence/{FirebaseManager.UserID}");
+        await @ref.OnDisconnect().SetValue(UserStatus.Offline);
+        await @ref.SetValueAsync(UserStatus.Online);
+    }
 
     async UniTask LoadMakeFriendList()
     {

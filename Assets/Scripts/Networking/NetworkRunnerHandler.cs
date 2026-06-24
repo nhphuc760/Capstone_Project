@@ -15,8 +15,6 @@ public class NetworkRunnerHandler : MonoBehaviour
     [Required]
     NetworkRunner NetworkRunnerPrefab;
     NetworkRunner _runner;
-
-    //Dictionary<>
     public static NetworkRunnerHandler Ins { get; private set; }
 
     private void Awake()

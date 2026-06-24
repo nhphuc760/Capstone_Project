@@ -1,21 +1,10 @@
 using System;
+using System.Security;
 using Firebase.Firestore;
 
-
-public enum InviteStatus 
-{
-    Pending,
-    Accepted,
-    Rejected,
-    Expired
-}
-
-
-[FirestoreData]
+[Serializable]
 public struct Invite 
 {
-    [FirestoreProperty]
-    public string senderID { get; set; }
-    [FirestoreProperty]    
-    public DateTime CreateAt { get; set; }
+    public string senderID;
+    public DateTime CreateAt;
 }

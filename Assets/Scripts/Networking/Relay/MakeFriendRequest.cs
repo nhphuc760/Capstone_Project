@@ -1,6 +1,5 @@
 using System;
 using Firebase.Firestore;
-using UnityEngine;
 
 [FirestoreData]
 public struct MakeFriendRequest 
