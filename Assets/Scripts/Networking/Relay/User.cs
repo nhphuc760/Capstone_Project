@@ -8,9 +8,7 @@ public class User
     public string Name { get; set; }
     [FirestoreProperty] 
     public string Tag{ get; set; }
-    [FirestoreProperty]
-    public UserStatus Status { get; set; }
-    [FirestoreProperty] 
+    [FirestoreProperty]   
     public string AvatarUrl { get; set; }
 }
 

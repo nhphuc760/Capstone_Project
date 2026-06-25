@@ -13,6 +13,7 @@ public class SceneController : MonoBehaviour
     List<string> loadedSceneBySlot = new();
     public static SceneController Instance { get; private set; }
     public bool isBusy;
+    public bool DontDestroy;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -21,6 +22,8 @@ public class SceneController : MonoBehaviour
             return;
         }
         Instance = this;
+        if(DontDestroy)
+            DontDestroyOnLoad(gameObject);
     }
 
     public SceneTransitionPlan NewTransitionPlan()
@@ -37,7 +40,7 @@ public class SceneController : MonoBehaviour
 
     public async UniTask ChangeSceneAsync(SceneTransitionPlan plan)
     {
-        if (plan.Overlay)
+        if (plan.FadeIn)
         {
             await loadingOverlay.FadeInBlack(.5f);
         }
@@ -58,7 +61,7 @@ public class SceneController : MonoBehaviour
             await LoadAdditiveAsync(scene, scene.Name == plan.ActiveSceneName);
         }
 
-        if (plan.Overlay)
+        if (plan.FadeOut)
         {
             await loadingOverlay.FadeOutBlack(.5f);
         }
@@ -120,7 +123,8 @@ public class SceneTransitionPlan
     public string ActiveSceneName { get; private set; }
     public string progressTitle { get; private set; }
     public bool ClearUnuseAssets { get; private set; } = false;
-    public bool Overlay { get; private set; }
+    public bool FadeIn { get; private set; }
+    public bool FadeOut { get; private set; }
     public SceneTransitionPlan Load(ParameterScene sceneParam, bool isActiveScene = false)
     {
         if (SceneToLoad.Contains(sceneParam)) return this;
@@ -140,9 +144,14 @@ public class SceneTransitionPlan
         ClearUnuseAssets = true;
         return this;
     }
-    public SceneTransitionPlan WithOverlay()
+    public SceneTransitionPlan WithFadeIn()
     {
-        Overlay = true;
+        FadeIn = true;
+        return this;
+    }
+    public SceneTransitionPlan WithFadeOut()
+    {
+        FadeOut = true;
         return this;
     }
     public async UniTask Perform()

@@ -6,5 +6,15 @@ using Firebase.Firestore;
 public struct Invite 
 {
     public string senderID;
+    public int status;
     public DateTime CreateAt;
 }
+
+public enum InviteStatus 
+{
+    Pending,
+    Accepted,
+    Rejected,
+    Expired
+}
+

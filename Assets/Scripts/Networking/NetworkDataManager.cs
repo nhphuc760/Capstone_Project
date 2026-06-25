@@ -1,8 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Firebase.Firestore;
 using UnityEngine;
 using System.Linq;
+using System.Threading.Tasks;
+using System;
 
 public class NetworkDataManager : MonoBehaviour
 {
@@ -25,17 +27,48 @@ public class NetworkDataManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
     }
-    private void Start()
+    private async void Start()
     {
-        
+        await LoadMakeFriendList();
+        await LoadFriend();
+        await UpdateStatus();
+        //LoadScene
+        await SceneController.Instance.NewTransitionPlan()
+                                .Load(new ParameterScene { Name = "LobbyScene"})
+                                .UnLoad(new ParameterScene { Name = "MainMenu" })
+                                .WithFadeOut()
+                                .Perform();
     }
 
+    /// <summary>
+    /// Clean invites expire when login
+    /// </summary>
+    /// <returns></returns>
+    async UniTask CleanInvites()
+    {
+        var inviteSnapshot = await FirebaseManager.RealtimeDB.GetValue($"Invites/{FirebaseManager.UserID}");
+        if (!inviteSnapshot.Exists) return;
+        var timeNow = await FirebaseManager.RealtimeDB.GetServerDateTime();
+        foreach (var data in inviteSnapshot.Children)
+        {
+            string roomID = data.Key;
+            var invite = JsonUtility.FromJson<Invite>(data.GetRawJsonValue());
+            DateTime now = timeNow == null ? DateTime.UtcNow : timeNow.Value;
+            TimeSpan t = (now - invite.CreateAt);
+            if(t > TimeSpan.FromSeconds(30))
+            {
+                var task = FirebaseManager.RealtimeDB.reference.Child($"Invites/{data.Key}").RemoveValueAsync();
+            }
+        }        
+    }
+
+    async
 
     async UniTask UpdateStatus()
     {
         var @ref = FirebaseManager.RealtimeDB.reference.Child($"Presence/{FirebaseManager.UserID}");
-        await @ref.OnDisconnect().SetValue(UserStatus.Offline);
-        await @ref.SetValueAsync(UserStatus.Online);
+        await @ref.OnDisconnect().SetValue(UserStatus.Offline.ToString());
+        await @ref.SetValueAsync(UserStatus.Online.ToString());
     }
 
     async UniTask LoadMakeFriendList()
@@ -46,7 +79,7 @@ public class NetworkDataManager : MonoBehaviour
                                     .GetSnapshotAsync();
 
         if (query.Documents.Count() == 0) return;       
-
+        //Kiểm tra lại, thử chạy song song thay vì đợi từng task.
         foreach (DocumentSnapshot snapshot in query.Documents)
         {
             string senderID = snapshot.GetValue<string>("senderID");
@@ -63,6 +96,7 @@ public class NetworkDataManager : MonoBehaviour
         var data = await FirebaseManager.FireStore.GetValue($"Friends/{FirebaseManager.UserID}");
         if (!data.Exists) return;
         var list = data.GetValue<List<string>>("friends");
+        // Kiểm tra lại, thử chạy song song task.
         foreach (string i in list)
         {
             var userSnapshot = await FirebaseManager.FireStore.GetValue($"Users/{i}");

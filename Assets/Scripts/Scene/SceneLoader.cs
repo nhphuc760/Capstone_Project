@@ -13,10 +13,28 @@ public class SceneLoader: MonoBehaviour
     float targetProgress;
     bool isLoading;
     public readonly SceneGroupManager manager = new SceneGroupManager();
+
+    private void Awake()
+    {
+        manager.OnSceneLoaded += sceneName => Debug.Log("Loaded: " + sceneName);
+        manager.OnSceneUnloaded += sceneName => Debug.Log("Unloaded: " + sceneName);
+        manager.OnSceneGoupLoaded += () => Debug.Log("Scene Group Loaded");
+    }
+
     async void Start()
     {
         await LoadSceneGroup(0);
     }
+
+    private void Update()
+    {
+        if (!isLoading) return;
+        float currentFillAmount = loadingBar.fillAmount;
+        float progressDifference = Mathf.Abs(currentFillAmount - targetProgress);
+        float dynamicFillSpeed = progressDifference * fillSpeed;
+        loadingBar.fillAmount = Mathf.Lerp(currentFillAmount, targetProgress, Time.deltaTime * dynamicFillSpeed);
+    }
+
     public async UniTask LoadSceneGroup(int index)
     {
         loadingBar.fillAmount = 0f;
@@ -28,7 +46,16 @@ public class SceneLoader: MonoBehaviour
         }
         LoadingProgress progress = new LoadingProgress();
         progress.Progressed += target => targetProgress = Mathf.Max(target, targetProgress);
+        EnableLoadingCanvas();
+        await manager.LoadScenes(sceneGroups[index], progress);
+        EnableLoadingCanvas(false);
 
+    }
+    void EnableLoadingCanvas(bool enable = true)
+    {
+        isLoading = enable;
+        loadingCanvas.gameObject.SetActive(enable);
+        loadingCamera.gameObject.SetActive(enable);
     }
 }
 public class LoadingProgress : IProgress<float>

@@ -34,11 +34,7 @@ public static class FirebaseManager
         public static async UniTask<DocumentSnapshot> GetValue(string path)
         {
             DocumentSnapshot snap = await doc.Document(path).GetSnapshotAsync();
-            if (snap.Exists)
-            {
-                return snap;
-            }
-            return default;
+            return snap;
         }
     }
 

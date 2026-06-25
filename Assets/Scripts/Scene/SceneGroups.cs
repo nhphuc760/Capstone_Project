@@ -8,6 +8,8 @@ public enum SceneType
 {
     ActiveScene,
     MainMenu,
+    Bootstrapter,
+    UI,
     HUD,
     Cinematic,
     Environment,

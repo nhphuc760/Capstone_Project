@@ -9,12 +9,14 @@ public class LoadingOverlay : MonoBehaviour
    public async UniTask FadeInBlack(float duration, string title = null)
     {
         this.title.text = title;
+        canvasGroup.blocksRaycasts = true;
         await FadeTo(1f, duration);
     }
     public async UniTask FadeOutBlack(float duration, string title = null)
     {
         this.title.text = title;
         await FadeTo(0f, duration);
+        canvasGroup.blocksRaycasts = false;
     }
     async UniTask FadeTo(float targetAlpha, float duration)
     {
