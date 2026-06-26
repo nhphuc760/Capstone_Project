@@ -5,14 +5,15 @@ using UnityEngine;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using Firebase.Database;
 
 public class NetworkDataManager : MonoBehaviour
 {
     public static NetworkDataManager Instance;
     [Header("Data")]
-    public Dictionary<string, User> listFriends = new Dictionary<string, User>();
-    public Dictionary<User, Sprite> avatarsFriend = new Dictionary<User, Sprite>();
-    public Dictionary<string, User> makeFriendsList = new Dictionary<string, User>();
+    public Dictionary<string, UserStore> listFriends = new Dictionary<string, UserStore>();
+    public Dictionary<string, Sprite> avatarsFriend = new Dictionary<string, Sprite>();
+    public Dictionary<string, UserStore> makeFriendsList = new Dictionary<string, UserStore>();
     public bool dontDestroy = true;
     private void Awake()
     {
@@ -40,35 +41,11 @@ public class NetworkDataManager : MonoBehaviour
                                 .Perform();
     }
 
-    /// <summary>
-    /// Clean invites expire when login
-    /// </summary>
-    /// <returns></returns>
-    async UniTask CleanInvites()
-    {
-        var inviteSnapshot = await FirebaseManager.RealtimeDB.GetValue($"Invites/{FirebaseManager.UserID}");
-        if (!inviteSnapshot.Exists) return;
-        var timeNow = await FirebaseManager.RealtimeDB.GetServerDateTime();
-        foreach (var data in inviteSnapshot.Children)
-        {
-            string roomID = data.Key;
-            var invite = JsonUtility.FromJson<Invite>(data.GetRawJsonValue());
-            DateTime now = timeNow == null ? DateTime.UtcNow : timeNow.Value;
-            TimeSpan t = (now - invite.CreateAt);
-            if(t > TimeSpan.FromSeconds(30))
-            {
-                var task = FirebaseManager.RealtimeDB.reference.Child($"Invites/{data.Key}").RemoveValueAsync();
-            }
-        }        
-    }
-
-    async
-
     async UniTask UpdateStatus()
     {
         var @ref = FirebaseManager.RealtimeDB.reference.Child($"Presence/{FirebaseManager.UserID}");
-        await @ref.OnDisconnect().SetValue(UserStatus.Offline.ToString());
-        await @ref.SetValueAsync(UserStatus.Online.ToString());
+        await @ref.OnDisconnect().SetValue((int)UserStatus.Offline);
+        await @ref.SetValueAsync((int)UserStatus.Online);
     }
 
     async UniTask LoadMakeFriendList()
@@ -86,7 +63,7 @@ public class NetworkDataManager : MonoBehaviour
             var userSnapshot = await FirebaseManager.FireStore.GetValue($"Users/{senderID}");
             if (userSnapshot.Exists)
             {
-                makeFriendsList.Add(senderID, userSnapshot.ConvertTo<User>());
+                makeFriendsList.Add(senderID, userSnapshot.ConvertTo<UserStore>());
             }
         }       
     }
@@ -102,10 +79,10 @@ public class NetworkDataManager : MonoBehaviour
             var userSnapshot = await FirebaseManager.FireStore.GetValue($"Users/{i}");
             if(userSnapshot.Exists)
             {
-                User user = userSnapshot.ConvertTo<User>();
+                UserStore user = userSnapshot.ConvertTo<UserStore>();
                 listFriends.Add(i, user);
                 var avatar = await ImgbbUploader.GetAvatar(user.AvatarUrl);               
-                avatarsFriend.Add(user, avatar);                
+                avatarsFriend.Add(i, avatar);                
             }
         }
     }

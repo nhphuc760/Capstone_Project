@@ -9,14 +9,16 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using Firebase.Firestore;
 using Firebase.Extensions;
+
 public class NetworkRunnerHandler : MonoBehaviour
 {
     [SerializeField]
     [Required]
     NetworkRunner NetworkRunnerPrefab;
-    NetworkRunner _runner;
+    public NetworkRunner _runner;
     public static NetworkRunnerHandler Ins { get; private set; }
-
+    public bool InMatch { get; private set; } = false;
+    public bool InParty { get; private set; } = false;
     private void Awake()
     {
         if (Ins != null && Ins != this)
@@ -25,7 +27,7 @@ public class NetworkRunnerHandler : MonoBehaviour
             return;
         }
         Ins = this;
-    }    
+    }
 
     public async UniTask<StartGameResult> StartSession( string sessionName, int playerCount, Scene sceneStart, byte[] connectionToken = default,  Dictionary<string, SessionProperty> sessionProperties = null, System.Action<NetworkRunner> onGameStarted = null, System.Action<NetworkRunner> hostmigrationResume = null, string customLobbyName = "Standard" )
     {

@@ -10,8 +10,8 @@ public class ElementFriendUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI status;
     [SerializeField] Image avatar;
     [SerializeField] Button invite;
-    User _friendData;
-    public void SetUp(User user, Action callbackInvite = default)
+    UserStore _friendData;
+    public void SetUp(UserStore user, Action callbackInvite = default)
     {
         _friendData = user;
         invite.onClick.AddListener(() => 
@@ -20,7 +20,7 @@ public class ElementFriendUI : MonoBehaviour
         });
         //UpdateUI
     }
-    public void UpdateUI(User user)
+    public void UpdateUI(UserStore user)
     {
         if (_friendData != null)
         {
@@ -29,6 +29,6 @@ public class ElementFriendUI : MonoBehaviour
         }
         _name.text = user.Name;
         tags.text = user.Tag;
-        status.text = user.Status.ToString();
+        //status.text = user.Status.ToString();
     }    
 }

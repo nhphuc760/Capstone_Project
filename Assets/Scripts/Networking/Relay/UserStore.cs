@@ -2,7 +2,7 @@ using Firebase.Firestore;
 using UnityEngine;
 
 [FirestoreData]
-public class User
+public class UserStore
 {
     [FirestoreProperty]
     public string Name { get; set; }
@@ -16,5 +16,6 @@ public enum UserStatus
 {
     Online,
     Offline,
+    InParty,
     InMatch
 }

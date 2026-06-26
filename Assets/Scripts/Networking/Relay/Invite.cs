@@ -5,9 +5,10 @@ using Firebase.Firestore;
 [Serializable]
 public struct Invite 
 {
+    public string roomID;
     public string senderID;
     public int status;
-    public DateTime CreateAt;
+    public DateTime CreateAt;   
 }
 
 public enum InviteStatus 
