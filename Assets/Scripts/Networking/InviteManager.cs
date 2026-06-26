@@ -2,12 +2,14 @@
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class InviteManager : MonoBehaviour
 {   
     InviteSender sender;
     InviteReceiver receiver;
     [SerializeField] InviteElementUI invitePopupUI;
+    [SerializeField] RectTransform container;
     void Awake()
     {
         sender = new InviteSender();
@@ -23,7 +25,7 @@ public class InviteManager : MonoBehaviour
     public UniTask<bool> ShowPopup(string title, Invite invite)
     {
         //Init elementUI
-        var popup = Instantiate(invitePopupUI);        
+        var popup = Instantiate(invitePopupUI, container);
         var tcs = new UniTaskCompletionSource<bool>();
         popup.Show(title, invite, (selected) => 
         { 
@@ -106,10 +108,14 @@ public class InviteReceiver
 
     async void ShowPopup(Invite invite)
     {
-        var result = await manager.ShowPopup("Đã gửi lời mời vào đội");
-
+        if (SceneManager.GetActiveScene().name != SceneDatabase.LOBBY)
+        {
+            return;
+        }
+        var result = await manager.ShowPopup("Đã gửi lời mời vào đội", invite);
         if (result)
         {
+
             await InviteDatabase.UpdateStatus(invite.roomID, InviteStatus.Accepted);
         }
         else
