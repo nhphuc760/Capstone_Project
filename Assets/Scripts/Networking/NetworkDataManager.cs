@@ -11,9 +11,9 @@ public class NetworkDataManager : MonoBehaviour
 {
     public static NetworkDataManager Instance;
     [Header("Data")]
-    public Dictionary<string, UserStore> listFriends = new Dictionary<string, UserStore>();
+    public Dictionary<string, Presence> listFriends = new Dictionary<string, Presence>();
     public Dictionary<string, Sprite> avatarsFriend = new Dictionary<string, Sprite>();
-    public Dictionary<string, UserStore> makeFriendsList = new Dictionary<string, UserStore>();
+    public Dictionary<string, Presence> makeFriendsList = new Dictionary<string, Presence>();
     public bool dontDestroy = true;
     private void Awake()
     {

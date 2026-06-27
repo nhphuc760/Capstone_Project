@@ -1,32 +1,30 @@
 ﻿using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class InviteManager : MonoBehaviour
+public class InviteManager
 {   
     InviteSender sender;
     InviteReceiver receiver;
-    [SerializeField] InviteElementUI invitePopupUI;
-    [SerializeField] RectTransform container;
-    void Awake()
+    //[SerializeField] InviteElementUI invitePopupUI;
+    //[SerializeField] RectTransform container;    
+
+    public void Initialize(string myId) //Checked
     {
+        FirebaseManager.RealtimeDB.reference.Child($"Users/{myId}/Invites").OnDisconnect().RemoveValue();
         sender = new InviteSender();
         receiver = new InviteReceiver();
-    }
-
-    public void Initialize(string myId)
-    {
         sender.Initialize(myId, this);
         receiver.Initialize(myId, this);
-        InviteDatabase.CleanInvite(myId);
     }
     public UniTask<bool> ShowPopup(string title, Invite invite)
     {
-        //Init elementUI
-        var popup = Instantiate(invitePopupUI, container);
+        //Init elementUI        
         var tcs = new UniTaskCompletionSource<bool>();
+        //EventBus
         popup.Show(title, invite, (selected) => 
         { 
             tcs.TrySetResult(selected);
@@ -36,7 +34,7 @@ public class InviteManager : MonoBehaviour
 }
 
 
-public class InviteSender
+public class InviteSender // checked
 {
 
     private string myId;
@@ -54,21 +52,20 @@ public class InviteSender
         var dateTime = await FirebaseManager.RealtimeDB.GetServerDateTime();
         Invite invite = new Invite()
         {
-            senderID = myId,
-            status = (int)InviteStatus.Pending,
+            SenderID = myId,
+            Status = InviteStatus.Pending,
             CreateAt = dateTime == null ? DateTime.UtcNow : dateTime.Value,
         };
-
         var result = await InviteDatabase.Create(receiverId, invite);
         if(result)
-            Listen(invite.roomID);
+            Listen(invite.RoomID);
     }
 
     void Listen(string inviteId)
     {
         InviteDatabase.Listen(myId, inviteId, invite =>
         {
-            switch ((InviteStatus)invite.status)
+            switch (invite.Status)
             {
                 case InviteStatus.Accepted:
 
@@ -86,7 +83,7 @@ public class InviteSender
     }
 
    
-}
+} 
 public class InviteReceiver
 {
     private string myId;
@@ -113,10 +110,33 @@ public class InviteReceiver
             return;
         }
         var result = await manager.ShowPopup("Đã gửi lời mời vào đội", invite);
+        // Kiểm tra phòng hợp lệ không => có thì vào luôn và gửi token, chưa thì đợi phòng ready
         if (result)
         {
+            //
+            var roomSnapshot = await FirebaseManager.RealtimeDB.GetValue($"Lobbies/{invite.roomID}");
+            if (!roomSnapshot.Exists) Debug.Log("Room invalid");
+            var room = JsonUtility.FromJson<Room>(roomSnapshot.GetRawJsonValue());
+            switch ((RoomStatus)room.status) 
+            {
+                case RoomStatus.Waiting:
+                    await InviteDatabase.UpdateStatus(invite.roomID, InviteStatus.Accepted);
+                    break;
+                case RoomStatus.InGame:
+                    Debug.Log("Không thể tham gia, phòng đã bắt đầu trận đấu");
+                    break;
+                case RoomStatus.Ready:
+                    //Join
+                    break;
+                case RoomStatus.Canceled:
+                    Debug.Log("Phòng không tồn tại");
+                    break;
+                case RoomStatus.InitError:
+                    Debug.Log("Lỗi từ phía máy chủ, phòng chưa sẵn sàng");
+                    break;
+            }
 
-            await InviteDatabase.UpdateStatus(invite.roomID, InviteStatus.Accepted);
+         
         }
         else
         {
@@ -128,66 +148,60 @@ public class InviteReceiver
 
 public static class InviteDatabase
 {
+    /// <summary>
+    /// return true if create new invit, false if just update
+    /// </summary>
+    /// <param name="receiver"></param>
+    /// <param name="invite"></param>
+    /// <returns></returns>
     public static async UniTask<bool> Create(string receiver, Invite invite) //Finished
     {
-        var statusOnline = await FirebaseManager.RealtimeDB.GetValue($"Presence/{receiver}");
-        if (!statusOnline.Exists) return false;
-        UserStatus status = (UserStatus)statusOnline.Value;
-        if(status == UserStatus.Offline ||  status == UserStatus.InMatch) return false;       
-        await FirebaseManager.RealtimeDB.SetValue($"Invites/{receiver}/{invite.roomID}", invite);
-        return true;
+        
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiver}/Invites");
+        var query = await @ref.OrderByChild("SenderID").EqualTo(invite.SenderID).GetValueAsync();
+        string inviteID = query.Exists ? query.Children.First().Key : @ref.Push().Key;
+        await @ref.Child(inviteID).SetValueAsync(invite);
+        return !query.Exists;
     }
 
     public static void ListenIncoming(string userId, Action<Invite> callback) //Finished
     {
-        FirebaseManager.RealtimeDB.reference.Child($"Invites/{userId}").ChildAdded += (sender, e) =>
-        {
-            DataSnapshot snapshot = e.Snapshot;
-            if (!snapshot.Exists) return;
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userId}/Invites");
+        EventHandler<ChildChangedEventArgs> addHandle = (sender, args) => {       
+            DataSnapshot snapshot = args.Snapshot;
             Invite invite = JsonUtility.FromJson<Invite>(snapshot.GetRawJsonValue());
             callback(invite);
-        };
+            Debug.Log("ChildAdded Invoke: Invites");
+        };    
+        @ref.ChildAdded += addHandle;
     }
-
-    public static void Listen(string userID, string roomID, Action<Invite> callback) // Finished
+    /// <summary>
+    /// Chỉ lắng nghe sự kiện thay đổi dữ liệu, các hành đồng thêm, xóa không quan tâm
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <param name="roomID"></param>
+    /// <param name="callback"></param>
+    public static void Listen(string userID, string inviteID, Action<Invite> callback) // Finished
     {
-        EventHandler<ChildChangedEventArgs> handle = (sender, e) =>
+        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userID}/Invites/{inviteID}");
+        EventHandler<ChildChangedEventArgs> changeHandle = (sender, e) =>
         {
             Invite invite = JsonUtility.FromJson<Invite>(e.Snapshot.GetRawJsonValue());
             callback(invite);
         };
-        
-        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Invites/{userID}/{roomID}");
-        @ref.OnDisconnect().RemoveValue();
-        @ref.ChildChanged += handle;
-        @ref.ChildRemoved -= handle;
+        EventHandler<ChildChangedEventArgs> removeHandle = null;
+        removeHandle = (sender, e) =>
+        {
+            @ref.ChildChanged -= changeHandle;
+            @ref.ChildRemoved -= removeHandle;
+        };
+        @ref.ChildChanged += changeHandle;
+        @ref.ChildRemoved += removeHandle;
     }
  
 
-    public static async UniTask UpdateStatus(string roomID, InviteStatus status) //Finished
+    public static async UniTask UpdateStatus(string inviteID, InviteStatus status)
     {               
-        await FirebaseManager.RealtimeDB.SetValue($"Invites/{FirebaseManager.UserID}/{roomID}", (int)status);
-    }
-
-    public static async void CleanInvite(string userID)
-    {
-        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Invites/{userID}");
-        DataSnapshot snapshot = await @ref.GetValueAsync();
-        if (!snapshot.Exists) return;
-        var severTime = await FirebaseManager.RealtimeDB.GetServerDateTime();
-        var timeNow = severTime == null ? DateTime.UtcNow : severTime.Value;
-        foreach (var i in snapshot.Children)
-        {
-            if (i.Exists)
-            {
-                Invite invite = JsonUtility.FromJson<Invite>(i.GetRawJsonValue());
-                TimeSpan t = (timeNow - invite.CreateAt);
-                if(t > TimeSpan.FromSeconds(30))
-                {
-                    @ref.Child(i.Key).RemoveValueAsync().AsUniTask().Forget();
-                }
-            }
-        }
-        
-    }
+        await FirebaseManager.RealtimeDB.SetValue($"Users/{FirebaseManager.UserID}/Invites/{inviteID}", (int)status);
+    }   
 }

@@ -1,28 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 
 [Serializable]
-public struct Room
+public class Room
 {
     public string hostID;
-    public RoomStatus roomStatus;
     public string roomName;
+    public int playerCount;
+    public int status;
 }
 
-[Serializable]
-public struct RoomStatus
+public enum RoomStatus
 {
-    public VirtualRoomState roomState;
-    public int currentPlayerCount;
-    public int maxPlayerCount;
-    public DateTime createAt; 
-}
-
-
-
-
-public enum VirtualRoomState
-{
-   Waiting,// đang trong trạng thái chờ chưa khởi tạo session
+    Waiting,// đang trong trạng thái chờ chưa khởi tạo session
    InitError, // khởi tạo thất bại
    Ready, // trạng thái khởi tạo session hoàn tất có thể join
    InGame, //đang trong match
