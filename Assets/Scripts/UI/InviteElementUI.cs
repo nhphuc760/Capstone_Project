@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -15,47 +14,40 @@ public class InviteElementUI : MonoBehaviour
     [SerializeField] Button cancel;
     RectTransform rect;
     float width;
-    Action<bool> selected;
-
+    UniTaskCompletionSource<bool> tcs;
     private void Awake()
     {
-       rect = GetComponent<RectTransform>();
+        rect = GetComponent<RectTransform>();
         rect.pivot = Vector2.one * .5f;
         rect.anchorMin = new Vector2(1, 0.35f);
         rect.anchorMax = new Vector2(1, 0.35f);
         width = rect.rect.width;
         rect.anchoredPosition = Vector2.zero;
-    }
-    private void OnEnable()
-    {
         accept.interactable = true;
         cancel.interactable = true;
-    }
-   
-    public void Show(string title,Invite invite, Action<bool> selected)
-    {
-        Sprite avt = NetworkDataManager.Instance.avatarsFriend[invite.senderID];
-        if(avt != null)
-        {
-            avatar.sprite = avt;
-        }
-        this.title.text = title;
-        this.selected = selected;
+    }   
+
+    public UniTask<bool> Show(string title,Sprite avt)
+    {        
+        tcs = new UniTaskCompletionSource<bool>();
+        avatar.sprite = avt;
+        this.title.text = title;        
         TweenIn();
         Utils.DelayCall(10f, () => TweenOut()).Forget();
+        return tcs.Task;
     }
 
     public void OnAccept()
     {
-        selected?.Invoke(true);
-        selected = null;
+        tcs?.TrySetResult(true);
+        tcs = null;
         accept.interactable = false;
         TweenOut(); 
     }
     public void OnCancel()
     {
-        selected?.Invoke(false);
-        selected = null;
+        tcs?.TrySetResult(false);
+        tcs = null;
         cancel.interactable = false;
         TweenOut();
     }
@@ -68,7 +60,8 @@ public class InviteElementUI : MonoBehaviour
             .OnComplete(
                 () =>
                 {
-                    Destroy(gameObject);
+                    if(this != null)
+                        Destroy(gameObject);
                 }
             );
     }
@@ -79,7 +72,8 @@ public class InviteElementUI : MonoBehaviour
             .OnComplete(
                 () => 
                 {
-                    Destroy(gameObject);
+                    if(this != null)
+                        Destroy(gameObject);
                 }
              );
     }

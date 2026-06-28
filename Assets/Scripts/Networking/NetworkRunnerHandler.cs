@@ -2,13 +2,10 @@
 using Fusion;
 using Unity.VisualScripting;
 using TriInspector;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Fusion.Sockets;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using Firebase.Firestore;
-using Firebase.Extensions;
 
 public class NetworkRunnerHandler : MonoBehaviour
 {

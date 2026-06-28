@@ -3,7 +3,7 @@ using System.Security;
 using Firebase.Firestore;
 
 [Serializable]
-public struct Invite 
+public class Invite 
 {
     public string SenderID;
     public string RoomID;
