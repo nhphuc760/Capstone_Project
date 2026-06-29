@@ -89,7 +89,40 @@ public static class FirebaseManager
 
         }
 
+        public static async UniTask<long> GetUnixSeverTimespan()
+        {
+            try
+            {
+                var sw = Stopwatch.StartNew();
 
+                // Ghi timestamp server
+                await reference.Child("ServerTime").SetValueAsync(ServerValue.Timestamp);
+
+                // Đọc lại timestamp server
+                var task = reference.Child("ServerTime").GetValueAsync();
+                await task;
+
+                sw.Stop();
+
+                if (task.IsCompleted)
+                {
+                    DataSnapshot dataSnapshot = task.Result;
+                    long serverMilliseconds = (long)dataSnapshot.Value;
+
+                    serverMilliseconds += sw.ElapsedMilliseconds / 2;
+
+                    // Bù đắp độ trễ (elapsed từ client gửi -> nhận)
+
+
+                    return serverMilliseconds;
+                }
+            }
+            catch (FirebaseException e)
+            {
+                UnityEngine.Debug.LogError($"GetServerDateTime error: {e.Message}");
+            }
+            return 0;
+        }
 
     }
 }

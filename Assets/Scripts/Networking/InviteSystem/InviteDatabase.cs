@@ -19,7 +19,9 @@ public static class InviteDatabase
         {
             await @ref.OnDisconnect().RemoveValue();
         }
-        await @ref.Child(invite.SenderID).SetValueAsync(invite);
+        string json = JsonUtility.ToJson(invite);
+        Debug.Log("InviteJson: " + json);
+        await @ref.Child(invite.SenderID).SetRawJsonValueAsync(json);
         return !inviteSnapshot.Exists;
     }
 
@@ -44,19 +46,20 @@ public static class InviteDatabase
     /// <param name="callback"></param>
     public static void Listen(string receiverID, Action<InviteStatus> callback) // Finished
     {
-        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}/Status");
+        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}");
         EventHandler<ChildChangedEventArgs> changeHandle = (sender, e) =>
         {
             var inviteStatus = (InviteStatus)e.Snapshot.Value;
+            Debug.Log("Dữ liệu nhận được từ đối phương, invite status: " + inviteStatus.ToString());
             callback(inviteStatus);
         };
         EventHandler<ChildChangedEventArgs> removeHandle = null;
         removeHandle = (sender, e) =>
         {
-            @ref.ChildChanged -= changeHandle;
+            @ref.Child("Status").ChildChanged -= changeHandle;
             @ref.ChildRemoved -= removeHandle;
         };
-        @ref.ChildChanged += changeHandle;
+        @ref.Child("Status").ChildChanged += changeHandle;
         @ref.ChildRemoved += removeHandle;
     }
  

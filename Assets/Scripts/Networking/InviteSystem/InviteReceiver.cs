@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class InviteReceiver
 {
@@ -28,6 +29,7 @@ public class InviteReceiver
                     invite = blackBoard,
                     senderID = sender,
                 });
+               
             }
             else
             {
@@ -39,6 +41,7 @@ public class InviteReceiver
                     senderID = sender,
                 });
             }
+            Debug.Log($"Nhận được lời mời từ user {sender}");
             if (countDowns.TryGetValue(sender, out CountDownTimer timer))
             {
                 timer.RestartTimer();

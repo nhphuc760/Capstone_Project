@@ -5,8 +5,6 @@ public class NetworkDataManager : MonoBehaviour
 {
     public static NetworkDataManager Instance;
     [Header("Data")]
-    public FriendManager friendManager { get; private set; }
-    public InviteManager inviteManager { get; private set; }
     public bool dontDestroy = true;
     private void Awake()
     {
@@ -20,18 +18,9 @@ public class NetworkDataManager : MonoBehaviour
         {
             DontDestroyOnLoad(gameObject);
         }
-        friendManager = new FriendManager();
-        inviteManager = new InviteManager();
     }
     private async void Start()
     {
-        var userSnapshot = await FirebaseManager.RealtimeDB.GetValue($"Users/{FirebaseManager.UserID}");
-        if (userSnapshot.Exists)
-        {
-            await friendManager.InitData(userSnapshot);
-            inviteManager.InitData(FirebaseManager.UserID);
-            await UpdateStatus();
-        }
         //LoadScene
         await SceneController.Instance.NewTransitionPlan()
                                 .Load(new ParameterScene { Name = "LobbyScene"})

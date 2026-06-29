@@ -10,7 +10,7 @@ public class InviteManager
     InviteSender sender;
     InviteReceiver receiver;   
 
-    public void InitData(string myId) //Checked
+    public InviteManager(string myId) //Checked
     {       
         sender = new InviteSender();
         receiver = new InviteReceiver();
@@ -29,9 +29,45 @@ public class InviteManager
         {
             case InviteStatus.Accepted:
                 var @ref = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}");
-                var roomStatus = await @ref.GetValueAsync();
-                
-                break;
+                var room = await @ref.GetValueAsync();
+                if (room.Exists)
+                {
+                    var roomStatus = (RoomStatus)room.Child("Status").Value;
+                    if (roomStatus == RoomStatus.Ready)
+                    {
+                        Debug.Log("Joining room");
+                        // var result = runner.StartGame()
+                        //if(true) => Success => Remove Invite
+                        // false => UnSuccess => Debug.Log("Unsuccess")
+
+                    } else if (roomStatus == RoomStatus.Full)
+                    {
+                        Debug.Log("Phòng đã đầy");
+                    } else if (roomStatus == RoomStatus.InGame) 
+                    {
+                        Debug.Log("Đội đã ở trong trận");
+                    }
+                }
+                else
+                {
+                    var result = await InviteDatabase.WaitRoomInit(invite.RoomID);
+                    switch (result)
+                    {
+                        case RoomStatus.Ready:
+                            Debug.Log("Joining Game...");
+                            break;
+                        case RoomStatus.InitError:
+                            Debug.Log("Đã có lỗi xảy ra");
+                            break;
+                        case RoomStatus.Full:
+                            Debug.Log("Phòng đã đầy");
+                            break;
+                        case RoomStatus.InGame:
+                            Debug.Log("Đội đã ở trong trận");
+                            break;
+                    }
+                }
+                    break;
             case InviteStatus.Rejected:
                 await InviteDatabase.UpdateStatus(senderID, InviteStatus.Rejected);
                 Debug.Log("UpdateStatus: Reject");

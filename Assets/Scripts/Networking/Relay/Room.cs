@@ -11,12 +11,10 @@ public class Room
 }
 
 public enum RoomStatus
-{
-    Waiting,// đang trong trạng thái chờ chưa khởi tạo session
+{   
     Full,
-   InitError, // khởi tạo thất bại
-   Ready, // trạng thái khởi tạo session hoàn tất có thể join
-   InGame, //đang trong match
-   Canceled // phòng đã hủy, ví dụ khi mời người khác nhưng chưa kịp nhận câu trả lời đã vào phòng khác, chỉ update khi nào thoát phòng thì update waiting
+    Ready, // trạng thái khởi tạo session hoàn tất có thể join
+    InGame, //đang trong match    
+    InitError, // khởi tạo thất bại
 }
 

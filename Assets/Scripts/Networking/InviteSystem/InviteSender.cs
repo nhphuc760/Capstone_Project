@@ -16,12 +16,13 @@ public class InviteSender // checked
     public async void SendInvite(string receiverId)
     {
         
-        var dateTime = await FirebaseManager.RealtimeDB.GetServerDateTime();
+        var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         Invite invite = new Invite()
         {
+            RoomID = "ABCDXYZ",
             SenderID = myId,
             Status = InviteStatus.Pending,
-            CreateAt = dateTime == null ? DateTime.UtcNow : dateTime.Value,
+            CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
         };
         var result = await InviteDatabase.Create(receiverId, invite);
         if (result)
@@ -46,7 +47,7 @@ public class InviteSender // checked
                     Debug.Log("Accepted");
                     //init runner.StartGame
                     //Giả lập tiến trình khởi tạo session
-                    await UniTask.Delay(5000);
+                    await UniTask.Delay(2000);
                     //UpdateStatus, giải lập khởi tạo session thành công
                     await FirebaseManager.RealtimeDB.SetValue($"Lobbies/{invite.RoomID}/Status", (int)RoomStatus.Ready);
                     Debug.Log("Khởi tạo room thành công, chờ đối phương kết nối");

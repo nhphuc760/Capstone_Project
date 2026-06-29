@@ -36,6 +36,11 @@ public class AnonymousLogin : MonoBehaviour
     async Task AnonymousLoginBTN()
     {
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
+        if(auth.CurrentUser != null)
+        {
+            auth.SignOut();
+            Debug.Log("SignOut");
+        }
         await auth.SignInAnonymouslyAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled)
@@ -57,6 +62,7 @@ public class AnonymousLogin : MonoBehaviour
             //can save user id in playerprefs
             //GuestLoginSuccess(result.User.UserId);
         });
+        EventBus<EventTest.OnLoginSuccess>.Raise(new EventTest.OnLoginSuccess { });
     }
 
     void GuestLoginSuccess(string userId)
@@ -65,4 +71,13 @@ public class AnonymousLogin : MonoBehaviour
         successLoginPopup.SetActive(true);
         successLoginPopup.transform.Find("Disc").GetComponent<TextMeshProUGUI>().text = "Login Success\nUser ID: " + userId;
     }
+}
+
+public class EventTest
+{
+    public struct OnLoginSuccess :IEvent
+    { 
+
+    }
+
 }

@@ -5,10 +5,14 @@ using Firebase.Firestore;
 [Serializable]
 public class Invite 
 {
+    public Invite()
+    {
+        
+    }
     public string SenderID;
     public string RoomID;
     public InviteStatus Status;
-    public DateTime CreateAt;   
+    public long CreateAt;   
 }
 
 public enum InviteStatus 
