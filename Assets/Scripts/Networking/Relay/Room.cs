@@ -4,10 +4,12 @@ using System.Collections.Generic;
 [Serializable]
 public class Room
 {
+    public string RoomID;
     public string HostID;
     public string RoomName;
-    public int PlayerCount;
-    public int Status;
+    public int MaxPlayerCount;
+    public RoomStatus Status;
+    public List<string> members; // danh sách các thành viên trong phòng
 }
 
 public enum RoomStatus

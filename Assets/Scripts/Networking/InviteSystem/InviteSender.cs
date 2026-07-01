@@ -18,8 +18,8 @@ public class InviteSender // checked
         
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         Invite invite = new Invite()
-        {
-            RoomID = "ABCDXYZ",
+        {  
+            RoomID = "ABCXYZ",
             SenderID = myId,
             Status = InviteStatus.Pending,
             CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
@@ -38,7 +38,7 @@ public class InviteSender // checked
 
     void Listen(string receiverID, Invite invite)
     {
-        InviteDatabase.Listen(receiverID, async  status =>
+        InviteDatabase.ListenRepply(receiverID, async  status =>
         {
             switch (status)
             {
@@ -50,6 +50,7 @@ public class InviteSender // checked
                     await UniTask.Delay(2000);
                     //UpdateStatus, giải lập khởi tạo session thành công
                     await FirebaseManager.RealtimeDB.SetValue($"Lobbies/{invite.RoomID}/Status", (int)RoomStatus.Ready);
+                    FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}").OnDisconnect().RemoveValue().AsUniTask().Forget();
                     Debug.Log("Khởi tạo room thành công, chờ đối phương kết nối");
                     break;
 

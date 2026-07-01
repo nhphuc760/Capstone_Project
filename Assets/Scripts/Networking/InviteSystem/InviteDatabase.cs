@@ -4,7 +4,8 @@ using Firebase.Database;
 using UnityEngine;
 
 public static class InviteDatabase
-{
+{   
+
     /// <summary>
     /// return true if create new invit, false if just update
     /// </summary>
@@ -25,18 +26,30 @@ public static class InviteDatabase
         return !inviteSnapshot.Exists;
     }
 
+
+
     public static void ListenIncoming(Action<string, Invite> callback) //Finished
     {
         var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Invites");
-        EventHandler<ChildChangedEventArgs> handle = (sender, args) => {       
+        EventHandler<ChildChangedEventArgs> handle = (sender, args) => {            
             DataSnapshot snapshot = args.Snapshot;
-            Invite invite = JsonUtility.FromJson<Invite>(snapshot.GetRawJsonValue());
-            Debug.Log("Invitekey: " + snapshot.Key);
+            Invite invite = JsonUtility.FromJson<Invite>(snapshot.GetRawJsonValue());            
             callback(snapshot.Key, invite);
-            Debug.Log("ChildAdded Invoke: Invites");
+            Debug.Log("Child AddedOrUpdate Invoke: Invites");
         };
+
+        EventHandler<ValueChangedEventArgs> handleTimeChanged = (sender, args) =>
+        {
+            DataSnapshot snapshot = args.Snapshot;
+            if (snapshot.Exists)
+            {
+                string key = snapshot.Reference.Parent.Key;
+                callback(key, null);
+                Debug.Log($"Cập nhật lời mời từ: {key}");
+            }
+        };        
         @ref.ChildAdded += handle;
-        @ref.ChildChanged += handle;
+        @ref.Child("CreateAt").ValueChanged += handleTimeChanged;
         @ref.OnDisconnect().RemoveValue();
     }
     /// <summary>
@@ -44,22 +57,25 @@ public static class InviteDatabase
     /// </summary>
     /// <param name="receiverID"></param>   
     /// <param name="callback"></param>
-    public static void Listen(string receiverID, Action<InviteStatus> callback) // Finished
+    public static void ListenRepply(string receiverID, Action<InviteStatus> callback) // Finished
     {
+        Debug.Log("Đăng ký lắng nghe repply của receiver");
         DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}");
-        EventHandler<ChildChangedEventArgs> changeHandle = (sender, e) =>
+        EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
         {
-            var inviteStatus = (InviteStatus)e.Snapshot.Value;
+            if (!e.Snapshot.Exists) return;           
+            Debug.Log(e.Snapshot.Value.GetType().Name);
+            var inviteStatus = (InviteStatus)Convert.ToInt32(e.Snapshot.Value);
             Debug.Log("Dữ liệu nhận được từ đối phương, invite status: " + inviteStatus.ToString());
             callback(inviteStatus);
         };
         EventHandler<ChildChangedEventArgs> removeHandle = null;
         removeHandle = (sender, e) =>
         {
-            @ref.Child("Status").ChildChanged -= changeHandle;
+            @ref.Child("Status").ValueChanged -= changeHandle;
             @ref.ChildRemoved -= removeHandle;
         };
-        @ref.Child("Status").ChildChanged += changeHandle;
+        @ref.Child("Status").ValueChanged += changeHandle;
         @ref.ChildRemoved += removeHandle;
     }
  
@@ -81,7 +97,8 @@ public static class InviteDatabase
         EventHandler<ValueChangedEventArgs> handle = null;
         handle = (sender, e) =>
         {
-            var roomStatus = (RoomStatus)e.Snapshot.Value;
+            if (!e.Snapshot.Exists) return;            
+            var roomStatus = (RoomStatus)Convert.ToInt32(e.Snapshot.Value);
             tcs.TrySetResult(roomStatus);
             @ref.Child("Status").ValueChanged -= handle;
             countDown.Stop();

@@ -19,29 +19,21 @@ public class InviteReceiver
         InviteDatabase.ListenIncoming((sender, invite) =>
         {
             if (inviteReceived.ContainsKey(sender))
-            {
-                //Update invite
-                Invite blackBoard = inviteReceived[sender];
-                blackBoard.Status = invite.Status;
-                blackBoard.CreateAt = invite.CreateAt;
-                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise(new InviteEvent.OnUpdateInviteArgs
-                {
-                    invite = blackBoard,
-                    senderID = sender,
-                });
-               
+            {               
+                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise();
+                Debug.Log("Invite đã có trong danh sách, tiến hành cập nhật");
             }
             else
             {
                 // AddInvite
+                Debug.Log("Invite chưa có trong cache, tiến hành tạo mới");
                 inviteReceived.Add(sender, invite);
                 EventBus<InviteEvent.OnAddInviteArgs>.Raise(new InviteEvent.OnAddInviteArgs
                 {
                     invite = invite,
                     senderID = sender,
                 });
-            }
-            Debug.Log($"Nhận được lời mời từ user {sender}");
+            }           
             if (countDowns.TryGetValue(sender, out CountDownTimer timer))
             {
                 timer.RestartTimer();

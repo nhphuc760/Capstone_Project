@@ -19,4 +19,11 @@ public static class EventBus<T> where T : IEvent
             binding.OnEventNoArgs.Invoke();
         }
     }
+    public static void Raise()
+    {
+        foreach (var binding in bindings)
+        {
+            binding.OnEventNoArgs.Invoke();
+        }
+    }
 }
