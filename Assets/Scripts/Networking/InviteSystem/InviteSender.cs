@@ -17,9 +17,14 @@ public class InviteSender // checked
     {
         
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
+        var currentRoom = RoomManager.Instance.CurrentRoom;
+        if (currentRoom == null)
+        {
+            currentRoom = RoomManager.Instance.CreateRoom();
+        }
         Invite invite = new Invite()
-        {  
-            RoomID = "ABCXYZ",
+        {
+            RoomID = currentRoom.RoomID,
             SenderID = myId,
             Status = InviteStatus.Pending,
             CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,

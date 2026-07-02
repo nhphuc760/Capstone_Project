@@ -128,27 +128,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 142609876}
-  - component: {fileID: 142609875}
+  - component: {fileID: 142609877}
   m_Layer: 0
-  m_Name: InviteTest
+  m_Name: RoomTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &142609875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 142609874}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67a0bafa037e23c4ca911bb5179d6448, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InviteSystemTest
-  userIDInvite: {fileID: 1974947282}
 --- !u!4 &142609876
 Transform:
   m_ObjectHideFlags: 0
@@ -164,6 +151,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &142609877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 142609874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbee88546b0eb104fa00b46bba2215e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomManager
+  userID: {fileID: 1974947282}
+  CurrentRoom:
+    RoomID: 
+    HostID: 
+    RoomName: 
+    MaxPlayerCount: 0
+    Status: 1
+    Members: []
+  DestroyOnLoad: 0
 --- !u!1 &285008119
 GameObject:
   m_ObjectHideFlags: 0

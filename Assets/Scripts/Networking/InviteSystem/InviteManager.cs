@@ -55,15 +55,16 @@ public class InviteManager
                     {
                         case RoomStatus.Ready:
                             Debug.Log("Joining Game...");
-                            break;
-                        case RoomStatus.InitError:
-                            Debug.Log("Đã có lỗi xảy ra");
-                            break;
+                            //await RoomManager.Instance.JoinRoom(invite.RoomID);
+                            break;                    
                         case RoomStatus.Full:
                             Debug.Log("Phòng đã đầy");
                             break;
                         case RoomStatus.InGame:
                             Debug.Log("Đội đã ở trong trận");
+                            break;
+                        case RoomStatus.Error:
+                            Debug.Log("Khởi tạo phòng thất bại, Đã có lỗi xảy ra");
                             break;
                     }
                 }

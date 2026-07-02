@@ -109,7 +109,7 @@ public static class InviteDatabase
         {
             @ref.Child("Status").ValueChanged -= handle;
             Debug.Log("Khởi tạo phòng thất bại");
-            tcs.TrySetResult(RoomStatus.InitError);
+            tcs.TrySetResult(RoomStatus.Error);
         });
         return tcs.Task;
     }

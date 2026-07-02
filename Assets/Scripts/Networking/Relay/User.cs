@@ -11,7 +11,7 @@ public enum OnlineStatus
 public class Presence 
 {
     public string Name;
-    public string Tag; 
+    public string Tag;
     public string AvatarUrl;
     public OnlineStatus Status;
 }

@@ -148,7 +148,6 @@ GameObject:
   - component: {fileID: 4972334434358156297}
   - component: {fileID: 798558713230785103}
   - component: {fileID: 9050286949949481897}
-  - component: {fileID: -8600843177689966549}
   m_Layer: 5
   m_Name: ElementRequestJoin
   m_TagString: Untagged
@@ -216,27 +215,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &-8600843177689966549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4689179810718945908}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de8269080e3cad84da52d101a21714d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InviteElementUI
-  title: {fileID: 0}
-  avatar: {fileID: 0}
-  timeBar: {fileID: 0}
-  accept: {fileID: 0}
-  cancel: {fileID: 0}
-  invite:
-    roomID: 
-    senderID: 
-    status: 0
 --- !u!1 &5457601930154185987
 GameObject:
   m_ObjectHideFlags: 0
