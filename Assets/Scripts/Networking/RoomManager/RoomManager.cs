@@ -40,11 +40,7 @@ public class RoomManager : MonoBehaviour
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
             RemoveMembers(userID.text).Forget();
-        }
-        if (Keyboard.current.uKey.wasPressedThisFrame)
-        {
-            UpdateStatus(RoomStatus.Full);
-        }
+        }        
     }
 
 
@@ -72,6 +68,11 @@ public class RoomManager : MonoBehaviour
         if (string.IsNullOrEmpty(memberID))
         {
             Debug.LogWarning("MemberID is null or empty");
+            return;
+        }
+        if (CurrentRoom.Members.Count == CurrentRoom.MaxPlayerCount || CurrentRoom.Status == RoomStatus.Full)
+        {
+            Debug.LogWarning("Room is full, Cant add member");
             return;
         }
         if (!CurrentRoom.Members.Contains(memberID) && memberID != CurrentRoom.HostID)

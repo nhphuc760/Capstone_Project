@@ -5,12 +5,12 @@ public class MakeFriendRequest
 {
     public string SenderID;
     public MakeFriendStatus Status;
-    public DateTime CreatAt;
+    public long CreatAt;
 }
 
 public enum MakeFriendStatus
 {
     Pending,
-    Approved,
-    Rejected,
+    Accept,
+    Decline,
 }

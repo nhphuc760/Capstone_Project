@@ -160,18 +160,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 142609874}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbee88546b0eb104fa00b46bba2215e3, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f6cae42126cc6b41a46b1da203550b0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoomManager
-  userID: {fileID: 1974947282}
-  CurrentRoom:
-    RoomID: 
-    HostID: 
-    RoomName: 
-    MaxPlayerCount: 0
-    Status: 1
-    Members: []
-  DestroyOnLoad: 0
+  m_EditorClassIdentifier: Assembly-CSharp::FriendTest
+  Request: {fileID: 1974947282}
 --- !u!1 &285008119
 GameObject:
   m_ObjectHideFlags: 0
