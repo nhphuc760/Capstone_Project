@@ -26,6 +26,7 @@ public class InviteManager
         switch (invite.Status)
         {
             case InviteStatus.Accepted:
+                EventBus<InviteEvent.OnAcceptInviteArgs>.Raise();
                 var @ref = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}");
                 var room = await @ref.GetValueAsync();
                 if (room.Exists)
@@ -33,6 +34,7 @@ public class InviteManager
                     var roomStatus = (RoomStatus)Convert.ToInt32(room.Child("Status").Value);
                     if (roomStatus == RoomStatus.Ready)
                     {
+
                         Debug.Log("Joining room");
                         // var result = runner.StartGame()
                         //if(true) => Success => Remove Invite

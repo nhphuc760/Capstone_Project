@@ -5,7 +5,7 @@ using Firebase.Database;
 using UnityEngine;
 
 public class MakeFriend
-{
+{  
     List<string> friendRequests = new List<string>();
     List<string> pendingRequests = new List<string>();
     FriendManager friendManager;
@@ -16,38 +16,45 @@ public class MakeFriend
         @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
     }
 
-    public async UniTask Initialize()
+    public async UniTask Initialize(DataSnapshot userSnapshot)
     {
-        await FetchAndListenPendingRequests();
-        await FetchAndListenFriendRequests();
+        await FetchAndListenPendingRequests(userSnapshot);
+        await FetchAndListenFriendRequests(userSnapshot);
     }
 
-    async UniTask FetchAndListenFriendRequests()
+    async UniTask FetchAndListenFriendRequests(DataSnapshot userSnapshot)
     {
         Debug.Log("[Firebase] Bắt đầu tải danh sách FriendREquests...");
-        var friendRequestSnapshot = await @ref.Child("FriendRequests").GetValueAsync();
+        var friendRequestSnapshot = userSnapshot.Child("FriendRequests");
         if (friendRequestSnapshot.Exists)
         {
             foreach (DataSnapshot child in friendRequestSnapshot.Children)
             {
                 string targetUserId = child.Key;
+                await NetworkDataManager.Instance.LoadPresenceData(targetUserId);
                 if (child.HasChild("Status"))
                 {
                     MakeFriendStatus status = (MakeFriendStatus)Convert.ToInt32(child.Child("Status").Value);
                     if (status == MakeFriendStatus.Accept)
                     {
-                        if (!friendManager.IsFriend(targetUserId)) friendManager.AddFriend(targetUserId);
+                        if (!friendManager.IsFriend(targetUserId)) 
+                        {
+                            friendManager.AddFriend(targetUserId);                           
+                        }
                     }
                     else if (status == MakeFriendStatus.Pending)
                     {
-                        if (!pendingRequests.Contains(targetUserId)) pendingRequests.Add(targetUserId);
+                        if (!pendingRequests.Contains(targetUserId)) 
+                        { 
+                            pendingRequests.Add(targetUserId); 
+                        }
                     }
                 }
             }
         }
         @ref.Child("FriendRequests").ChildAdded += OnFriendRequestAdded;
     }
-    private void OnFriendRequestAdded(object sender, ChildChangedEventArgs args)
+    private async void OnFriendRequestAdded(object sender, ChildChangedEventArgs args)
     {
         Debug.Log("OnFriendRequestAdded called");
         if (args.Snapshot.Exists)
@@ -57,19 +64,21 @@ public class MakeFriend
             if (!friendRequests.Contains(targetUserId))
             {
                 friendRequests.Add(targetUserId);
+                await NetworkDataManager.Instance.LoadPresenceData(targetUserId);
                 Debug.Log($"[Firebase] Nhận được lời mời kết bạn từ: {targetUserId}");
             }
         }
     }
-    async UniTask FetchAndListenPendingRequests()
+    async UniTask FetchAndListenPendingRequests(DataSnapshot userSnapshot)
     {
         Debug.Log("[Firebase] Bắt đầu tải danh sách PendingRequests...");
-        var pendingSnapshot = await @ref.Child("PendingRequests").GetValueAsync();
+        var pendingSnapshot = userSnapshot.Child("PendingRequests");
         if (pendingSnapshot.Exists)
         {
             foreach (DataSnapshot child in pendingSnapshot.Children)
             {
                 string targetUserId = child.Key;
+                await NetworkDataManager.Instance.LoadPresenceData(targetUserId);
                 if (child.HasChild("Status"))
                 {
                     MakeFriendStatus status = (MakeFriendStatus)Convert.ToInt32(child.Child("Status").Value);
@@ -90,12 +99,13 @@ public class MakeFriend
         @ref.Child("PendingRequests").ChildChanged += OnPendingRequestStatusChanged;
         @ref.Child("PendingRequests").ChildAdded += OnPendingRequestAdded;
     }
-    private void OnPendingRequestAdded(object sender, ChildChangedEventArgs args)
+    private async void OnPendingRequestAdded(object sender, ChildChangedEventArgs args)
     {
         Debug.Log("OnPendingRequestAdded called");
         if (args.Snapshot.Exists)
         {
             string targetUserId = args.Snapshot.Key;
+            await NetworkDataManager.Instance.LoadPresenceData(targetUserId);
             if (args.Snapshot.HasChild("Status"))
             {
                 MakeFriendStatus status = (MakeFriendStatus)Convert.ToInt32(args.Snapshot.Child("Status").Value);
@@ -226,6 +236,7 @@ public class MakeFriend
             Debug.Log($"Đã hủy lời mời kết bạn gửi tới {targetUserID}.");
         }
     }
+    public List<string> GetFriendRequests() => friendRequests;
     public void CleanUp()
     {
         if (@ref != null)

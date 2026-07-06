@@ -3,27 +3,29 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using System.Linq;
+using Newtonsoft.Json;
 public class FriendManager
-{
+{    
     List<string> friends = new List<string>();
     public int FriendCount => friends.Count;
 
     public MakeFriend MakeFriend { get; private set; }
 
-    public async UniTask Initialize()
+    public async UniTask Initialize(DataSnapshot userSnapshot)
     {
-        await Load();
+        await Load(userSnapshot);
         MakeFriend = new MakeFriend(this);
-        await MakeFriend.Initialize();
+        await MakeFriend.Initialize(userSnapshot);
     }
 
-    public void AddFriend(string userID)
+    public async void AddFriend(string userID)
     {
         if (!IsFriend(userID))
-        {
-            friends.Add(userID);
+        {            
+            await NetworkDataManager.Instance.LoadPresenceData(userID);
+            friends.Add(userID);                
             Save();
-            Debug.Log($"Friend {userID} added.");
+            Debug.Log($"Friend {userID} added.");            
         }
         else
         {
@@ -47,18 +49,22 @@ public class FriendManager
     }
     void Save()
     {
-        string json = JsonUtility.ToJson(friends);
+        string json = JsonConvert.SerializeObject(friends);
+        Debug.Log("Friend save json: " + json);
         FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Friends").SetRawJsonValueAsync(json);
         Debug.Log("Friends list saved to Firebase.");
     }
-    async UniTask Load()
+    async UniTask Load(DataSnapshot snapshot)
     {
-        var snapshot = await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Friends").GetValueAsync();
-
-        if (snapshot.Exists)
-        {
-            string json = snapshot.GetRawJsonValue();
-            friends = JsonUtility.FromJson<List<string>>(json);
+        var friendsSnapshot = snapshot.Child("Friends");
+        if (friendsSnapshot.Exists)
+        {            
+            string json = friendsSnapshot.GetRawJsonValue();
+            var listFriend = JsonConvert.DeserializeObject<List<string>>(json);
+            foreach (var i in listFriend)
+            {
+                await NetworkDataManager.Instance.LoadPresenceData(i);
+            }
             Debug.Log("Friends list loaded from Firebase.");
         }
         else
@@ -94,9 +100,7 @@ public class FriendManager
         return null;
     }
     //not used yet
-    private string[] GetFriends()
-    {
-        return null;
-    }
+    private List<string> GetFriends() => friends;    
+   
 }
 

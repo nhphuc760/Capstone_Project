@@ -1001,7 +1001,7 @@ GameObject:
   - component: {fileID: 7252270869388754024}
   - component: {fileID: 6919757040859439676}
   m_Layer: 5
-  m_Name: ElementInvitation
+  m_Name: InviteElementUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

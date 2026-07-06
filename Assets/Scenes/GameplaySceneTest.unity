@@ -119,51 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &142609874
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 142609876}
-  - component: {fileID: 142609877}
-  m_Layer: 0
-  m_Name: RoomTest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &142609876
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 142609874}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &142609877
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 142609874}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f6cae42126cc6b41a46b1da203550b0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FriendTest
-  Request: {fileID: 1974947282}
 --- !u!1 &285008119
 GameObject:
   m_ObjectHideFlags: 0
@@ -255,6 +210,7 @@ GameObject:
   - component: {fileID: 451553259}
   - component: {fileID: 451553258}
   - component: {fileID: 451553257}
+  - component: {fileID: 451553261}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -346,6 +302,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &451553261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451553256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bbd5f89828a7774f954dbf89895c50a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Test
+  test: {fileID: 1974947282}
 --- !u!1 &855082860
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,7 +331,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &855082861
 Transform:
   m_ObjectHideFlags: 0
@@ -1142,7 +1111,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 2013908937}
   - {fileID: 1867917767}
-  - {fileID: 142609876}
   - {fileID: 855082861}
   - {fileID: 451553260}
   - {fileID: 285008122}

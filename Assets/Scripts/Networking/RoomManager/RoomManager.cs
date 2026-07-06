@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -83,9 +83,9 @@ public class RoomManager : MonoBehaviour
                 UpdateStatus(RoomStatus.Full);
                 Debug.LogWarning("Room is full");
             }
-            string roomJson = JsonUtility.ToJson(CurrentRoom);
-            Debug.Log("RoomJson: " + roomJson);
-            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}").SetRawJsonValueAsync(roomJson);
+            string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
+            Debug.Log("RoomJson: " + memberJson);
+            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Members").SetRawJsonValueAsync(memberJson);
         }
         else
         {
@@ -107,8 +107,8 @@ public class RoomManager : MonoBehaviour
             {
                UpdateStatus(RoomStatus.Ready);
             }
-            string roomJson = JsonUtility.ToJson(CurrentRoom);
-            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}").SetRawJsonValueAsync(roomJson);
+            string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
+            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Members").SetRawJsonValueAsync(memberJson);
         }
         return;
     }
@@ -129,7 +129,8 @@ public class RoomManager : MonoBehaviour
     public async UniTask LeaveRoom()
     {
 
-        await UniTask.Delay(500); // Simulate room leaving delay        
+        await UniTask.Delay(500); // Simulate room leaving delay
+        _currentRoom = null;
         Debug.Log("Leave success");
     }
 }

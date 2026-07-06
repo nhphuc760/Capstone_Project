@@ -16,4 +16,8 @@ public class InviteEvent
     {
         public string senderID;
     }
+    public struct OnAcceptInviteArgs : IEvent
+    {
+
+    }
 }

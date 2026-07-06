@@ -19,7 +19,6 @@ public class AnonymousLogin : MonoBehaviour
             FirebaseApp app = FirebaseApp.DefaultInstance;
             Debug.Log("Firebase đã khởi tạo thành công và sẵn sàng sử dụng!");
             await AnonymousLoginBTN();
-            await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence/Status").SetValueAsync(0);
         }
         else
         {
