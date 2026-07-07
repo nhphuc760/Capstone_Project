@@ -11,55 +11,43 @@ using System.Collections.Generic;
 public class EmailLogin : MonoBehaviour
 {
     [Header("Login")]
-    public TMP_InputField LoginEmail;
-    public TMP_InputField LoginPassword;
+    [SerializeField] private TMP_InputField LoginEmail;
+    [SerializeField] private TMP_InputField LoginPassword;
 
     [Header("Sign up")]
-    public TMP_InputField SignUpEmail;
-    public TMP_InputField SignUpPassword;
-    public TMP_InputField SignUpPasswordConfirm;
+    [SerializeField] private TMP_InputField SignUpEmail;
+    [SerializeField] private TMP_InputField SignUpPassword;
+    [SerializeField] private TMP_InputField SignUpPasswordConfirm;
 
     [Header("Extra")]
     //public GameObject loadingScreen;
-    public Toggle rememberMeToggle; 
-    
+    [SerializeField] private Toggle rememberMeToggle;
 
     [Header("UI")]
-    public TextMeshProUGUI logTxt, wrongEmailPasswordText;
-    public GameObject loginUI, signUpUI, SuccessUI, emailVerificationPanel, emailPasswordNotificationPanel;
+    [SerializeField] private TextMeshProUGUI logTxt, wrongEmailPasswordText;
+    [SerializeField] private GameObject loginUI, signUpUI, SuccessUI, emailVerificationPanel, emailPasswordNotificationPanel;
 
     [Header("Email List")]
-    public GameObject emailSuggestionPanel;
-    public Transform emailSuggestionContent;
-    public GameObject emailItemPrefab;
-    public EmailSuggestion emailSuggestion;
+    [SerializeField] private GameObject emailSuggestionPanel;
+    [SerializeField] private Transform emailSuggestionContent;
+    [SerializeField] private GameObject emailItemPrefab;
+    [SerializeField] private EmailSuggestion emailSuggestion;
+
+    [Header("Forgot Password")]
+    [SerializeField] private GameObject forgotPasswordPanel;
+    [SerializeField] private TMP_InputField forgotPasswordEmail;
 
     private void Start()
     {
         LoadRememberedEmail();
         emailSuggestionPanel.SetActive(false);
 
-        // turn off password visibility by default
-        LoginPassword.contentType = TMP_InputField.ContentType.Password;
-        SignUpPassword.contentType = TMP_InputField.ContentType.Password;
-
-        LoginPassword.ForceLabelUpdate();
-        SignUpPassword.ForceLabelUpdate();
-
-        // if (showLoginPasswordToggle != null)
-        //     showLoginPasswordToggle.isOn = false;
-
-        // if (showSignUpPasswordToggle != null)
-        //     showSignUpPasswordToggle.isOn = false;
-
-        // if (showSignUpPasswordConfirmToggle != null)
-        //     showSignUpPasswordConfirmToggle.isOn = false;
-
         if (rememberMeToggle != null)
             rememberMeToggle.isOn = false;
     }
 
-    // sign up
+    #region  sign up
+    // Sign up
     public void SignUp()
     {
         //loadingScreen.SetActive(true);
@@ -223,6 +211,27 @@ public class EmailLogin : MonoBehaviour
         }
     }
 
+    //Email verification notification panel
+    public void closeNotificationPanel()
+    {
+        emailVerificationPanel.SetActive(false);
+    }
+
+    private void openNotificationPanel()
+    {
+        emailVerificationPanel.SetActive(true);
+        showLogMsg("Please verify your email before logging in. A verification email has been sent to your email address.");
+    }
+
+    //Login panel
+    public void openLoginPanel()
+    {
+        signUpUI.SetActive(false);
+        loginUI.SetActive(true);
+    }
+    #endregion
+
+    #region log in
     // Log in
     public void LogIn()
     {
@@ -300,6 +309,126 @@ public class EmailLogin : MonoBehaviour
         }
     }
 
+    //wrong email or password notification panel
+    public void closeEmailPasswordNotificationPanel()
+    {
+        emailPasswordNotificationPanel.SetActive(false);
+    }
+
+    private void openEmailPasswordNotificationPanel(string message)
+    {
+        emailPasswordNotificationPanel.SetActive(true);
+        showLogMsg(message);
+    }
+
+    //Sign up panel
+    public void openSignUpPanel()
+    {
+        signUpUI.SetActive(true);
+        loginUI.SetActive(false);
+    }
+    #endregion
+
+    #region forgot password
+    public void ResetPassword()
+    {
+        if (!CheckForgotPasswordEmail())
+            return;
+
+        string email = forgotPasswordEmail.text.Trim();
+
+        FirebaseAuth auth = FirebaseAuth.DefaultInstance;
+
+        auth.SendPasswordResetEmailAsync(email).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCanceled)
+            {
+                Debug.LogError("Reset Password was canceled.");
+                showLogMsg("Password reset was canceled.");
+                return;
+            }
+
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Reset Password Error: " + task.Exception);
+
+                FirebaseException firebaseException =
+                    task.Exception.GetBaseException() as FirebaseException;
+
+                if (firebaseException != null)
+                {
+                    AuthError error = (AuthError)firebaseException.ErrorCode;
+
+                    switch (error)
+                    {
+                        case AuthError.InvalidEmail:
+                            showLogMsg("Invalid email address.");
+                            break;
+
+                        case AuthError.UserNotFound:
+                            showLogMsg("No account found with this email.");
+                            break;
+
+                        case AuthError.NetworkRequestFailed:
+                            showLogMsg("Network error. Please try again.");
+                            break;
+
+                        default:
+                            showLogMsg("Failed to send password reset email.");
+                            break;
+                    }
+                }
+                else
+                {
+                    showLogMsg("Failed to send password reset email.");
+                }
+
+                return;
+            }
+
+            showLogMsg("Password reset email has been sent.");
+
+            forgotPasswordPanel.SetActive(false);
+
+            Debug.Log("Password reset email sent successfully.");
+        });
+    }
+
+    private bool CheckForgotPasswordEmail()
+    {
+        if (string.IsNullOrWhiteSpace(forgotPasswordEmail.text))
+        {
+            showLogMsg("Please enter your email.");
+            return false;
+        }
+
+        if (!Regex.IsMatch(
+            forgotPasswordEmail.text.Trim(),
+            @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            showLogMsg("Invalid email format.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void OpenForgotPasswordPanel()
+    {
+        forgotPasswordEmail.text = LoginEmail.text;
+        loginUI.SetActive(false);
+        forgotPasswordPanel.SetActive(true);
+    }
+
+    public void CloseForgotPasswordPanel()
+    {
+        forgotPasswordPanel.SetActive(false);
+        loginUI.SetActive(true);
+    }
+
+    #endregion
+
+    #region remember me functionality
     // Load the remembered email from PlayerPrefs and set it in the login email input field
     public void ToggleRememberMe()
     {
@@ -324,7 +453,7 @@ public class EmailLogin : MonoBehaviour
         {
             PlayerPrefs.SetInt("RememberMe", 1);
             PlayerPrefs.SetString("SavedEmail", LoginEmail.text);
-            PlayerPrefs.SetString("SavedPassword", LoginPassword.text);
+            PlayerPrefs.SetString("SavedPassword", LoginPassword.text);      
         }
         else
         {
@@ -335,70 +464,5 @@ public class EmailLogin : MonoBehaviour
 
         PlayerPrefs.Save();
     }
-
-    // Toggle password visibility based on the state of the showPasswordToggle
-    // public void TogglePasswordVisibility()
-    // {
-    //     TMP_InputField.ContentType type =
-    //         showLoginPasswordToggle.isOn
-    //         ? TMP_InputField.ContentType.Standard
-    //         : TMP_InputField.ContentType.Password;
-
-    //     TMP_InputField.ContentType typeSignUp =
-    //         showSignUpPasswordToggle.isOn
-    //         ? TMP_InputField.ContentType.Standard
-    //         : TMP_InputField.ContentType.Password;
-
-    //     TMP_InputField.ContentType typeSignUpConfirm =
-    //         showSignUpPasswordConfirmToggle.isOn
-    //         ? TMP_InputField.ContentType.Standard
-    //         : TMP_InputField.ContentType.Password;
-
-    //     LoginPassword.contentType = type;
-    //     SignUpPassword.contentType = type;
-    //     SignUpPasswordConfirm.contentType = type;
-
-    //     LoginPassword.ForceLabelUpdate();
-    //     SignUpPassword.ForceLabelUpdate();
-    //     SignUpPasswordConfirm.ForceLabelUpdate();
-    // }
-
-    //Button
-    //Email verification notification panel
-    public void closeNotificationPanel()
-    {
-        emailVerificationPanel.SetActive(false);
-    }
-
-    private void openNotificationPanel()
-    {
-        emailVerificationPanel.SetActive(true);
-        showLogMsg("Please verify your email before logging in. A verification email has been sent to your email address.");
-    }
-
-    //wrong email or password notification panel
-    public void closeEmailPasswordNotificationPanel()
-    {
-        emailPasswordNotificationPanel.SetActive(false);
-    }
-
-    private void openEmailPasswordNotificationPanel(string message)
-    {
-        emailPasswordNotificationPanel.SetActive(true);
-        showLogMsg(message);
-    }
-
-    //Sign up panel
-    public void openSignUpPanel()
-    {
-        signUpUI.SetActive(true);
-        loginUI.SetActive(false);
-    }
-
-    //Login panel
-    public void openLoginPanel()
-    {
-        signUpUI.SetActive(false);
-        loginUI.SetActive(true);
-    }
+    #endregion 
 }
