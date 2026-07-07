@@ -35,29 +35,33 @@ public class EmailSuggestion : MonoBehaviour
         if (string.IsNullOrEmpty(email))
             return;
 
-        string key = email + ";" + password;
+        bool updated = false;
 
-        bool exists = false;
-
-        foreach (string item in emailHistory)
+        // check if the email already exists in the history
+        for (int i = 0; i < emailHistory.Count; i++)
         {
-            if (item.StartsWith(email + ";"))
+            string[] info = emailHistory[i].Split(';');
+
+            if (info.Length < 2)
+                continue;
+
+            if (info[0] == email)
             {
-                exists = true;
+                // update the password for the existing email
+                emailHistory[i] = email + ";" + password;
+                updated = true;
                 break;
             }
         }
 
-        if (!exists)
+        // update the email history if the email is new
+        if (!updated)
         {
-            emailHistory.Add(key);
-
-            PlayerPrefs.SetString(
-                "EmailHistory",
-                string.Join("|", emailHistory));
-
-            PlayerPrefs.Save();
+            emailHistory.Add(email + ";" + password);
         }
+
+        PlayerPrefs.SetString("EmailHistory", string.Join("|", emailHistory));
+        PlayerPrefs.Save();
     }
 
     //==================================================
