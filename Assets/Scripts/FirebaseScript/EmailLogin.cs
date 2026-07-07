@@ -235,7 +235,7 @@ public class EmailLogin : MonoBehaviour
     // Log in
     public void LogIn()
     {
-        if (!checkPasswordMatch()) return;
+        if (!checkValidation()) return;
 
         //loadingScreen.SetActive(true);
 
@@ -247,12 +247,56 @@ public class EmailLogin : MonoBehaviour
         auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(task => {
             if (task.IsCanceled)
             {
-                Debug.LogError("LogIn was canceled.");
+                Debug.Log("LogIn was canceled.");
                 return;
             }
             if (task.IsFaulted)
             {
-                Debug.LogError("LogIn encountered an error: " + task.Exception);
+                Debug.Log("LogIn encountered an error: " + task.Exception);
+
+                FirebaseException firebaseException =
+                    task.Exception.GetBaseException() as FirebaseException;
+
+                if (firebaseException != null)
+                {
+                    AuthError error = (AuthError)firebaseException.ErrorCode;
+
+                    switch (error)
+                    {
+                        case AuthError.WrongPassword:
+                            openEmailPasswordNotificationPanel("Incorrect password.");
+                            break;
+
+                        case AuthError.InvalidEmail:
+                            openEmailPasswordNotificationPanel("Invalid email.");
+                            break;
+
+                        case AuthError.UserNotFound:
+                            openEmailPasswordNotificationPanel("Account does not exist.");
+                            break;
+
+                        case AuthError.InvalidCredential:
+                            openEmailPasswordNotificationPanel("Incorrect email or password.");
+                            break;
+
+                        case AuthError.UserDisabled:
+                            openEmailPasswordNotificationPanel("This account has been disabled.");
+                            break;
+
+                        case AuthError.NetworkRequestFailed:
+                            openEmailPasswordNotificationPanel("Network error. Please try again.");
+                            break;
+
+                        default:
+                            openEmailPasswordNotificationPanel("Login failed. Please check your email and password.");
+                            break;
+                    }
+                }
+                else
+                {
+                    openEmailPasswordNotificationPanel("Login failed.");
+                }
+
                 return;
             }
 
@@ -278,7 +322,7 @@ public class EmailLogin : MonoBehaviour
         });
     }
 
-    public bool checkPasswordMatch()
+    public bool checkValidation()
     {
         if (string.IsNullOrWhiteSpace(LoginEmail.text))
         {
@@ -362,35 +406,33 @@ public class EmailLogin : MonoBehaviour
                     switch (error)
                     {
                         case AuthError.InvalidEmail:
-                            showLogMsg("Invalid email address.");
+                            openEmailPasswordNotificationPanel("Invalid email address.");
                             break;
 
                         case AuthError.UserNotFound:
-                            showLogMsg("No account found with this email.");
+                            openEmailPasswordNotificationPanel("No account found with this email.");
                             break;
 
                         case AuthError.NetworkRequestFailed:
-                            showLogMsg("Network error. Please try again.");
+                            openEmailPasswordNotificationPanel("Network error. Please try again.");
                             break;
 
                         default:
-                            showLogMsg("Failed to send password reset email.");
+                            openEmailPasswordNotificationPanel("Failed to send password reset email.");
                             break;
                     }
                 }
                 else
                 {
-                    showLogMsg("Failed to send password reset email.");
+                    openEmailPasswordNotificationPanel("Failed to send password reset email.");
                 }
 
                 return;
             }
 
-            showLogMsg("Password reset email has been sent.");
+            openEmailPasswordNotificationPanel("If the email is registered, you will receive a password reset email shortly.");
 
-            forgotPasswordPanel.SetActive(false);
-
-            Debug.Log("Password reset email sent successfully.");
+            CloseForgotPasswordPanel();
         });
     }
 
@@ -398,7 +440,7 @@ public class EmailLogin : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(forgotPasswordEmail.text))
         {
-            showLogMsg("Please enter your email.");
+            openEmailPasswordNotificationPanel("Please enter your email.");
             return false;
         }
 
@@ -406,7 +448,7 @@ public class EmailLogin : MonoBehaviour
             forgotPasswordEmail.text.Trim(),
             @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
-            showLogMsg("Invalid email format.");
+            openEmailPasswordNotificationPanel("Invalid email format.");
             return false;
         }
 
@@ -425,7 +467,6 @@ public class EmailLogin : MonoBehaviour
         forgotPasswordPanel.SetActive(false);
         loginUI.SetActive(true);
     }
-
     #endregion
 
     #region remember me functionality
