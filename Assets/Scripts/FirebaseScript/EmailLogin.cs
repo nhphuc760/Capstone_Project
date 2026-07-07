@@ -17,12 +17,14 @@ public class EmailLogin : MonoBehaviour
     [Header("Sign up")]
     public TMP_InputField SignUpEmail;
     public TMP_InputField SignUpPassword;
-    public TMP_InputField SignUpEmailConfirm;
+    public TMP_InputField SignUpPasswordConfirm;
 
     [Header("Extra")]
     //public GameObject loadingScreen;
-    public Toggle rememberMeToggle;
-    public Toggle showPasswordToggle;
+    public Toggle rememberMeToggle; 
+    
+
+    [Header("UI")]
     public TextMeshProUGUI logTxt, wrongEmailPasswordText;
     public GameObject loginUI, signUpUI, SuccessUI, emailVerificationPanel, emailPasswordNotificationPanel;
 
@@ -37,8 +39,6 @@ public class EmailLogin : MonoBehaviour
         LoadRememberedEmail();
         emailSuggestionPanel.SetActive(false);
 
-        
-
         // turn off password visibility by default
         LoginPassword.contentType = TMP_InputField.ContentType.Password;
         SignUpPassword.contentType = TMP_InputField.ContentType.Password;
@@ -46,8 +46,17 @@ public class EmailLogin : MonoBehaviour
         LoginPassword.ForceLabelUpdate();
         SignUpPassword.ForceLabelUpdate();
 
-        if (showPasswordToggle != null)
-            showPasswordToggle.isOn = false;
+        // if (showLoginPasswordToggle != null)
+        //     showLoginPasswordToggle.isOn = false;
+
+        // if (showSignUpPasswordToggle != null)
+        //     showSignUpPasswordToggle.isOn = false;
+
+        // if (showSignUpPasswordConfirmToggle != null)
+        //     showSignUpPasswordConfirmToggle.isOn = false;
+
+        if (rememberMeToggle != null)
+            rememberMeToggle.isOn = false;
     }
 
     // sign up
@@ -59,6 +68,7 @@ public class EmailLogin : MonoBehaviour
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
         string email = SignUpEmail.text;
         string password = SignUpPassword.text;
+        string confirmPassword = SignUpPasswordConfirm.text;
 
         // Check if the email and password fields are not empty
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
@@ -82,12 +92,11 @@ public class EmailLogin : MonoBehaviour
 
             SignUpEmail.text = "";
             SignUpPassword.text = "";
-            SignUpEmailConfirm.text = "";
+            SignUpPasswordConfirm.text = "";
 
             if (result.User.IsEmailVerified)
             {
                 showLogMsg("Sign up successful! Please log in.");
-                
             }
             else
             {
@@ -246,7 +255,7 @@ public class EmailLogin : MonoBehaviour
             if (result.User.IsEmailVerified)
             {
                 SaveRememberMe();
-                emailSuggestion.SaveEmail(LoginEmail.text);
+                emailSuggestion.SaveLogin(LoginEmail.text , LoginPassword.text);
 
                 showLogMsg("Login successful!");
                 loginUI.SetActive(false);
@@ -328,19 +337,31 @@ public class EmailLogin : MonoBehaviour
     }
 
     // Toggle password visibility based on the state of the showPasswordToggle
-    public void TogglePasswordVisibility()
-    {
-        TMP_InputField.ContentType type =
-            showPasswordToggle.isOn
-            ? TMP_InputField.ContentType.Standard
-            : TMP_InputField.ContentType.Password;
+    // public void TogglePasswordVisibility()
+    // {
+    //     TMP_InputField.ContentType type =
+    //         showLoginPasswordToggle.isOn
+    //         ? TMP_InputField.ContentType.Standard
+    //         : TMP_InputField.ContentType.Password;
 
-        LoginPassword.contentType = type;
-        SignUpPassword.contentType = type;
+    //     TMP_InputField.ContentType typeSignUp =
+    //         showSignUpPasswordToggle.isOn
+    //         ? TMP_InputField.ContentType.Standard
+    //         : TMP_InputField.ContentType.Password;
 
-        LoginPassword.ForceLabelUpdate();
-        SignUpPassword.ForceLabelUpdate();
-    }
+    //     TMP_InputField.ContentType typeSignUpConfirm =
+    //         showSignUpPasswordConfirmToggle.isOn
+    //         ? TMP_InputField.ContentType.Standard
+    //         : TMP_InputField.ContentType.Password;
+
+    //     LoginPassword.contentType = type;
+    //     SignUpPassword.contentType = type;
+    //     SignUpPasswordConfirm.contentType = type;
+
+    //     LoginPassword.ForceLabelUpdate();
+    //     SignUpPassword.ForceLabelUpdate();
+    //     SignUpPasswordConfirm.ForceLabelUpdate();
+    // }
 
     //Button
     //Email verification notification panel

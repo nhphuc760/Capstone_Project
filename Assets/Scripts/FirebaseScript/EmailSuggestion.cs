@@ -5,9 +5,11 @@ using TMPro;
 
 public class EmailSuggestion : MonoBehaviour
 {
-    [Header("UI")]
+    [Header("Login")]
     public TMP_InputField emailInput;
-     
+    public TMP_InputField passwordInput;
+
+    [Header("Suggestion Panel")]
     public GameObject suggestionPanel;
     public Transform content;
     public Button emailItemPrefab;
@@ -26,16 +28,29 @@ public class EmailSuggestion : MonoBehaviour
     // Save Email
     //==================================================
 
-    public void SaveEmail(string email)
+    public void SaveLogin(string email, string password)
     {
         email = email.Trim().ToLower();
 
         if (string.IsNullOrEmpty(email))
             return;
 
-        if (!emailHistory.Contains(email))
+        string key = email + ";" + password;
+
+        bool exists = false;
+
+        foreach (string item in emailHistory)
         {
-            emailHistory.Add(email);
+            if (item.StartsWith(email + ";"))
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists)
+        {
+            emailHistory.Add(key);
 
             PlayerPrefs.SetString(
                 "EmailHistory",
@@ -74,26 +89,31 @@ public class EmailSuggestion : MonoBehaviour
 
         int count = 0;
 
-        foreach (string email in emailHistory)
+        foreach (string data in emailHistory)
         {
+            string[] info = data.Split(';');
+
+            if (info.Length < 2)
+                continue;
+
+            string email = info[0];
+            string password = info[1];
+
             if (!email.StartsWith(keyword))
                 continue;
 
-            Button item =
-                Instantiate(emailItemPrefab, content);
+            Button item = Instantiate(emailItemPrefab, content);
 
             item.GetComponentInChildren<TextMeshProUGUI>().text = email;
-
-            //Button btn = item.GetComponent<Button>();
 
             item.onClick.RemoveAllListeners();
 
             item.onClick.AddListener(() =>
             {
-                //Debug.Log("Selected Email: " + email);
                 emailInput.text = email;
+                passwordInput.text = password;
+
                 HideSuggestions();
-                Debug.Log(emailInput.text);
             });
 
             count++;
