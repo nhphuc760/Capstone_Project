@@ -7,8 +7,8 @@
   <Project Path="UniTask.Addressables.csproj" />
   <Project Path="Fusion.Unity.csproj" />
   <Project Path="MyUtils.csproj" />
-  <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="ParrelSync.csproj" />
   <Project Path="UniTask.Editor.csproj" />
   <Project Path="UniTask.DOTween.csproj" />

@@ -1,9 +1,11 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance;
+
+    [Header("Current Level")]
     public LevelData currentLevel;
 
     private void Awake()
@@ -12,35 +14,55 @@ public class LevelManager : MonoBehaviour
     }
 
     public void SpawnObjects(SpawnArea area)
+{
+    AreaData areaData = currentLevel.areas.Find(x => x.areaType == area.areaType);
+
+    if (areaData == null)
+        return;
+
+    foreach (SpawnData data in areaData.spawnDatas)
     {
-        AreaData areaData = currentLevel.areas.Find(x => x.areaType == area.areaType);
+        if (Random.Range(0, 100) >= data.spawnChance)
+            continue;
 
-        if (areaData == null) return;
+        int amount = Random.Range(data.minAmount, data.maxAmount + 1);
 
-        foreach (SpawnData data in areaData.spawnDatas)
+        for (int i = 0; i < amount; i++)
         {
-            if (data.spawnArea != area.areaType) continue;
+            SpawnPoints point = GetRandomSpawnPoint(area);
 
-            List<SpawnPoints> availablePoints =
-                new List<SpawnPoints>(area.spawnPoints);
+            if (point == null)
+                break;
 
-            for (int i = 0; i < data.maxAmount; i++)
-            {
-                if (availablePoints.Count == 0)
-                    break;
+            GameObject obj = Instantiate(
+                data.objectData.objectPrefab,
+                point.GetSpawnPosition(),
+                Quaternion.identity
+            );
 
-                int index = Random.Range(0, availablePoints.Count);
-
-                SpawnPoints point = availablePoints[index];
-
-                availablePoints.RemoveAt(index);
-
-                Instantiate(
-                    data.objectData.objectPrefab,
-                    point.transform.position,
-                    Quaternion.identity
-                );
-            }
+            point.SetOccupied(true);
         }
     }
+}
+
+    private SpawnPoints GetRandomSpawnPoint(SpawnArea area)
+{
+    List<SpawnPoints> available = new();
+
+    foreach (SpawnPoints point in area.spawnPoints)
+    {
+        if (!point.canSpawn)
+            continue;
+
+        if (point.occupied)
+            continue;
+
+        available.Add(point);
+    }
+
+    if (available.Count == 0)
+        return null;
+
+    return available[Random.Range(0, available.Count)];
+}
 }

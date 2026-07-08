@@ -12,7 +12,7 @@ public class SpawnAreaTrigger : MonoBehaviour
         }
         else
         {
-            spawnArea.ActivateArea();
+            spawnArea.Activate();
         }    
     }
 }

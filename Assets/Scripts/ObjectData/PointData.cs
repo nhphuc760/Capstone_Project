@@ -11,7 +11,7 @@ public enum PointRank
     SS
 }
 
-[CreateAssetMenu(fileName = "PointData", menuName = "Scriptable Objects/Point Data")]
+[CreateAssetMenu(fileName = "PointData", menuName = "Objects Data/Point Data")]
 public class PointData : ScriptableObject
 {
     [Header("Target")]

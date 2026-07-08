@@ -1,38 +1,69 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Đoạn code này nằm trong gameobject chứa toàn bộ spawn point của 1 khu vực,model và nó sẽ được quản lý bởi LevelManager
+/*Level
+│
+├── Areas
+│   │
+│   ├── House_01        ← SpawnArea.cs
+│   │   ├── Model
+│   │   ├── Trigger
+│   │   ├── SpawnPoint_01
+│   │   ├── SpawnPoint_02
+│   │   └── SpawnPoint_03
+*/
 public class SpawnArea : MonoBehaviour
 {
     [Header("Area")]
     public SpawnAreaType areaType;
 
+    [Tooltip("ID của khu vực cùng loại. Ví dụ House_0, House_1...")]
+    [Min(0)]
+    public int areaId;
+
     [Header("Spawn Points")]
     public List<SpawnPoints> spawnPoints = new();
 
     [Header("Runtime")]
-    public bool isActivated;
+    [SerializeField]
+    private AreaState currentState = AreaState.Inactive;
 
-    //Onvalidate dùng để tự động cập nhật danh sách spawnPoints khi có sự thay đổi trong Inspector, giúp tránh việc phải thêm thủ công các spawn points vào danh sách.
-    //Đảm bảo spawnPoints là lớp con của SpawnArea, vì vậy nó sẽ tìm kiếm tất cả các SpawnPoints trong các đối tượng con của SpawnArea.
+    public AreaState CurrentState => currentState;
+
+    /// <summary>
+    /// House_0, Church_1...
+    /// </summary>
+    public string AreaKey => $"{areaType}_{areaId}";
+
     private void OnValidate()
     {
         spawnPoints.Clear();
-
-        foreach (SpawnPoints point in GetComponentsInChildren<SpawnPoints>())
-        {
-            spawnPoints.Add(point);
-        }
+        spawnPoints.AddRange(GetComponentsInChildren<SpawnPoints>());
     }
 
-    public void ActivateArea()
+    public void Activate()
     {
-        if (isActivated)
+        if (currentState != AreaState.Inactive)
             return;
 
-        isActivated = true;
-
-        Debug.Log($"{areaType} Activated");
+        currentState = AreaState.Active;
 
         LevelManager.Instance.SpawnObjects(this);
+    }
+
+    public void CompleteArea()
+    {
+        currentState = AreaState.Cleared;
+    }
+
+    public void DisableArea()
+    {
+        currentState = AreaState.Disabled;
+    }
+
+    public bool IsCleared()
+    {
+        return currentState == AreaState.Cleared;
     }
 }

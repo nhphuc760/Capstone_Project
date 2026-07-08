@@ -8,7 +8,7 @@ public enum ObjectType
     Consumable
 }
 
-[CreateAssetMenu(fileName = "ObjectData", menuName = "Game/Object Data")]
+[CreateAssetMenu(fileName = "ObjectData", menuName = "Objects Data/Object Data")]
 public class ObjectData : ScriptableObject
 {
     [Header("Objects Information")]

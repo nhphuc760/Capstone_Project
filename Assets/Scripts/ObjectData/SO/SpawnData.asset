@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22cffc76c8a74734da16bb3728a692d2, type: 3}
+  m_Name: SpawnData
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnData
+  objectData: {fileID: 11400000, guid: 4fbbd29d7b441eb4e90dde8b4d778c5a, type: 2}
+  minAmount: 1
+  maxAmount: 3
+  spawnChance: 100
