@@ -3,12 +3,13 @@ using UnityEngine;
 
 public class MainMenuManager : MonoBehaviour
 {
-   public async void PlayOnline()
+   public void PlayOnline()
     {
-        await SceneController.Instance.NewTransitionPlan()
-                                      .Load(new ParameterScene { Name = SceneDatabase.BOOTSTRAPONLINE})
-                                      .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU})
-                                      .WithFadeIn()
-                                      .Perform();
+
+        //await SceneController.Instance.NewTransitionPlan()
+        //                              .Load(new ParameterScene { Name = SceneDatabase.BOOTSTRAPONLINE })
+        //                              .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU })
+        //                              .WithFadeIn()
+        //                              .Perform();
     }
 }

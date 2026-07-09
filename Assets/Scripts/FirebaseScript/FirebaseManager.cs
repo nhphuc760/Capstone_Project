@@ -50,6 +50,7 @@ public static class FirebaseManager
         {
             return await reference.Child(path).GetValueAsync();
         }
+
         public static async UniTask<DateTime?> GetServerDateTime()
         {
             try

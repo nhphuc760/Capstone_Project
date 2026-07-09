@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Extensions;
@@ -33,7 +34,7 @@ public class AnonymousLogin : MonoBehaviour
         await AnonymousLoginBTN();
     }
 
-    async Task AnonymousLoginBTN()
+    async UniTask AnonymousLoginBTN()
     {
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
         if(auth.CurrentUser != null)
@@ -60,9 +61,8 @@ public class AnonymousLogin : MonoBehaviour
             print("User ID: " + result.User.UserId);
             //print("User Name: " + result.User.DisplayName);
             //can save user id in playerprefs
-            //GuestLoginSuccess(result.User.UserId);
+            GuestLoginSuccess(result.User.UserId);
         });
-        EventBus<EventTest.OnLoginSuccess>.Raise(new EventTest.OnLoginSuccess { });
     }
 
     void GuestLoginSuccess(string userId)
@@ -73,11 +73,3 @@ public class AnonymousLogin : MonoBehaviour
     }
 }
 
-public class EventTest
-{
-    public struct OnLoginSuccess :IEvent
-    { 
-
-    }
-
-}

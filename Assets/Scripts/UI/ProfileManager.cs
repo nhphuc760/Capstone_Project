@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using SFB;
 using TMPro;
 using UnityEngine;
@@ -39,14 +37,12 @@ public class ProfileManager : MonoBehaviour
     // Kiểm tra xem có đang trong tiến trình chỉnh sửa nào không
     public bool IsEditing => currentState != ProfileEditState.Idle;
 
-    EventBinding<DataEvent.OnInitializeSuccess> onInitialize;
     private void Awake()
     {
-        onInitialize = new EventBinding<DataEvent.OnInitializeSuccess>(OnInitializeSuccess);
-        EventBus<DataEvent.OnInitializeSuccess>.Register(onInitialize);
+        Initialize();
     }
 
-    void OnInitializeSuccess()
+    void Initialize()
     {
         string userID = FirebaseManager.UserID;
         myPresence = NetworkDataManager.Instance.GetPresenceUser(userID);

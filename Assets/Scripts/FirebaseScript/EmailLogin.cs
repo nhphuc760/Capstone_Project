@@ -7,6 +7,7 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class EmailLogin : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class EmailLogin : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI logTxt, wrongEmailPasswordText;
-    [SerializeField] private GameObject loginUI, signUpUI, SuccessUI, emailVerificationPanel, emailPasswordNotificationPanel;
+    [SerializeField] private GameObject loginUI, signUpUI, emailVerificationPanel, emailPasswordNotificationPanel;
 
     [Header("Email List")]
     [SerializeField] private GameObject emailSuggestionPanel;
@@ -267,9 +268,11 @@ public class EmailLogin : MonoBehaviour
                 emailSuggestion.SaveLogin(LoginEmail.text , LoginPassword.text);
 
                 showLogMsg("Login successful!");
+                SceneController.Instance.NewTransitionPlan()
+                                      .Load(new ParameterScene { Name = SceneDatabase.BOOTSTRAPONLINE })
+                                      .WithFadeIn()
+                                      .Perform().Forget();
                 loginUI.SetActive(false);
-                SuccessUI.SetActive(true);
-                SuccessUI.transform.Find("SuccessText").GetComponent<TextMeshProUGUI>().text = "Welcome, " + result.User.Email + "!";
             }
             else
             {

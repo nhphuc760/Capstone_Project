@@ -696,6 +696,7 @@ GameObject:
   - component: {fileID: 90874428734049888}
   - component: {fileID: 6072331836941885420}
   - component: {fileID: 300739403437359375}
+  - component: {fileID: 2654212861556900225}
   m_Layer: 5
   m_Name: FriendElementUI
   m_TagString: Untagged
@@ -718,8 +719,8 @@ RectTransform:
   - {fileID: 8017491783590788626}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -761,6 +762,23 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2654212861556900225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6865198970952354167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b76d8232cd99cd459e0a2e4ec65dd4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FriendElementUI
+  avatar: {fileID: 2766664115744511079}
+  nameTag: {fileID: 2289153389272497340}
+  status: {fileID: 4118578297629735953}
+  invite: {fileID: 2535907957246125602}
+  requestJoin: {fileID: 6353981156169931348}
 --- !u!1 &7262019312500515895
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,7 +791,7 @@ GameObject:
   - component: {fileID: 5088416871822531543}
   - component: {fileID: 2289153389272497340}
   m_Layer: 5
-  m_Name: Name
+  m_Name: NameTag
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

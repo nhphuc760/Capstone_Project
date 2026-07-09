@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class SceneController : MonoBehaviour
 {
-    [SerializeField] LoadingOverlay loadingOverlay;
+    public LoadingOverlay loadingOverlay;
     List<string> loadedSceneBySlot = new();
     public static SceneController Instance { get; private set; }
     public bool isBusy;
@@ -24,6 +24,7 @@ public class SceneController : MonoBehaviour
         Instance = this;
         if(DontDestroy)
             DontDestroyOnLoad(gameObject);
+        loadedSceneBySlot.Add(SceneManager.GetActiveScene().name);
     }
 
     public SceneTransitionPlan NewTransitionPlan()
@@ -34,7 +35,7 @@ public class SceneController : MonoBehaviour
     public async UniTask ExecutePlan(SceneTransitionPlan plan)
     {
         if (isBusy) return;
-        isBusy = true;
+        isBusy = true;       
         await ChangeSceneAsync(plan);
     }
 
@@ -82,9 +83,7 @@ public class SceneController : MonoBehaviour
         while (loadOp.progress < 0.9f)
         {
             await UniTask.Yield();
-        }
-        if (param.onBeforeDone != null)
-            await param.onBeforeDone();
+        }        
         loadOp.allowSceneActivation = true;
         await UniTask.WaitUntil(() => loadOp.isDone);
         if (setActive)
@@ -135,7 +134,7 @@ public class SceneTransitionPlan
     }
     public SceneTransitionPlan UnLoad(ParameterScene sceneParam)
     {
-        if (SceneToLoad.Contains(sceneParam)) return this;
+        if (SceneToUnload.Contains(sceneParam)) return this;
         SceneToUnload.Add(sceneParam);
         return this;
     }
@@ -163,13 +162,11 @@ public struct ParameterScene : IEquatable<ParameterScene>
 {
     public string Name;
     public Func<UniTask> onBeforeExecute;
-    public Func<UniTask> onBeforeDone;
 
     public bool Equals(ParameterScene other)
     {
         return Name == other.Name
-        && onBeforeExecute == other.onBeforeExecute
-        && onBeforeDone == other.onBeforeDone;
+        && onBeforeExecute == other.onBeforeExecute;
     }
 
     public override bool Equals(object obj)
@@ -180,8 +177,7 @@ public struct ParameterScene : IEquatable<ParameterScene>
     {
         return HashCode.Combine(
             Name,
-            onBeforeExecute,
-            onBeforeDone);
+            onBeforeExecute);
     }
     public static bool operator ==(
        ParameterScene left,

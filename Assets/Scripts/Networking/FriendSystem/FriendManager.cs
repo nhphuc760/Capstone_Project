@@ -10,13 +10,12 @@ public class FriendManager
     public int FriendCount => friends.Count;
 
     public MakeFriend MakeFriend { get; private set; }
-
     public async UniTask Initialize(DataSnapshot userSnapshot)
     {
         await Load(userSnapshot);
         MakeFriend = new MakeFriend(this);
         await MakeFriend.Initialize(userSnapshot);
-    }
+    } 
 
     public async void AddFriend(string userID)
     {
@@ -25,7 +24,8 @@ public class FriendManager
             await NetworkDataManager.Instance.LoadPresenceData(userID);
             friends.Add(userID);                
             Save();
-            Debug.Log($"Friend {userID} added.");            
+            Debug.Log($"Friend {userID} added.");
+            EventBus<DataEvent.OnFriendAdded>.Raise(new DataEvent.OnFriendAdded { userID = userID});
         }
         else
         {
@@ -41,6 +41,7 @@ public class FriendManager
             friends.Remove(userID);
             Save();
             Debug.Log($"Friend {userID} removed.");
+            EventBus<DataEvent.OnFriendRemoved>.Raise(new DataEvent.OnFriendRemoved { userID = userID});
         }
         else
         {
@@ -100,7 +101,8 @@ public class FriendManager
         return null;
     }
     //not used yet
-    private List<string> GetFriends() => friends;    
-   
+    public List<string> GetFriends() => friends;    
+    
+
 }
 

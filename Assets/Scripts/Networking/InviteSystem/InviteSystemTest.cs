@@ -10,9 +10,9 @@ public class InviteSystemTest : MonoBehaviour
 
     private void Awake()
     {
-        EventBinding<EventTest.OnLoginSuccess> test = new EventBinding<EventTest.OnLoginSuccess>(OnLoginSuccess);
+        //EventBinding<EventTest.OnLoginSuccess> test = new EventBinding<EventTest.OnLoginSuccess>(OnLoginSuccess);
         EventBinding<InviteEvent.OnAddInviteArgs> onChildAddedInvite = new EventBinding<InviteEvent.OnAddInviteArgs>(OnAddInvite);
-        EventBus<EventTest.OnLoginSuccess>.Register(test);
+        //EventBus<EventTest.OnLoginSuccess>.Register(test);
         EventBus<InviteEvent.OnAddInviteArgs>.Register(onChildAddedInvite);
     }
 

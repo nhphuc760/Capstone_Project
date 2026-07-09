@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
-using Google.MiniJSON;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -11,7 +10,8 @@ public class NetworkDataManager : MonoBehaviour
     [Header("Data")]
     Dictionary<string, Presence> userPresence = new Dictionary<string, Presence>();
     Dictionary<string, Sprite> userAvatar = new Dictionary<string, Sprite>();
-    public  FriendManager friendManager { get; private set; }
+    public FriendManager friendManager { get; private set; }
+    public InviteManager inviteManager { get; private set; }
     Presence myPresence;
     public bool dontDestroy = true;
     DatabaseReference @ref;
@@ -21,42 +21,56 @@ public class NetworkDataManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
-        }        
+        }
         Instance = this;
         if (dontDestroy)
         {
             DontDestroyOnLoad(gameObject);
         }
         @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
+        friendManager = new FriendManager();
+        inviteManager = new InviteManager(FirebaseManager.UserID);
     }
     private async void Start()
     {
-        //LoadScene
-        await SceneController.Instance.NewTransitionPlan()
-                                .Load(new ParameterScene { Name = "LobbyScene"})
-                                .UnLoad(new ParameterScene { Name = "MainMenu" })
-                                .WithFadeOut()
-                                .Perform();
-    }
-    async UniTask Initialize()
-    {
-        var dataSnapshot = await @ref.GetValueAsync();
-        if (dataSnapshot.Exists)
+        //Lấy dữ liệu tổng của người chơi
+        var data = await @ref.GetValueAsync();
+        if (data.Exists)
         {
-            var presenceSnapshot = dataSnapshot.Child("Presence").GetRawJsonValue();
-            myPresence = JsonConvert.DeserializeObject<Presence>(presenceSnapshot);
-            myPresence.Status = OnlineStatus.Online;
-            LoadPresenceData(FirebaseManager.UserID).Forget();
-            await UpdateMyPresence(myPresence);
-            await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
+            await Initialize(data);
+            await SceneController.Instance.NewTransitionPlan()
+                                   .Load(new ParameterScene { Name = SceneDatabase.LOBBY }, true)
+                                   .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU})
+                                   .WithFadeOut()
+                                   .Perform();
         }
-        friendManager = new FriendManager();
-        await friendManager.Initialize(dataSnapshot);
-        //OnInitializeSuccess
+        else
+        {
+            var panel = GameObject.Find("FirstSetupCanvas");
+            if (panel != null)
+            {
+                panel.SetActive(true);
+            }
+            await SceneController.Instance.loadingOverlay.FadeOutBlack(.5f);
+
+        }
+
+    }
+
+    async UniTask Initialize(DataSnapshot userSnapshot)
+    {
+
+        var presenceSnapshot = userSnapshot.Child("Presence").GetRawJsonValue();
+        myPresence = JsonConvert.DeserializeObject<Presence>(presenceSnapshot);
+        myPresence.Status = OnlineStatus.Online;
+        LoadPresenceData(FirebaseManager.UserID).Forget();
+        await UpdateMyPresence(myPresence);
+        await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);       
+        await friendManager.Initialize(userSnapshot);
     }
 
     public async UniTask UpdateMyPresence(Presence presence)
-    {       
+    {
         myPresence = presence;
         string jsonMyData = JsonConvert.SerializeObject(myPresence);
         await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence").SetRawJsonValueAsync(jsonMyData);
@@ -86,6 +100,7 @@ public class NetworkDataManager : MonoBehaviour
         return null;
     }
 
+    public Presence GetMyPresence() => myPresence;  
     public void SetPresenceUser(string userID, Presence presence)
     {
         userPresence[userID] = presence;
