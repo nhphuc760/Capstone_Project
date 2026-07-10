@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 508c27f035ce400e8fd5735e2e40bd87
+timeCreated: 1763839731
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/ListSelectionPopup.cs
+  uploadId: 876412
