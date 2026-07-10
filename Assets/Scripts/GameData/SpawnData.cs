@@ -1,6 +1,14 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SpawnData", menuName = "Objects Data/Spawn Data")]
+public enum AreaState
+{
+    Waiting,
+    Spawning,
+    Active,
+    Cleared
+}
+
+[CreateAssetMenu(fileName = "SpawnData", menuName = "Game Data/Spawn Data")]
 public class SpawnData : ScriptableObject
 {
     [Header("Object")]
@@ -15,4 +23,7 @@ public class SpawnData : ScriptableObject
 
     [Range(0, 100)]
     public int spawnChance = 100;
+
+    [Header("Area State")]
+    public AreaState areaState = AreaState.Waiting;
 }

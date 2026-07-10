@@ -4,7 +4,7 @@ public enum ObjectType
 {
     None,
     Valuable,
-    QuestItem,
+    ItemEffect,
     Consumable
 }
 
@@ -15,17 +15,25 @@ public class ObjectData : ScriptableObject
     public string objectName;
     public Sprite icon;
     public ObjectType objectType;
-    public GameObject objectPrefab;
+    public GameObject objectPrefab; // for 3d objects
 
     [Header("Object Points")]
     public int objectPoints;
 
     [Header("Physics")]
+    [Tooltip("Tự động tính ko cần nhập")]
     [Min(0)]
     public float weight;
+    private void OnValidate()
+    {
+        weight = objectPoints / 20f;
+    }
 
     [Header("Gameplay")]
-    public bool isQuestItem;
+    public bool isItemEffect;
     public bool isRare;
-    public int difficultyMultiplier = 1;
+
+    // [Header("Time Effect")]
+    // [SerializeField]
+    // private TimeEffectData timeEffectData;
 }

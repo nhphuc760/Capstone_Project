@@ -27,7 +27,7 @@ public enum levelname
     Level3
 }
 
-[CreateAssetMenu(fileName = "LevelData", menuName = "Objects Data/Level Data")]
+[CreateAssetMenu(fileName = "LevelData", menuName = "Game Data/Level Data")]
 public class LevelData : ScriptableObject
 {
     [Header("Information")]
@@ -38,4 +38,7 @@ public class LevelData : ScriptableObject
 
     [Header("Areas")]
     public List<AreaData> areas = new();
+
+    [Header("Time")]
+    public TimeData timeData;
 }
