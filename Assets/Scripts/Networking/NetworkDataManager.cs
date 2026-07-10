@@ -30,34 +30,9 @@ public class NetworkDataManager : MonoBehaviour
         @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
         friendManager = new FriendManager();
         inviteManager = new InviteManager(FirebaseManager.UserID);
-    }
-    private async void Start()
-    {
-        //Lấy dữ liệu tổng của người chơi
-        var data = await @ref.GetValueAsync();
-        if (data.Exists)
-        {
-            await Initialize(data);
-            await SceneController.Instance.NewTransitionPlan()
-                                   .Load(new ParameterScene { Name = SceneDatabase.LOBBY }, true)
-                                   .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU})
-                                   .WithFadeOut()
-                                   .Perform();
-        }
-        else
-        {
-            var panel = GameObject.Find("FirstSetupCanvas");
-            if (panel != null)
-            {
-                panel.SetActive(true);
-            }
-            await SceneController.Instance.loadingOverlay.FadeOutBlack(.5f);
+    }    
 
-        }
-
-    }
-
-    async UniTask Initialize(DataSnapshot userSnapshot)
+    public async UniTask Initialize(DataSnapshot userSnapshot)
     {
 
         var presenceSnapshot = userSnapshot.Child("Presence").GetRawJsonValue();
@@ -65,7 +40,7 @@ public class NetworkDataManager : MonoBehaviour
         myPresence.Status = OnlineStatus.Online;
         LoadPresenceData(FirebaseManager.UserID).Forget();
         await UpdateMyPresence(myPresence);
-        await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);       
+        await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
         await friendManager.Initialize(userSnapshot);
     }
 
@@ -100,7 +75,7 @@ public class NetworkDataManager : MonoBehaviour
         return null;
     }
 
-    public Presence GetMyPresence() => myPresence;  
+    public Presence GetMyPresence() => myPresence;
     public void SetPresenceUser(string userID, Presence presence)
     {
         userPresence[userID] = presence;
@@ -121,6 +96,25 @@ public class NetworkDataManager : MonoBehaviour
             SetAvatarUser(userID, avt);
         }
 
+    }
+
+    public async UniTask UpdatePresenceData(string userID, Presence presence)
+    {
+        Presence currentPresence = GetPresenceUser(userID);
+        if (currentPresence != null)
+        {
+            if (presence.AvatarUrl != currentPresence.AvatarUrl)
+            {
+                var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
+                SetAvatarUser(userID, avt);
+            }
+        }
+        else
+        {
+            var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
+            SetAvatarUser(userID, avt);
+        }
+            SetPresenceUser(userID, presence);
     }
 
 }

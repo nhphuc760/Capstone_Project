@@ -87,11 +87,17 @@ public class FriendManager
             return null;
         }
         var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").EqualTo(name).LimitToFirst(10).GetValueAsync();
-        if (!dataSnapshot.Exists) return null;
+        if (!dataSnapshot.HasChildren) return null;
         var list = dataSnapshot.Children;
         if (!string.IsNullOrEmpty(tag))
         {
-            return list.Where(x => x.Child("Presence/Tag").Value.ToString() == tag).ToArray();
+            
+            var tmp = list.Where(x => x.Child("Presence/Tag").Value.ToString() == tag).ToArray();
+            if (tmp.Length > 0)
+            {
+                return tmp;
+            }
+            return list.ToArray();
         }
         return list.ToArray();
     }

@@ -267,7 +267,6 @@ GameObject:
   - component: {fileID: 215942712}
   - component: {fileID: 215942714}
   - component: {fileID: 215942713}
-  - component: {fileID: 215942715}
   m_Layer: 5
   m_Name: ProfileSetup
   m_TagString: Untagged
@@ -335,23 +334,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 215942711}
   m_CullTransparentMesh: 1
---- !u!114 &215942715
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 215942711}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bbd5f89828a7774f954dbf89895c50a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Test
-  Name: {fileID: 926471728}
-  Tag: {fileID: 957126070}
-  Continue: {fileID: 2145821729}
-  LogError: {fileID: 1886917731}
-  LogMessage: {fileID: 887349537}
 --- !u!1 &262697266
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,6 +398,7 @@ GameObject:
   - component: {fileID: 277906859}
   - component: {fileID: 277906858}
   - component: {fileID: 277906857}
+  - component: {fileID: 277906861}
   m_Layer: 5
   m_Name: FirstSetupCanvas
   m_TagString: Untagged
@@ -480,7 +463,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
@@ -508,6 +491,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &277906861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 277906856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bbd5f89828a7774f954dbf89895c50a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Test
+  Name: {fileID: 926471728}
+  Tag: {fileID: 957126070}
+  Continue: {fileID: 2145821729}
+  LogError: {fileID: 1886917731}
+  LogMessage: {fileID: 887349537}
 --- !u!1 &376474801
 GameObject:
   m_ObjectHideFlags: 0
@@ -1454,6 +1454,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 957126068}
   m_CullTransparentMesh: 1
+--- !u!1 &1314972493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1314972494}
+  - component: {fileID: 1314972495}
+  m_Layer: 0
+  m_Name: BootstrapObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1314972494
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314972493}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1314972495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314972493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf6db7176d96b5d47826fd2deaeb0aef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Bootstrap
+  firstTimeSetup: {fileID: 277906861}
 --- !u!1 &1418843903
 GameObject:
   m_ObjectHideFlags: 0
@@ -1499,6 +1544,55 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkDataManager
   dontDestroy: 1
+--- !u!1 &1579342316
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1579342317}
+  - component: {fileID: 1579342318}
+  m_Layer: 0
+  m_Name: ObjectPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1579342317
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1579342316}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 456.52786, y: 629.0036, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1579342318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1579342316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f007eb4ac022944fa7a320e6303ec22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MyUtils::ObjectPoolManager
+  poolsData:
+  - key: RESULTSEARCHUI
+    prefab: {fileID: 2722416060711862164, guid: afd6fce2415b366479b3f5973ed05621, type: 3}
+    defaultCapacity: 0
+    maxSize: 12
 --- !u!1 &1814969570
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,3 +2015,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1418843904}
   - {fileID: 277906860}
+  - {fileID: 1579342317}
+  - {fileID: 1314972494}

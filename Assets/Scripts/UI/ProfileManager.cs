@@ -45,7 +45,7 @@ public class ProfileManager : MonoBehaviour
     void Initialize()
     {
         string userID = FirebaseManager.UserID;
-        myPresence = NetworkDataManager.Instance.GetPresenceUser(userID);
+        myPresence = NetworkDataManager.Instance.GetMyPresence();
         avatar.sprite = NetworkDataManager.Instance.GetAvatarUser(userID);
         _name.text = myPresence.Name;
         Avatar.sprite = NetworkDataManager.Instance.GetAvatarUser(userID);

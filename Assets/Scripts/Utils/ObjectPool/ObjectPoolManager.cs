@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Ins;
-
+    public bool DonDestroy = true;
     [System.Serializable]
     public class PoolData
     {
@@ -22,16 +22,16 @@ public class ObjectPoolManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Ins == null)
-        {
-            Ins = this;
-        }
-        else
+        if (Ins != null && Ins != this)
         {
             Destroy(gameObject);
             return;
         }
-
+        Ins = this;
+        if (DonDestroy)
+        {
+            DontDestroyOnLoad(gameObject);
+        }
         CreatePools();
     }
 
@@ -72,6 +72,18 @@ public class ObjectPoolManager : MonoBehaviour
         }
     }
 
+    public GameObject Get(string key, Transform parent, bool worldPositionStays = true)
+    {
+        if (!pools.ContainsKey(key))
+        {
+            Debug.LogError($"Pool {key} does not exist!");
+            return null;
+        }
+
+        GameObject obj = pools[key].Get();
+        obj.transform.SetParent(parent, worldPositionStays);
+        return obj;
+    }
     public GameObject Get(
         string key,
         Vector3 position,

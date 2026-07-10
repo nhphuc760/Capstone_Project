@@ -8,6 +8,7 @@ public class MakeFriend
 {  
     List<string> friendRequests = new List<string>();
     List<string> pendingRequests = new List<string>();
+    public event Action<string> onChildAdded;
     FriendManager friendManager;
     DatabaseReference @ref;
     public MakeFriend(FriendManager friendManager)
@@ -66,6 +67,7 @@ public class MakeFriend
                 friendRequests.Add(targetUserId);
                 await NetworkDataManager.Instance.LoadPresenceData(targetUserId);
                 Debug.Log($"[Firebase] Nhận được lời mời kết bạn từ: {targetUserId}");
+                onChildAdded?.Invoke(targetUserId);
             }
         }
     }
@@ -135,12 +137,14 @@ public class MakeFriend
                 if (!friendManager.IsFriend(targetUserId)) friendManager.AddFriend(targetUserId);
                 // Xóa node này trên Firebase pending_requests vì đã thành bạn bè
                 @ref.Child("PendingRequests").Child(targetUserId).RemoveValueAsync();
+                // Kích hoạt sự kiện
             }
             else if (status == MakeFriendStatus.Decline)
             {
                 // Nếu họ từ chối, xóa khỏi danh sách chờ
                 if (pendingRequests.Contains(targetUserId)) pendingRequests.Remove(targetUserId);
                 @ref.Child("PendingRequests").Child(targetUserId).RemoveValueAsync();
+                // invoke event
             }
         }
     }
@@ -237,6 +241,7 @@ public class MakeFriend
         }
     }
     public List<string> GetFriendRequests() => friendRequests;
+    public bool HasPending(string userID) => pendingRequests.Contains(userID);
     public void CleanUp()
     {
         if (@ref != null)

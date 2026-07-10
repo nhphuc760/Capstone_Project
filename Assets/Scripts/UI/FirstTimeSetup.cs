@@ -61,10 +61,11 @@ public class FirstTimeSetup : MonoBehaviour
             await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
             await SceneController.Instance.NewTransitionPlan()
                                    .Load(new ParameterScene { Name = SceneDatabase.LOBBY }, true)
-                                   .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU })
+                                   .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU })                                   
                                    .WithFadeIn()
                                    .WithFadeOut()
                                    .Perform();
+            gameObject.SetActive(false);   
         }
         else
         {
