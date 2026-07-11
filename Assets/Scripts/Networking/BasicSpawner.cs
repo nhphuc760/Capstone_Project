@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
+
     public void OnConnectedToServer(NetworkRunner runner)
     {
 

@@ -4,7 +4,7 @@
 [RequireComponent(typeof(Collider))]
 public class InteractionController : MonoBehaviour
 {
-    PlayerInputController playerInput;
+    //PlayerInputController playerInput;
     IInteractor player;
     IInteractable curInteractable;
     float holdTime = 0;
@@ -17,21 +17,21 @@ public class InteractionController : MonoBehaviour
     }
     private void Update()
     {
-        var input = playerInput.GetInput();
-        if (input.Interact)
-        {
-            if (!isHolding)
-            {
-                isHolding = StartInteraction();
-            }
-            else
-            {
-                isHolding = UpdateInteraction();
-            }
-        }else if (isHolding)
-        {
-            CancelInteraction();
-        }
+        //var input = playerInput.GetInput();
+        //if (input.Interact)
+        //{
+        //    if (!isHolding)
+        //    {
+        //        isHolding = StartInteraction();
+        //    }
+        //    else
+        //    {
+        //        isHolding = UpdateInteraction();
+        //    }
+        //}else if (isHolding)
+        //{
+        //    CancelInteraction();
+        //}
     }
 
 

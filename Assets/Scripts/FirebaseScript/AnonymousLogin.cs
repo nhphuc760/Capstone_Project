@@ -1,4 +1,6 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using Firebase;
 using Firebase.Auth;
 using Firebase.Extensions;
 using TMPro;
@@ -8,14 +10,38 @@ public class AnonymousLogin : MonoBehaviour
 {
     public GameObject loginBTN, successLoginPopup;
 
+
+    private async void Start()
+    {
+        // Bước 1: Kiểm tra các dependency (thư viện hệ thống phụ thuộc) trên thiết bị
+        var status = await FirebaseApp.CheckAndFixDependenciesAsync();
+        if (status == DependencyStatus.Available)
+        {
+            FirebaseApp app = FirebaseApp.DefaultInstance;
+            Debug.Log("Firebase đã khởi tạo thành công và sẵn sàng sử dụng!");
+            await AnonymousLoginBTN();
+        }
+        else
+        {
+            // Thất bại (Có thể do thiết bị thiếu Google Play Services và không thể tự fix)
+            Debug.LogError($"Không thể khởi tạo Firebase: {status}");
+        }      
+
+    }
+
     public async void Login()
     {
         await AnonymousLoginBTN();
     }
 
-    async Task AnonymousLoginBTN()
+    async UniTask AnonymousLoginBTN()
     {
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
+        if(auth.CurrentUser != null)
+        {
+            auth.SignOut();
+            Debug.Log("SignOut");
+        }
         await auth.SignInAnonymouslyAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled)
@@ -46,3 +72,4 @@ public class AnonymousLogin : MonoBehaviour
         successLoginPopup.transform.Find("Disc").GetComponent<TextMeshProUGUI>().text = "Login Success\nUser ID: " + userId;
     }
 }
+
