@@ -17,11 +17,10 @@ public class FriendManager
         await MakeFriend.Initialize(userSnapshot);
     } 
 
-    public async void AddFriend(string userID)
+    public void AddFriend(string userID)
     {
         if (!IsFriend(userID))
         {            
-            await NetworkDataManager.Instance.LoadPresenceData(userID);
             friends.Add(userID);                
             Save();
             Debug.Log($"Friend {userID} added.");
@@ -88,6 +87,7 @@ public class FriendManager
         }
         var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").EqualTo(name).LimitToFirst(10).GetValueAsync();
         if (!dataSnapshot.HasChildren) return null;
+        Debug.Log(dataSnapshot.GetRawJsonValue());
         var list = dataSnapshot.Children;
         if (!string.IsNullOrEmpty(tag))
         {

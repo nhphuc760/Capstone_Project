@@ -33,7 +33,10 @@ public class SearchPanel : MonoBehaviour
             for (int i = content.childCount - 1; i>= 0; i--)
             {
                 GameObject obj = content.GetChild(i).gameObject;
-                ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, obj);
+                if (obj.activeSelf)
+                {
+                    ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, obj);
+                }
             }
             foreach (var child in snapshot)
             {
@@ -41,7 +44,7 @@ public class SearchPanel : MonoBehaviour
                 {
                     continue;
                 }
-                Presence presence = JsonConvert.DeserializeObject<Presence>(child.GetRawJsonValue());
+                Presence presence = JsonConvert.DeserializeObject<Presence>(child.Child("Presence").GetRawJsonValue());
                 await NetworkDataManager.Instance.UpdatePresenceData(child.Key, presence); 
                 GameObject element = ObjectPoolManager.Ins.Get(RESAULTSEARCH_KEY, content);
                 ResultSearchUI scripts = element.GetComponent<ResultSearchUI>();
