@@ -13,35 +13,17 @@ public class FriendElementUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI status;
     [SerializeField] Button invite;
     [SerializeField] Button requestJoin;
+    [SerializeField] Sprite defaultAvatar;
     string userID;
-    DatabaseReference @ref;
     public void Init(string userID)
     {
         this.userID = userID;
-        Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
-        UpdateUI(presence);
-        @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userID}/Presence");
-        @ref.ValueChanged += PresenceChanged;
-    }
-
-    private async void PresenceChanged(object sender, ValueChangedEventArgs e)
-    {
-        Presence currentPresence = NetworkDataManager.Instance.GetPresenceUser(userID);
-        Presence newPresence = JsonConvert.DeserializeObject<Presence>( e.Snapshot.GetRawJsonValue());
-        currentPresence.Name = newPresence.Name;
-        currentPresence.Status = newPresence.Status;
-        currentPresence.Tag = newPresence.Tag;
-        if (currentPresence.AvatarUrl != newPresence.AvatarUrl)
-        {
-            var avt = await ImgbbUploader.GetAvatar(newPresence.AvatarUrl);
-            NetworkDataManager.Instance.SetAvatarUser(userID, avt);
-        }
-        UpdateUI(newPresence);
+        UpdateUI(); 
     }
 
     public void OnInviteClick()
     {
-        NetworkDataManager.Instance.inviteManager.SendInvite(userID);
+        //NetworkDataManager.Instance.inviteManager.SendInvite(userID);
     }
     public void OnReqestJoinClick()
     {
@@ -49,13 +31,12 @@ public class FriendElementUI : MonoBehaviour
     }
 
 
-    public void UpdateUI(Presence presence)
+    public void UpdateUI()
     {
+        if(string.IsNullOrEmpty(userID)) return;
+        Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
         Sprite avt = NetworkDataManager.Instance.GetAvatarUser(userID);
-        if (avt != null)
-        {
-            avatar.sprite = avt;
-        }
+        avatar.sprite = avt != null ? avt : defaultAvatar;     
         nameTag.text = $"{presence.Name} #{presence.Tag}";
         status.text = GetStatusText(presence.Status);
         if (presence.Status != OnlineStatus.Offline)
@@ -82,30 +63,25 @@ public class FriendElementUI : MonoBehaviour
             invite.gameObject.SetActive(false); 
             requestJoin.gameObject.SetActive(false);
         }
-    }
-    public void Refesh()
+    }     
+    private string GetStatusText(OnlineStatus status)
     {
-        UpdateUI(NetworkDataManager.Instance.GetPresenceUser(userID));
-    }
-    private void OnDestroy()
-    {
-        @ref.ValueChanged -= PresenceChanged;
-    }
-    string GetStatusText(OnlineStatus status)
-    {
-        switch (status) 
+        return status switch
         {
-            case OnlineStatus.Online:
-                return status.ToString().ToColor(Color.green);
-            case OnlineStatus.Offline:
-                return status.ToString().ToColor(Color.gray);
-            case OnlineStatus.InParty:
-                return status.ToString().ToColor(Color.white);
-            case OnlineStatus.InMatch:
-                return status.ToString().ToColor(Color.blue);
-                default:
-                return status.ToString();
-        }
+            OnlineStatus.Online =>
+                "Online".ToColor(Color.green),
+
+            OnlineStatus.Offline =>
+                "Offline".ToColor(Color.gray),
+
+            OnlineStatus.InParty =>
+                "InParty".ToColor(Color.white),
+
+            OnlineStatus.InMatch =>
+                "InMatch".ToColor(Color.blue),
+
+            _ => status.ToString()
+        };
     }
 
 }

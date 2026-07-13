@@ -4,12 +4,13 @@ using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using System.Linq;
 using Newtonsoft.Json;
+using System;
 public class FriendManager
 {    
     List<string> friends = new List<string>();
     public int FriendCount => friends.Count;
-
     public MakeFriend MakeFriend { get; private set; }
+    public event Action<string> OnPresenceChanged;
     public async UniTask Initialize(DataSnapshot userSnapshot)
     {
         await Load(userSnapshot);
@@ -24,6 +25,7 @@ public class FriendManager
             friends.Add(userID);                
             Save();
             Debug.Log($"Friend {userID} added.");
+            SubPresenceChanged(userID);
             EventBus<DataEvent.OnFriendAdded>.Raise(new DataEvent.OnFriendAdded { userID = userID});
         }
         else
@@ -60,18 +62,19 @@ public class FriendManager
         if (friendsSnapshot.Exists)
         {            
             string json = friendsSnapshot.GetRawJsonValue();
-            var listFriend = JsonConvert.DeserializeObject<List<string>>(json);
-            foreach (var i in listFriend)
+            friends = JsonConvert.DeserializeObject<List<string>>(json);            
+            foreach (var i in friends)
             {
                 await NetworkDataManager.Instance.LoadPresenceData(i);
+                SubPresenceChanged(i);
             }
-            Debug.Log("Friends list loaded from Firebase.");
+            Debug.Log("Friends list loaded from Firebase." + friends.Count);
+
         }
         else
         {
             Debug.Log("No friends list found in Firebase.");
         }
-
     }
     public bool IsFriend(string userID)
     {
@@ -85,30 +88,46 @@ public class FriendManager
             Debug.LogWarning("Search name is null or empty");
             return null;
         }
-        var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").EqualTo(name).LimitToFirst(10).GetValueAsync();
+        var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").StartAt(name).LimitToFirst(10).GetValueAsync();
         if (!dataSnapshot.HasChildren) return null;
-        Debug.Log(dataSnapshot.GetRawJsonValue());
-        var list = dataSnapshot.Children;
+        var list = dataSnapshot.Children;       
         if (!string.IsNullOrEmpty(tag))
         {
             
-            var tmp = list.Where(x => x.Child("Presence/Tag").Value.ToString() == tag).ToArray();
+            var tmp = list
+                .Where(x => x.Child("Presence/Tag").Value.ToString() == tag 
+                            && x.Key != FirebaseManager.UserID 
+                            && !NetworkDataManager.Instance.friendManager.IsFriend(x.Key))
+                .ToArray();
             if (tmp.Length > 0)
             {
                 return tmp;
             }
             return list.ToArray();
         }
-        return list.ToArray();
-    }
-    //not used yet
-    private string GetFriend()
-    {
-        return null;
-    }
-    //not used yet
+        return list
+            .Where(x => x.Key != FirebaseManager.UserID && !NetworkDataManager.Instance.friendManager.IsFriend(x.Key))
+            .ToArray();
+    }   
     public List<string> GetFriends() => friends;    
     
+     void SubPresenceChanged(string userID)
+    {
+        
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userID}/Presence");
+        @ref.ValueChanged += OnPresenceChangedHandle;
+       
+    }
 
+    async void OnPresenceChangedHandle(object sender, ValueChangedEventArgs args) 
+    {
+        if (!args.Snapshot.Exists) return;
+        string rawJson = args.Snapshot.GetRawJsonValue();
+        Debug.Log(rawJson);
+        string userID = args.Snapshot.Key;
+        Presence newPresence = JsonConvert.DeserializeObject<Presence>(rawJson);
+        await NetworkDataManager.Instance.UpdatePresenceData(userID, newPresence);
+        OnPresenceChanged?.Invoke(args.Snapshot.Key);
+    }
 }
 

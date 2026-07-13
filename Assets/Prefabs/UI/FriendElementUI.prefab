@@ -779,6 +779,7 @@ MonoBehaviour:
   status: {fileID: 4118578297629735953}
   invite: {fileID: 2535907957246125602}
   requestJoin: {fileID: 6353981156169931348}
+  defaultAvatar: {fileID: 21300000, guid: f7ac07c8fc0f3734987c0c95aa76e5ed, type: 3}
 --- !u!1 &7262019312500515895
 GameObject:
   m_ObjectHideFlags: 0

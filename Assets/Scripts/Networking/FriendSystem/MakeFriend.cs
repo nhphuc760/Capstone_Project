@@ -204,6 +204,10 @@ public class MakeFriend
             if (!friendManager.IsFriend(targetUserID)) friendManager.AddFriend(targetUserID);
             Debug.Log($"Đã đồng ý lời mời kết bạn từ {targetUserID}.");
         }
+        else
+        {
+            Debug.Log("FriendRequest is not contains this user");
+        }
     }
     public async void DeclineFriendRequest(string targetUserID)
     {

@@ -9,26 +9,26 @@ public class FriendRequestPanelUI : MonoBehaviour
     [SerializeField] Image announceIcon;
     private void Awake()
     {
-        if (NetworkDataManager.Instance == null)
-        {
-            Debug.Log("NetworkDataManager null");
-            return;
-        }
-        if (NetworkDataManager.Instance.friendManager == null)
-        {
-            Debug.Log("FriendManager null");
-            return;
-        }
-        if (NetworkDataManager.Instance.friendManager.MakeFriend == null)
-        {
-            Debug.Log("MakeFriend null");
-            return;
-        }
-        if (NetworkDataManager.Instance.friendManager.MakeFriend.GetFriendRequests() == null)
-        {
-            Debug.Log("GetFriendRequest null");
-            return;
-        }
+        //if (NetworkDataManager.Instance == null)
+        //{
+        //    Debug.Log("NetworkDataManager null");
+        //    return;
+        //}
+        //if (NetworkDataManager.Instance.friendManager == null)
+        //{
+        //    Debug.Log("FriendManager null");
+        //    return;
+        //}
+        //if (NetworkDataManager.Instance.friendManager.MakeFriend == null)
+        //{
+        //    Debug.Log("MakeFriend null");
+        //    return;
+        //}
+        //if (NetworkDataManager.Instance.friendManager.MakeFriend.GetFriendRequests() == null)
+        //{
+        //    Debug.Log("GetFriendRequest null");
+        //    return;
+        //}
         var list = NetworkDataManager.Instance.friendManager.MakeFriend.GetFriendRequests();
         if (list == null || list.Count == 0) return;
         foreach (var i in list)
@@ -50,6 +50,7 @@ public class FriendRequestPanelUI : MonoBehaviour
     void InstantiateElement(string userID)
     {
         var obj = Instantiate(frequestUIPrefabs, content);
+        obj.ResetUI();
         obj.UpdateUI(userID);
     }
     private void OnDestroy()

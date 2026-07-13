@@ -6,7 +6,7 @@ public class FriendPanelUI : MonoBehaviour
 {
     [SerializeField] RectTransform content;
     [SerializeField] FriendElementUI elementFriendPrefabs;
-    Dictionary<string, FriendElementUI> container;
+    Dictionary<string, FriendElementUI> container = new();
 
 
     EventBinding<DataEvent.OnFriendAdded> onFriendAdded;
@@ -14,6 +14,7 @@ public class FriendPanelUI : MonoBehaviour
     private void Awake()
     {
         Initialize(NetworkDataManager.Instance.friendManager.GetFriends());
+        NetworkDataManager.Instance.friendManager.OnPresenceChanged += OnFriendPresenceChanged;
         onFriendAdded = new EventBinding<DataEvent.OnFriendAdded>(OnFriendAddedHandle);
         onFriendRemoved = new EventBinding<DataEvent.OnFriendRemoved>(OnFriendRemoveHandle);
         EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
@@ -29,7 +30,14 @@ public class FriendPanelUI : MonoBehaviour
         RemoveElement(args.userID);
     }
 
-
+    void OnFriendPresenceChanged(string userID)
+    {
+        if (container.TryGetValue(userID, out var user))
+        {
+            user.UpdateUI();
+        }
+        
+    }
     
 
     void Initialize(List<string> listFriends)
@@ -44,7 +52,7 @@ public class FriendPanelUI : MonoBehaviour
     {       
         foreach (var i in container.Values)
         {
-            i.Refesh();
+            i.UpdateUI();
         }
     }
 
@@ -63,6 +71,7 @@ public class FriendPanelUI : MonoBehaviour
     }
     private void OnDestroy()
     {
+        NetworkDataManager.Instance.friendManager.OnPresenceChanged -= OnFriendPresenceChanged;
         EventBus<DataEvent.OnFriendAdded>.Deregister(onFriendAdded);
         EventBus<DataEvent.OnFriendRemoved>.Deregister(onFriendRemoved);
     }

@@ -28,17 +28,19 @@ public class NetworkDataManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
         @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
+
         friendManager = new FriendManager();
         inviteManager = new InviteManager(FirebaseManager.UserID);
     }    
 
     public async UniTask Initialize(DataSnapshot userSnapshot)
     {
-
+        var data = await FirebaseManager.RealtimeDB.reference.Child("Users").GetValueAsync();
+        Debug.Log(data.GetRawJsonValue());
         var presenceSnapshot = userSnapshot.Child("Presence").GetRawJsonValue();
         myPresence = JsonConvert.DeserializeObject<Presence>(presenceSnapshot);
         myPresence.Status = OnlineStatus.Online;
-        LoadPresenceData(FirebaseManager.UserID).Forget();
+        await LoadPresenceData(FirebaseManager.UserID);
         await UpdateMyPresence(myPresence);
         await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
         await friendManager.Initialize(userSnapshot);
