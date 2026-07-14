@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -15,6 +16,7 @@ public class InviteElementUI : MonoBehaviour
     RectTransform rect;
     float width;
     UniTaskCompletionSource<bool> tcs;
+    CancellationTokenSource cts;
     private void Awake()
     {
         rect = GetComponent<RectTransform>();
@@ -33,8 +35,12 @@ public class InviteElementUI : MonoBehaviour
         avatar.sprite = avt;
         this.title.text = title;        
         TweenIn();
-        Utils.DelayCall(10f, () => TweenOut()).Forget();
         return tcs.Task;
+    }
+
+    public void Hide()
+    {
+        TweenOut();
     }
 
     public void OnAccept()
@@ -50,6 +56,15 @@ public class InviteElementUI : MonoBehaviour
         tcs = null;
         cancel.interactable = false;
         TweenOut();
+    }
+
+    public void UpdateInvite()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = new CancellationTokenSource();
+        TimebarRoutine(cts.Token).Forget();
+        
     }
 
     void TweenIn()
@@ -76,6 +91,27 @@ public class InviteElementUI : MonoBehaviour
                         Destroy(gameObject);
                 }
              );
+    }
+
+
+    async UniTask TimebarRoutine(CancellationToken token)
+    {
+        try
+        {
+            float timer = 0f;
+            float timeCount = 10f;
+            while (timer < timeCount)
+            {
+                timer += Time.deltaTime;
+                timeBar.fillAmount = 1 - (timer / timeCount);
+                await UniTask.Yield(token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+
+        }
+       
     }
 
 }

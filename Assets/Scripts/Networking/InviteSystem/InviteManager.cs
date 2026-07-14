@@ -26,7 +26,7 @@ public class InviteManager
         switch (invite.Status)
         {
             case InviteStatus.Accepted:
-                EventBus<InviteEvent.OnAcceptInviteArgs>.Raise();
+                //EventBus<InviteEvent.OnAcceptInviteArgs>.Raise();
                 var @ref = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}");
                 var room = await @ref.GetValueAsync();
                 if (room.Exists)

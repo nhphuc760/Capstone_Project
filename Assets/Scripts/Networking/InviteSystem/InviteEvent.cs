@@ -3,8 +3,8 @@ using UnityEngine;
 public class InviteEvent 
 { 
    public struct OnUpdateInviteArgs: IEvent
-    {      
-
+    {
+        public string senderID;
     }
 
     public struct OnAddInviteArgs: IEvent

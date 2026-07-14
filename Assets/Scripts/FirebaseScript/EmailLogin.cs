@@ -365,35 +365,33 @@ public class EmailLogin : MonoBehaviour
                     switch (error)
                     {
                         case AuthError.InvalidEmail:
-                            showLogMsg("Invalid email address.");
+                            openEmailPasswordNotificationPanel("Invalid email address.");
                             break;
 
                         case AuthError.UserNotFound:
-                            showLogMsg("No account found with this email.");
+                            openEmailPasswordNotificationPanel("No account found with this email.");
                             break;
 
                         case AuthError.NetworkRequestFailed:
-                            showLogMsg("Network error. Please try again.");
+                            openEmailPasswordNotificationPanel("Network error. Please try again.");
                             break;
 
                         default:
-                            showLogMsg("Failed to send password reset email.");
+                            openEmailPasswordNotificationPanel("Failed to send password reset email.");
                             break;
                     }
                 }
                 else
                 {
-                    showLogMsg("Failed to send password reset email.");
+                    openEmailPasswordNotificationPanel("Failed to send password reset email.");
                 }
 
                 return;
             }
 
-            showLogMsg("Password reset email has been sent.");
+            openEmailPasswordNotificationPanel("If the email is registered, you will receive a password reset email shortly.");
 
-            forgotPasswordPanel.SetActive(false);
-
-            Debug.Log("Password reset email sent successfully.");
+            CloseForgotPasswordPanel();
         });
     }
 
@@ -401,7 +399,7 @@ public class EmailLogin : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(forgotPasswordEmail.text))
         {
-            showLogMsg("Please enter your email.");
+            openEmailPasswordNotificationPanel("Please enter your email.");
             return false;
         }
 
@@ -409,7 +407,7 @@ public class EmailLogin : MonoBehaviour
             forgotPasswordEmail.text.Trim(),
             @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
-            showLogMsg("Invalid email format.");
+            openEmailPasswordNotificationPanel("Invalid email format.");
             return false;
         }
 
