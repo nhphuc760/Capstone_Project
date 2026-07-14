@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
-  <string name="gcm_defaultSenderId" translatable="false">306777546221</string>
-  <string name="google_storage_bucket" translatable="false">capstone-project-3a9d7.firebasestorage.app</string>
-  <string name="project_id" translatable="false">capstone-project-3a9d7</string>
-  <string name="google_api_key" translatable="false">AIzaSyChDJgeiworIbuqKRJxRgc-KMv8mtPJ8HU</string>
-  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyChDJgeiworIbuqKRJxRgc-KMv8mtPJ8HU</string>
-  <string name="google_app_id" translatable="false">1:306777546221:android:1ca35b8fc1b756a87b5be4</string>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/firebase_database_url,@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="firebase_database_url" translatable="false">https://capstone-fd6ed-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+  <string name="gcm_defaultSenderId" translatable="false">663921574151</string>
+  <string name="google_storage_bucket" translatable="false">capstone-fd6ed.firebasestorage.app</string>
+  <string name="project_id" translatable="false">capstone-fd6ed</string>
+  <string name="google_api_key" translatable="false">AIzaSyARDIXs9RL0TXzdzH0MZ5UlTdiNmlQ_3pI</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyARDIXs9RL0TXzdzH0MZ5UlTdiNmlQ_3pI</string>
+  <string name="google_app_id" translatable="false">1:663921574151:android:378d6bc0c2064432eec5a2</string>
 </resources>

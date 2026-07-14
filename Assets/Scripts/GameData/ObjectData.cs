@@ -17,6 +17,9 @@ public class ObjectData : ScriptableObject
     public ObjectType objectType;
     public GameObject objectPrefab; // for 3d objects
 
+    [Tooltip("Chỉ dùng khi ObjectType = ItemEffect")]
+    public ObjectEffectData effect;
+
     [Header("Object Points")]
     public int objectPoints;
 
@@ -30,10 +33,5 @@ public class ObjectData : ScriptableObject
     }
 
     [Header("Gameplay")]
-    public bool isItemEffect;
     public bool isRare;
-
-    // [Header("Time Effect")]
-    // [SerializeField]
-    // private TimeEffectData timeEffectData;
 }

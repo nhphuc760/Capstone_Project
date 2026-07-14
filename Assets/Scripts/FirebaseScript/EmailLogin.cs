@@ -482,6 +482,7 @@ public class EmailLogin : MonoBehaviour
         );
 
         PlayerPrefs.Save();
+        Debug.Log("Remember Me toggled: " + rememberMeToggle.isOn);
     }
 
     private void LoadRememberedEmail()

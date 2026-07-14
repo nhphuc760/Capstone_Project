@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -8,6 +9,19 @@ public class LevelBalanceWindow : EditorWindow
     private int warningCount;
     private int errorCount;
 
+    private Vector2 scrollPosition;
+
+    private enum LogType { Info, Warning, Error }
+
+    private class AnalyzerLog
+    {
+        public string message;
+        public LogType type;
+        public AnalyzerLog(string m, LogType t){ message=m; type=t; }
+    }
+
+    private readonly List<AnalyzerLog> logs = new();
+
     [MenuItem("Tools/Level Balance Analyzer")]
     public static void OpenWindow()
     {
@@ -17,27 +31,38 @@ public class LevelBalanceWindow : EditorWindow
     private void OnGUI()
     {
         GUILayout.Space(10);
-
         GUILayout.Label("Level Balance Analyzer", EditorStyles.boldLabel);
 
-        GUILayout.Space(5);
-
         levelData = (LevelData)EditorGUILayout.ObjectField(
-            "Level Data",
-            levelData,
-            typeof(LevelData),
-            false);
+            "Level Data", levelData, typeof(LevelData), false);
 
         GUILayout.Space(10);
 
-        if (GUILayout.Button("Analyze Level"))
+        if (GUILayout.Button("Analyze Level", GUILayout.Height(30)))
         {
             AnalyzeLevel();
         }
+
+        GUILayout.Space(10);
+        GUILayout.Label("Analysis Result", EditorStyles.boldLabel);
+
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+        foreach (var log in logs)
+        {
+            MessageType type = MessageType.Info;
+            if (log.type == LogType.Warning) type = MessageType.Warning;
+            else if (log.type == LogType.Error) type = MessageType.Error;
+
+            EditorGUILayout.HelpBox(log.message, type);
+        }
+
+        EditorGUILayout.EndScrollView();
     }
 
     private void AnalyzeLevel()
     {
+        logs.Clear();
         warningCount = 0;
         errorCount = 0;
 
@@ -62,9 +87,7 @@ public class LevelBalanceWindow : EditorWindow
         int totalMinObjects = 0;
         int totalMaxObjects = 0;
 
-        Debug.Log("=====================================");
-        Debug.Log($"LEVEL : {levelData.levelName}");
-        Debug.Log("=====================================");
+        Log($"LEVEL : {levelData.levelName}");
 
         foreach (AreaData area in levelData.areas)
         {
@@ -74,7 +97,7 @@ public class LevelBalanceWindow : EditorWindow
                 continue;
             }
 
-            Debug.Log($"AREA : {area.areaType}");
+            Log($"AREA : {area.areaType}");
 
             foreach (SpawnData spawn in area.spawnDatas)
             {
@@ -137,7 +160,7 @@ public class LevelBalanceWindow : EditorWindow
                 totalMinObjects += spawn.minAmount;
                 totalMaxObjects += spawn.maxAmount;
 
-                Debug.Log(
+                Log(
                     $"Object : {spawn.objectData.objectName}\n" +
                     $"Spawn : {spawn.minAmount} - {spawn.maxAmount}\n" +
                     $"Point : {spawn.objectData.objectPoints}\n" +
@@ -145,129 +168,126 @@ public class LevelBalanceWindow : EditorWindow
                     $"Score : {minScore} - {maxScore}\n");
             }
 
-            Debug.Log("-------------------------------------");
-        }
+            int averageScore = (totalMinScore + totalMaxScore) / 2;
 
-        //----------------------------------------
-        // Average
-        //----------------------------------------
+            float averageWeight =
+                (totalMinWeight + totalMaxWeight) / 2f;
 
-        int averageScore = (totalMinScore + totalMaxScore) / 2;
+            int averageObjects =
+                (totalMinObjects + totalMaxObjects) / 2;
 
-        float averageWeight =
-            (totalMinWeight + totalMaxWeight) / 2f;
+            //----------------------------------------
+            // Time Validation
+            //----------------------------------------
 
-        int averageObjects =
-            (totalMinObjects + totalMaxObjects) / 2;
-
-        //----------------------------------------
-        // Time Validation
-        //----------------------------------------
-
-        if (levelData.timeData != null)
-        {
-            float estimatedTime = averageObjects * 8f;
-
-            Debug.Log($"Estimated Play Time : {estimatedTime:F1} seconds");
-
-            if (estimatedTime > levelData.timeData.levelTime)
+            if (levelData.timeData != null)
             {
-                Warning(
-                    $"Estimated play time ({estimatedTime:F1}s) exceeds Level Time ({levelData.timeData.levelTime:F1}s).");
+                float estimatedTime = averageObjects * 8f;
+
+                Log($"Estimated Play Time : {estimatedTime:F1} seconds");
+
+                if (estimatedTime > levelData.timeData.levelTime)
+                {
+                    Warning(
+                        $"Estimated play time ({estimatedTime:F1}s) exceeds Level Time ({levelData.timeData.levelTime:F1}s).");
+                }
+            }
+            else
+            {
+                Warning("TimeData is missing.");
+            }
+
+            //----------------------------------------
+            // PointData Validation
+            //----------------------------------------
+
+            if (levelData.pointData != null)
+            {
+                if (levelData.pointData.scoreB >= levelData.pointData.scoreA)
+                    Error("Rank B must be lower than Rank A.");
+
+                if (levelData.pointData.scoreA >= levelData.pointData.scoreS)
+                    Error("Rank A must be lower than Rank S.");
+
+                if (levelData.pointData.scoreS >= levelData.pointData.scoreSS)
+                    Error("Rank S must be lower than Rank SS.");
+
+                if (totalMaxScore < levelData.pointData.scoreB)
+                {
+                    Error("Maximum obtainable score is lower than Rank B.");
+                }
+            }
+            else
+            {
+                Warning("PointData is missing.");
+            }
+
+            //----------------------------------------
+            // Result
+            //----------------------------------------
+
+            Log("================ RESULT ================");
+
+            Log($"Minimum Objects : {totalMinObjects}");
+            Log($"Maximum Objects : {totalMaxObjects}");
+            Log($"Average Objects : {averageObjects}");
+
+            Log("================= SCORE ================");
+
+            Log($"Minimum Score : {totalMinScore}");
+            Log($"Maximum Score : {totalMaxScore}");
+            Log($"Average Score : {averageScore}");
+
+            Log("================= WEIGHT ================");
+
+            Log($"Minimum Weight : {totalMinWeight:F1}");
+            Log($"Maximum Weight : {totalMaxWeight:F1}");
+            Log($"Average Weight : {averageWeight:F1}");
+
+            Log("================= RANKS ================");
+
+            Log("===== Suggested Rank =====");
+
+            Log($"Rank S : {Mathf.RoundToInt(averageScore * 0.95f)}");
+            Log($"Rank A : {Mathf.RoundToInt(averageScore * 0.80f)}");
+            Log($"Rank B : {Mathf.RoundToInt(averageScore * 0.60f)}");
+
+            Log("======== Rank Validation ======");
+
+            Log("===== Validation =====");
+
+            Log($"Warnings : {warningCount}");
+            Log($"Errors : {errorCount}");
+
+            if (errorCount == 0 && warningCount == 0)
+            {
+                Log("✅ LEVEL READY");
+            }
+            else if (errorCount == 0)
+            {
+                Log("⚠ LEVEL PLAYABLE (Review Recommended)");
+            }
+            else
+            {
+                Log("❌ LEVEL HAS ERRORS");
             }
         }
-        else
-        {
-            Warning("TimeData is missing.");
-        }
+    }
 
-        //----------------------------------------
-        // PointData Validation
-        //----------------------------------------
-
-        if (levelData.pointData != null)
-        {
-            if (levelData.pointData.scoreB >= levelData.pointData.scoreA)
-                Error("Rank B must be lower than Rank A.");
-
-            if (levelData.pointData.scoreA >= levelData.pointData.scoreS)
-                Error("Rank A must be lower than Rank S.");
-
-            if(levelData.pointData.scoreS >= levelData.pointData.scoreSS)
-                Error("Rank S must be lower than Rank SS.");
-
-            if (totalMaxScore < levelData.pointData.scoreB)
-            {
-                Error("Maximum obtainable score is lower than Rank B.");
-            }
-        }
-        else
-        {
-            Warning("PointData is missing.");
-        }
-
-        //----------------------------------------
-        // Result
-        //----------------------------------------
-
-        Debug.Log("================ RESULT ================");
-
-        Debug.Log($"Minimum Objects : {totalMinObjects}");
-        Debug.Log($"Maximum Objects : {totalMaxObjects}");
-        Debug.Log($"Average Objects : {averageObjects}");
-
-        Debug.Log("");
-
-        Debug.Log($"Minimum Score : {totalMinScore}");
-        Debug.Log($"Maximum Score : {totalMaxScore}");
-        Debug.Log($"Average Score : {averageScore}");
-
-        Debug.Log("");
-
-        Debug.Log($"Minimum Weight : {totalMinWeight:F1}");
-        Debug.Log($"Maximum Weight : {totalMaxWeight:F1}");
-        Debug.Log($"Average Weight : {averageWeight:F1}");
-
-        Debug.Log("");
-
-        Debug.Log("===== Suggested Rank =====");
-
-        Debug.Log($"Rank S : {Mathf.RoundToInt(averageScore * 0.95f)}");
-        Debug.Log($"Rank A : {Mathf.RoundToInt(averageScore * 0.80f)}");
-        Debug.Log($"Rank B : {Mathf.RoundToInt(averageScore * 0.60f)}");
-
-        Debug.Log("");
-
-        Debug.Log("===== Validation =====");
-
-        Debug.Log($"Warnings : {warningCount}");
-        Debug.Log($"Errors : {errorCount}");
-
-        if (errorCount == 0 && warningCount == 0)
-        {
-            Debug.Log("✅ LEVEL READY");
-        }
-        else if (errorCount == 0)
-        {
-            Debug.Log("⚠ LEVEL PLAYABLE (Review Recommended)");
-        }
-        else
-        {
-            Debug.LogError("❌ LEVEL HAS ERRORS");
-        }
-
-        Debug.Log("=======================================");
+    private void Log(string message)
+    {
+        logs.Add(new AnalyzerLog(message, LogType.Info));
     }
 
     private void Warning(string message)
     {
         warningCount++;
-        Debug.LogWarning("⚠ " + message);
+        logs.Add(new AnalyzerLog(message, LogType.Warning));
     }
 
     private void Error(string message)
     {
         errorCount++;
-        Debug.LogError("❌ " + message);
+        logs.Add(new AnalyzerLog(message, LogType.Error));
     }
 }

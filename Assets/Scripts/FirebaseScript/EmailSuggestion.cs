@@ -24,10 +24,7 @@ public class EmailSuggestion : MonoBehaviour
             suggestionPanel.SetActive(false);
     }
 
-    //==================================================
-    // Save Email
-    //==================================================
-
+    #region Save Login
     public void SaveLogin(string email, string password)
     {
         email = email.Trim().ToLower();
@@ -63,11 +60,9 @@ public class EmailSuggestion : MonoBehaviour
         PlayerPrefs.SetString("EmailHistory", string.Join("|", emailHistory));
         PlayerPrefs.Save();
     }
+    #endregion
 
-    //==================================================
-    // Load Email
-    //==================================================
-
+    #region Load Email
     private void LoadEmailHistory()
     {
         emailHistory.Clear();
@@ -79,11 +74,9 @@ public class EmailSuggestion : MonoBehaviour
 
         emailHistory.AddRange(history.Split('|'));
     }
+    #endregion
 
-    //==================================================
-    // Show Suggestions
-    //==================================================
-
+    #region Show Suggestions
     public void ShowSuggestions()
     {
         foreach (Transform child in content)
@@ -124,11 +117,9 @@ public class EmailSuggestion : MonoBehaviour
         }
 
         suggestionPanel.SetActive(count > 0); // Show the panel only if there are suggestions
+        Debug.Log("Suggestions count: " + count);
     }
-
-    //==================================================
-    // Hide Suggestions
-    //==================================================
+    #endregion
 
     public void HideSuggestions()
     {
