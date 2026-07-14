@@ -9,7 +9,7 @@ public class ObjectDataValidator : EditorWindow
     private readonly List<string> errors = new();
     private readonly List<string> warnings = new();
 
-    [MenuItem("Tools/ObjectData Validator")]
+    [MenuItem("Tools/Test Tools/ObjectData Validator")]
     public static void Open()
     {
         GetWindow<ObjectDataValidator>("Object Validator");

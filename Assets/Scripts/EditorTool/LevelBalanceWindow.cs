@@ -22,7 +22,7 @@ public class LevelBalanceWindow : EditorWindow
 
     private readonly List<AnalyzerLog> logs = new();
 
-    [MenuItem("Tools/Level Balance Analyzer")]
+    [MenuItem("Tools/Test Tools/Level Balance Analyzer")]
     public static void OpenWindow()
     {
         GetWindow<LevelBalanceWindow>("Level Balance");
