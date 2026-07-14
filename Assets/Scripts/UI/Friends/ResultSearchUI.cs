@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using Newtonsoft.Json;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,36 +11,28 @@ public class ResultSearchUI : MonoBehaviour
     [SerializeField] Button RequestFriend;
     [SerializeField] Sprite defaultAvatar;
     [SerializeField] Button Cancel;
-    [SerializeField] Image pendingRequest;
+    [SerializeField] Image pendingRequestIcon;
     const string RESAULTSEARCH_KEY = "RESULTSEARCHUI";
     string userID;
-    
+
+    private void OnEnable()
+    {
+        Cancel.onClick.AddListener(OnCancelPendingRequest);
+        RequestFriend.onClick.AddListener(OnRequestFriendClick);
+    }
 
     public void UpdateUI(string userID)
     {
         if (string.IsNullOrEmpty(userID)) return;
         this.userID = userID;
         Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
+        Debug.Log(JsonConvert.SerializeObject(presence));
         Sprite avatar = NetworkDataManager.Instance.GetAvatarUser(userID);
         Avatar.sprite = avatar;
-        NameTag.text = $"{presence.Tag} #{presence.Tag}";
-        status.text = GetStatusText(presence.Status);
+        NameTag.text = $"{presence.Name} #{presence.Tag}";
+        status.text = GetStatusText(presence.Status);        
         //nếu người này đã được gửi lời mời trước đó
-        if (NetworkDataManager.Instance.friendManager.MakeFriend.HasPending(userID))
-        {
-            RequestFriend.gameObject.SetActive(false);
-            Cancel.gameObject.SetActive(true);
-            pendingRequest.gameObject.SetActive(true);
-            Cancel.onClick.AddListener(OnCancelPendingRequest);
-        }
-        else // Nếu chưa
-        {
-            Cancel.gameObject.SetActive(false);
-            pendingRequest.gameObject.SetActive(false);
-            RequestFriend.gameObject.SetActive(true);
-            RequestFriend.onClick.AddListener(OnRequestFriendClick);
-        }
-
+        ShowRequestButtonOrNot(!NetworkDataManager.Instance.friendManager.MakeFriend.HasPending(userID));
     }
 
     public void ResetUI()
@@ -54,16 +47,38 @@ public class ResultSearchUI : MonoBehaviour
     void OnCancelPendingRequest()
     {
         NetworkDataManager.Instance.friendManager.MakeFriend.CancelFriendRequest(userID);
-        ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, gameObject);
+        ShowRequestButtonOrNot(true);
     }
 
     void OnRequestFriendClick()
     {
         NetworkDataManager.Instance.friendManager.MakeFriend.SendFriendRequest(userID);
+        ShowRequestButtonOrNot(false); 
     }
+
+    void ShowRequestButtonOrNot(bool value)
+    {
+        if (value)
+        {
+            RequestFriend.gameObject.SetActive(true);
+            Cancel.gameObject.SetActive(false);
+            pendingRequestIcon.gameObject.SetActive(false);
+        }
+        else
+        {
+            RequestFriend.gameObject.SetActive(false);
+            Cancel.gameObject.SetActive(true);
+            pendingRequestIcon.gameObject.SetActive(true);
+        }
+    }
+
     private void OnDisable()
     {
         ResetUI();
+        if (gameObject.activeSelf)
+        {
+            ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, gameObject);
+        }
     }
 
     string GetStatusText(OnlineStatus status)

@@ -40,6 +40,7 @@ public class ProfileManager : MonoBehaviour
     private void Awake()
     {
         Initialize();
+        SubcribeEventUI();
     }
 
     void Initialize()
@@ -117,15 +118,18 @@ public class ProfileManager : MonoBehaviour
 
             // 3. Upload
             UpdateState(ProfileEditState.Uploading);
-            byte[] uploadBytes = croppedAvatar.EncodeToPNG();
+            Texture2D resize = croppedAvatar.ResizeTexture(256, 256);
             Destroy(croppedAvatar); // Giải phóng RAM sớm
-
+            byte[] uploadBytes = resize.EncodeToJPG(90);
+            Debug.Log($"Upload Size: {uploadBytes.Length / 1024f:F2} KB");
+            Destroy(resize);
             // Truyền token vào bộ Uploader (Nếu ImgbbUploader hỗ trợ Task)
             string url = await ImgbbUploader.UploadAvatarBytesAsync(uploadBytes);
             token.ThrowIfCancellationRequested();
 
             if (string.IsNullOrEmpty(url))
             {
+                
                 Debug.LogError("Lưu ảnh thất bại");
                 CancelProcess();
                 return;
@@ -148,6 +152,7 @@ public class ProfileManager : MonoBehaviour
         finally
         {
             // Cuối cùng luôn đưa trạng thái về Idle và dọn dẹp Token
+            Debug.Log("Reset State finally");
             ResetState();
         }
     }
@@ -224,6 +229,10 @@ public class ProfileManager : MonoBehaviour
         Name.onEndEdit.RemoveAllListeners();
         Tag.onEndEdit.RemoveAllListeners();
         EditAvatar.onClick.RemoveAllListeners();
+    }
+    private void OnDestroy()
+    {
+        DesubcribeEventUI();
     }
 
     #region NameTag Edit

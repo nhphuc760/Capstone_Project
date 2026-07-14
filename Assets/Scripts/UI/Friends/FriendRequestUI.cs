@@ -12,6 +12,7 @@ public class FriendRequestUI : MonoBehaviour
     string userID;    
     public void UpdateUI(string userID)
     {
+        this.userID = userID;
         Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
         Sprite avt = NetworkDataManager.Instance.GetAvatarUser(userID);
         NameTag.text = $"{presence.Name} #{presence.Tag}";
@@ -31,22 +32,15 @@ public class FriendRequestUI : MonoBehaviour
         
     }
 
-    void ResetUI()
+    public void ResetUI()
     {
         Avatar.sprite = defaultAvatar;
         NameTag.text = string.Empty;
         Accept.onClick.RemoveAllListeners();
         Deny.onClick.RemoveAllListeners();
-    }
-    private void OnDisable()
-    {
-        ResetUI();
-    }
+    }   
     private void OnDestroy()
     {
-        Utils.Delay1Frame(() => 
-        {
-            FindAnyObjectByType<FriendRequestPanelUI>().UpdateAnnouce();
-        }).Forget();
+        
     }
 }
