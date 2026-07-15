@@ -88,7 +88,7 @@ public class FriendManager
             Debug.LogWarning("Search name is null or empty");
             return null;
         }
-        var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").StartAt(name).LimitToFirst(10).GetValueAsync();
+        var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").StartAt(name).EndAt(name).LimitToFirst(10).GetValueAsync();
         if (!dataSnapshot.HasChildren) return null;
         var list = dataSnapshot.Children;       
         if (!string.IsNullOrEmpty(tag))

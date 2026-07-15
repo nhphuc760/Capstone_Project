@@ -19,27 +19,11 @@ public class InviteSystemTest : MonoBehaviour
 
     private void OnAddInvite(InviteEvent.OnAddInviteArgs args)
     {
-        currentInvite = args.invite;
     }
 
     private void OnLoginSuccess()
     {
         inviteManager = new InviteManager(FirebaseManager.UserID);
     }
-
-    private async void Update()
-    {
-        if (Keyboard.current.fKey.wasPressedThisFrame)
-        {
-            inviteManager.SendInvite(userIDInvite.text);
-        }
-        if (Keyboard.current.rKey.wasPressedThisFrame)
-        {
-            if(currentInvite != null)
-            {
-                currentInvite.Status = InviteStatus.Accepted;
-                await inviteManager.RepplyInvite(currentInvite.SenderID, currentInvite);
-            }
-        }
-    }
+   
 }

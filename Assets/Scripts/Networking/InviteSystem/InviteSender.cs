@@ -1,5 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
+using Fusion;
 using UnityEngine;
 
 public class InviteSender // checked
@@ -7,7 +8,7 @@ public class InviteSender // checked
 
     private string myId;
     InviteManager manager;
-    public void Initialize( string myID, InviteManager manager)
+    public void Initialize(string myID, InviteManager manager)
     {
         this.manager = manager;
         this.myId = myID;
@@ -15,12 +16,12 @@ public class InviteSender // checked
 
     public async void SendInvite(string receiverId)
     {
-        
+
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         var currentRoom = RoomManager.Instance.CurrentRoom;
         if (currentRoom == null)
         {
-            currentRoom = RoomManager.Instance.CreateRoom();
+            currentRoom = await RoomManager.Instance.CreateRoom();
         }
         Invite invite = new Invite()
         {
@@ -43,7 +44,7 @@ public class InviteSender // checked
 
     void Listen(string receiverID, Invite invite)
     {
-        InviteDatabase.ListenRepply(receiverID, async  status =>
+        InviteDatabase.ListenRepply(receiverID, async status =>
         {
             switch (status)
             {
@@ -52,10 +53,13 @@ public class InviteSender // checked
                     Debug.Log("Accepted");
                     //init runner.StartGame
                     //Giả lập tiến trình khởi tạo session
-                    await UniTask.Delay(2000);
-                    //UpdateStatus, giải lập khởi tạo session thành công
-                    await FirebaseManager.RealtimeDB.SetValue($"Lobbies/{invite.RoomID}/Status", (int)RoomStatus.Ready);
-                    FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}").OnDisconnect().RemoveValue().AsUniTask().Forget();
+                    var result = await NetworkRunnerHandler.Ins.StartSession(invite.RoomID, 2, null);
+                    if (!result.Ok || !NetworkRunnerHandler.Ins._runner.IsInSession)
+                    {
+                        await RoomManager.Instance.UpdateStatus(RoomStatus.Error);
+                        return;
+                    }
+                    await RoomManager.Instance.UpdateStatus(RoomStatus.Ready);
                     Debug.Log("Khởi tạo room thành công, chờ đối phương kết nối");
                     break;
 
@@ -64,10 +68,10 @@ public class InviteSender // checked
                     //Xóa lời mời
                     await FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}").RemoveValueAsync();
                     Debug.Log("Đã xóa lời mời");
-                    break;               
+                    break;
             }
         });
     }
 
-   
-} 
+
+}

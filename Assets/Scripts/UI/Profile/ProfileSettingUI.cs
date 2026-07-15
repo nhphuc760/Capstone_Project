@@ -2,10 +2,5 @@
 
 public class ProfileSettingUI : MonoBehaviour
 {
-    
-   void Initialize()
-    {
-
-    }
 
 }

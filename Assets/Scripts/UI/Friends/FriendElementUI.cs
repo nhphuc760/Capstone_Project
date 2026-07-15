@@ -23,13 +23,12 @@ public class FriendElementUI : MonoBehaviour
 
     public void OnInviteClick()
     {
-        //NetworkDataManager.Instance.inviteManager.SendInvite(userID);
+        NetworkDataManager.Instance.inviteManager.SendInvite(userID);
     }
     public void OnReqestJoinClick()
     {
         //
-    }
-
+    }   
 
     public void UpdateUI()
     {

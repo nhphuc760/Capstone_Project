@@ -6,7 +6,6 @@ using UnityEngine.InputSystem;
 
 public class RoomManager : MonoBehaviour
 {
-    [SerializeField] TMP_InputField userID;
     public static RoomManager Instance { get; private set; }
     Room _currentRoom;
     public Room CurrentRoom => _currentRoom;
@@ -26,25 +25,8 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        //Test
-        if (Keyboard.current.cKey.wasPressedThisFrame)
-        {
-            if (CurrentRoom == null)
-            {
-                var room = CreateRoom("Test Room", 2);
-            }
-            AddMembers(userID.text).Forget();
-        }
-        if (Keyboard.current.rKey.wasPressedThisFrame)
-        {
-            RemoveMembers(userID.text).Forget();
-        }        
-    }
 
-
-    public Room CreateRoom(string roomName = null, int maxPlayerCount = 2)
+    public async UniTask<Room> CreateRoom(string roomName = null, int maxPlayerCount = 2)
     {
         var @ref = FirebaseManager.RealtimeDB.reference.Child("Lobbies").Push();
         Debug.Log("RoomID: " + @ref.Key);
@@ -52,14 +34,15 @@ public class RoomManager : MonoBehaviour
         {
             RoomID = @ref.Key,
             HostID = FirebaseManager.UserID,
-            Status = RoomStatus.Ready ,
+            Status = RoomStatus.Waiting,
             MaxPlayerCount = maxPlayerCount,
             RoomName = roomName,
             Members = new System.Collections.Generic.List<string>()
 
         };
         _currentRoom = room;
-        FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{room.RoomID}").OnDisconnect().RemoveValue();
+        await @ref.SetRawJsonValueAsync(JsonConvert.SerializeObject(room));
+        await @ref.OnDisconnect().RemoveValue();
         return room;
     }
 
@@ -113,10 +96,10 @@ public class RoomManager : MonoBehaviour
         return;
     }
 
-    public void UpdateStatus(RoomStatus status)
+    public async UniTask UpdateStatus(RoomStatus status)
     {
         CurrentRoom.Status = status;
-        FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Status").SetValueAsync((int)status);
+        await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Status").SetValueAsync((int)status);
         Debug.Log("UpdateStatus: " + status.ToString());
     }
 
@@ -127,8 +110,12 @@ public class RoomManager : MonoBehaviour
         return true; // Simulate successful join
     }
     public async UniTask LeaveRoom()
-    {
-
+    {    
+        if (_currentRoom == null) return;
+        if(_currentRoom.HostID == FirebaseManager.UserID)
+        {
+            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{_currentRoom.RoomID}").RemoveValueAsync();
+        }
         await UniTask.Delay(500); // Simulate room leaving delay
         _currentRoom = null;
         Debug.Log("Leave success");

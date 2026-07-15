@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using SFB;
 using TMPro;
 using UnityEngine;
@@ -52,6 +53,8 @@ public class ProfileManager : MonoBehaviour
         Avatar.sprite = NetworkDataManager.Instance.GetAvatarUser(userID);
         Name.text = myPresence.Name;
         Tag.text = myPresence.Tag;
+        LockNameInputField(true);
+        LockTagInputField(true);
     }
 
 
@@ -238,12 +241,12 @@ public class ProfileManager : MonoBehaviour
     #region NameTag Edit
     void LockNameInputField(bool value)
     {
-        Name.readOnly = false;      
+        Name.readOnly = value;      
         Name.image.enabled = !value;       
     }
     void LockTagInputField(bool value)
     {
-        Tag.readOnly = false;
+        Tag.readOnly = value;
         Tag.image.enabled = !value;
     }
 
@@ -251,6 +254,7 @@ public class ProfileManager : MonoBehaviour
     {
         // Popup xác nhận
         // Nếu xác nhận thì lưu tên text, nếu không Name.text = myPresence.Name;
+        Debug.Log("EndEditName Called");
         UpdateState(ProfileEditState.Idle);
         LockNameInputField(true);
     }
@@ -258,6 +262,7 @@ public class ProfileManager : MonoBehaviour
     {
         //Popup xác nhận ở đây
         // Nếu xác nhận thì lưu tag text, nếu không Tag.text = myPresence.Tag;
+        Debug.Log("EndEditTag called");
         UpdateState(ProfileEditState.Idle);
         LockTagInputField(true);
     }

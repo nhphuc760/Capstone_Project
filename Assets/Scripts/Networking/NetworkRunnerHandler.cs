@@ -12,6 +12,7 @@ public class NetworkRunnerHandler : MonoBehaviour
     [SerializeField]
     [Required]
     NetworkRunner NetworkRunnerPrefab;
+    [HideInInspector]
     public NetworkRunner _runner;
     public static NetworkRunnerHandler Ins { get; private set; }
     public bool InMatch { get; private set; } = false;
@@ -26,18 +27,19 @@ public class NetworkRunnerHandler : MonoBehaviour
         Ins = this;
     }
 
-    public async UniTask<StartGameResult> StartSession( string sessionName, int playerCount, Scene sceneStart, byte[] connectionToken = default,  Dictionary<string, SessionProperty> sessionProperties = null, System.Action<NetworkRunner> onGameStarted = null, System.Action<NetworkRunner> hostmigrationResume = null, string customLobbyName = "Standard" )
+
+    public async UniTask<StartGameResult> StartSession( string sessionName, int playerCount, Scene? sceneStart, byte[] connectionToken = default,  Dictionary<string, SessionProperty> sessionProperties = null, System.Action<NetworkRunner> onGameStarted = null, System.Action<NetworkRunner> hostmigrationResume = null, string customLobbyName = "Standard" )
     {
         await InitialRunner();
         return await _runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.AutoHostOrClient,
+            GameMode = GameMode.Host,
             Address = NetAddress.Any(),
             CustomLobbyName = customLobbyName,            
             SessionName = sessionName,
             SessionProperties = sessionProperties,
             SceneManager = GetSceneManager(),
-            Scene = SceneRef.FromIndex(sceneStart.buildIndex),
+            Scene = sceneStart != null ? SceneRef.FromIndex(sceneStart.Value.buildIndex) : null,
             ConnectionToken = connectionToken,
             PlayerCount = playerCount,
             OnGameStarted = onGameStarted,
@@ -50,13 +52,17 @@ public class NetworkRunnerHandler : MonoBehaviour
         _runner.JoinSessionLobby(sessionLobby, lobbyID);       
     }
 
-    public void JoinSession()
+    public async UniTask<StartGameResult> JoinSession(string sessionName, byte[] connectionToken = default, System.Action<NetworkRunner> onGameStarted = null)
     {
-
-    }
-    public void CreateSession()
-    {
-    }
+        await InitialRunner();
+        return await _runner.StartGame(new StartGameArgs
+        {
+            GameMode = GameMode.Client,
+            SessionName = sessionName,
+            ConnectionToken = connectionToken,
+            OnGameStarted = onGameStarted
+        });
+    }    
 
     async UniTask InitialRunner()
     {
