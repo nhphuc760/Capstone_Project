@@ -12,6 +12,7 @@ public enum ObjectType
 public class ObjectData : ScriptableObject
 {
     [Header("Objects Information")]
+    public int itemID;
     public string objectName;
     public Sprite icon;
     public ObjectType objectType;
@@ -34,4 +35,9 @@ public class ObjectData : ScriptableObject
 
     [Header("Gameplay")]
     public bool isRare;
+
+    [Header("Inventory")]
+    public bool stackable = false;
+    [Min(1)]
+    public int maxStack = 1;
 }
