@@ -14,6 +14,7 @@ public class Room
 
 public enum RoomStatus
 {   
+    Waiting,
     Full,
     Ready, // trạng thái khởi tạo session hoàn tất có thể join
     InGame, //đang trong match

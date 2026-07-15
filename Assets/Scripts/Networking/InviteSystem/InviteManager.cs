@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class InviteManager
-{   
+{
     InviteSender sender;
     InviteReceiver receiver;
+    Dictionary<string, Invite> pendingInvite = new();
 
     public InviteManager(string myId) //Checked
-    {       
+    {
         sender = new InviteSender();
         receiver = new InviteReceiver();
         sender.Initialize(myId, this);
@@ -20,10 +22,14 @@ public class InviteManager
         sender.SendInvite(receiverID);
     }
 
-    public async UniTask RepplyInvite(string senderID, Invite invite)
+    public async UniTask RepplyInvite(string senderID, InviteStatus status)
     {
         Debug.Log("Phản hồi lời mời");
-        switch (invite.Status)
+        if (!pendingInvite.TryGetValue(senderID, out Invite invite))
+        {
+            return;
+        }
+        switch (status)
         {
             case InviteStatus.Accepted:
                 //EventBus<InviteEvent.OnAcceptInviteArgs>.Raise();
@@ -32,50 +38,48 @@ public class InviteManager
                 if (room.Exists)
                 {
                     var roomStatus = (RoomStatus)Convert.ToInt32(room.Child("Status").Value);
-                    if (roomStatus == RoomStatus.Ready)
+                    switch (roomStatus) 
                     {
-
-                        Debug.Log("Joining room");
-                        // var result = runner.StartGame()
-                        //if(true) => Success => Remove Invite
-                        // false => UnSuccess => Debug.Log("Unsuccess")
-
-                    } else if (roomStatus == RoomStatus.Full)
-                    {
-                        Debug.Log("Phòng đã đầy");
-                    } else if (roomStatus == RoomStatus.InGame) 
-                    {
-                        Debug.Log("Đội đã ở trong trận");
+                        case RoomStatus.Waiting:
+                            await InviteDatabase.UpdateStatus(senderID, InviteStatus.Accepted);
+                            var result = await InviteDatabase.WaitRoomInit(invite.RoomID);
+                            if (result != RoomStatus.Waiting)
+                            {
+                              await RepplyInvite(senderID, status);
+                            }
+                            else
+                            {
+                                Debug.Log("Đã có lỗi xảy ra.");
+                                return;
+                            }
+                                break;
+                        case RoomStatus.Ready:
+                            var resultStartGame = await NetworkRunnerHandler.Ins.JoinSession(invite.RoomID, null);
+                            Debug.Log(resultStartGame.ToString());
+                            break;
+                        case RoomStatus.Full:
+                            Debug.Log("Room is full");
+                            break;
+                        case RoomStatus.InGame:
+                            Debug.Log("Đội đã ở trong trận, hiện không thể gia nhập");
+                            break;
+                        case RoomStatus.Error:
+                            Debug.Log("Đã xảy ra lỗi khởi tạo phòng hãy thử lại sau");
+                            break;
+                            default:
+                            break;
                     }
                 }
                 else
                 {
-                    Debug.Log("Phòng không tồn tại, đang gửi thông báo cho người gửi khởi tạo");
-                    await InviteDatabase.UpdateStatus(senderID, InviteStatus.Accepted);
-                    var result = await InviteDatabase.WaitRoomInit(invite.RoomID);
-                    switch (result)
-                    {
-                        case RoomStatus.Ready:
-                            Debug.Log("Joining Game...");
-                            //await RoomManager.Instance.JoinRoom(invite.RoomID);
-                            break;                    
-                        case RoomStatus.Full:
-                            Debug.Log("Phòng đã đầy");
-                            break;
-                        case RoomStatus.InGame:
-                            Debug.Log("Đội đã ở trong trận");
-                            break;
-                        case RoomStatus.Error:
-                            Debug.Log("Khởi tạo phòng thất bại, Đã có lỗi xảy ra");
-                            break;
-                    }
+                    Debug.Log("Phòng không tồn tại");
+                    return;                   
                 }
-                    break;
+                break;
             case InviteStatus.Rejected:
                 await InviteDatabase.UpdateStatus(senderID, InviteStatus.Rejected);
                 Debug.Log("UpdateStatus: Reject");
                 break;
         }
-    }
-
+    }   
 }

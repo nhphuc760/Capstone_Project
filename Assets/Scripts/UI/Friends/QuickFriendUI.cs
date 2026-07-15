@@ -23,12 +23,8 @@ public class QuickFriendUI : MonoBehaviour, IPointerClickHandler
     {
         foreach (var i in NetworkDataManager.Instance.friendManager.GetFriends())
         {
-            var avt = NetworkDataManager.Instance.GetAvatarUser(i);
-            if (avt == null)
-            {
-                avt = defaultAvatar;
-            }
-            var img = CreateImage(avt);
+            var avt = NetworkDataManager.Instance.GetAvatarUser(i);            
+            var img = CreateImage(avt == null ? defaultAvatar : avt);
             container.Add(i, img);
         }
         onFriendAdded = new EventBinding<DataEvent.OnFriendAdded>(OnFriendAdded);

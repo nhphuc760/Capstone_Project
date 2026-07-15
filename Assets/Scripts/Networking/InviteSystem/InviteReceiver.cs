@@ -10,7 +10,7 @@ public class InviteReceiver
     public void Initialize(string myId, InviteManager manager)
     {
         this.myId = myId;
-        this.manager = manager;        
+        this.manager = manager;
         ListenIncoming();
     }
 
@@ -19,7 +19,7 @@ public class InviteReceiver
         InviteDatabase.ListenIncoming((sender, invite) =>
         {
             if (inviteReceived.ContainsKey(sender))
-            {               
+            {
                 EventBus<InviteEvent.OnUpdateInviteArgs>.Raise();
                 Debug.Log("Invite đã có trong danh sách, tiến hành cập nhật");
             }
@@ -30,10 +30,9 @@ public class InviteReceiver
                 inviteReceived.Add(sender, invite);
                 EventBus<InviteEvent.OnAddInviteArgs>.Raise(new InviteEvent.OnAddInviteArgs
                 {
-                    invite = invite,
                     senderID = sender,
                 });
-            }           
+            }
             if (countDowns.TryGetValue(sender, out CountDownTimer timer))
             {
                 timer.RestartTimer();
@@ -41,9 +40,9 @@ public class InviteReceiver
             else
             {
                 CountDownTimer countDown = new CountDownTimer(10);
-                countDown.Start().OnExpired(() => EventBus<InviteEvent.OnRemoveInviteArgs>.Raise(new InviteEvent.OnRemoveInviteArgs { senderID = sender}));
+                countDown.Start().OnExpired(() => EventBus<InviteEvent.OnRemoveInviteArgs>.Raise(new InviteEvent.OnRemoveInviteArgs { senderID = sender }));
                 countDowns[sender] = countDown;
             }
         });
-    }    
+    }
 }
