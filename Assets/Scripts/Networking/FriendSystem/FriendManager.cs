@@ -5,17 +5,19 @@ using Firebase.Database;
 using System.Linq;
 using Newtonsoft.Json;
 using System;
+using Newtonsoft.Json.Linq;
 public class FriendManager
 {    
     List<string> friends = new List<string>();
     public int FriendCount => friends.Count;
     public MakeFriend MakeFriend { get; private set; }
     public event Action<string> OnPresenceChanged;
-    public async UniTask Initialize(DataSnapshot userSnapshot)
+    public async UniTask Initialize(string jsonUserSnapshot)
     {
-        await Load(userSnapshot);
+        await Load(jsonUserSnapshot);
         MakeFriend = new MakeFriend(this);
-        await MakeFriend.Initialize(userSnapshot);
+        await MakeFriend.Initialize(jsonUserSnapshot);
+        Debug.Log("Init friend" + friends.Count);
     } 
 
     public void AddFriend(string userID)
@@ -56,16 +58,17 @@ public class FriendManager
         FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Friends").SetRawJsonValueAsync(json);
         Debug.Log("Friends list saved to Firebase.");
     }
-    async UniTask Load(DataSnapshot snapshot)
+    async UniTask Load(string jsonUserSnapshot)
     {
-        var friendsSnapshot = snapshot.Child("Friends");
-        if (friendsSnapshot.Exists)
-        {            
-            string json = friendsSnapshot.GetRawJsonValue();
-            friends = JsonConvert.DeserializeObject<List<string>>(json);            
+        JObject obj = JObject.Parse(jsonUserSnapshot);
+        string friendJsonSnapshot = obj["Friends"]?.ToString();
+        if (friendJsonSnapshot != null)
+        {
+
+            friends = JsonConvert.DeserializeObject<List<string>>(friendJsonSnapshot);
             foreach (var i in friends)
             {
-                await NetworkDataManager.Instance.LoadPresenceData(i);
+                await NetworkDataManager.Instance.LoadPresence(i);
                 SubPresenceChanged(i);
             }
             Debug.Log("Friends list loaded from Firebase." + friends.Count);
@@ -123,11 +126,12 @@ public class FriendManager
     {
         if (!args.Snapshot.Exists) return;
         string rawJson = args.Snapshot.GetRawJsonValue();
-        Debug.Log(rawJson);
-        string userID = args.Snapshot.Key;
+        string userID = args.Snapshot.Reference.Parent.Key;
+        Debug.Log($"userID Changed: {args.Snapshot.Key} RawJson: {rawJson}");
+        Debug.Log($"{args.Snapshot.Reference.Parent.Key}");
         Presence newPresence = JsonConvert.DeserializeObject<Presence>(rawJson);
-        await NetworkDataManager.Instance.UpdatePresenceData(userID, newPresence);
-        OnPresenceChanged?.Invoke(args.Snapshot.Key);
+        await NetworkDataManager.Instance.UpddatePresenceData(userID, newPresence);
+        OnPresenceChanged?.Invoke(userID);
     }
 }
 

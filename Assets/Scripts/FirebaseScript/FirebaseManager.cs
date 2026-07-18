@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Firebase.Extensions;
 using Firebase.Firestore;
 using UnityEngine;
 
@@ -40,15 +42,19 @@ public static class FirebaseManager
 
     public static class RealtimeDB
     {
-        public static DatabaseReference reference = FirebaseDatabase.DefaultInstance.RootReference;
+        public static DatabaseReference reference;
+
+
+        public static void Init() => reference = FirebaseDatabase.DefaultInstance.RootReference;
+
         public static async UniTask SetValue(string path, object value)
         {
-            await reference.Child(path).SetValueAsync(value);           
+            await reference.Child(path).SetValueAsync(value).AsUniTask();           
         }
 
         public static async UniTask<DataSnapshot> GetValue(string path)
         {
-            return await reference.Child(path).GetValueAsync();
+            return await reference.Child(path).GetValueAsync().AsUniTask();    
         }
 
         public static async UniTask<DateTime?> GetServerDateTime()
@@ -58,7 +64,7 @@ public static class FirebaseManager
                 var sw = Stopwatch.StartNew();
 
                 // Ghi timestamp server
-                await reference.Child("ServerTime").SetValueAsync(ServerValue.Timestamp);
+                await reference.Child("ServerTime").SetValueAsync(ServerValue.Timestamp).AsUniTask();
 
                 // Đọc lại timestamp server
                 var task = reference.Child("ServerTime").GetValueAsync();
@@ -123,7 +129,6 @@ public static class FirebaseManager
                 UnityEngine.Debug.LogError($"GetServerDateTime error: {e.Message}");
             }
             return 0;
-        }
-
+        }      
     }
 }

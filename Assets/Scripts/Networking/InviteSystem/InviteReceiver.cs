@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InviteReceiver
 {
     private string myId;
-    InviteManager manager;
-    Dictionary<string, Invite> inviteReceived = new();
-    Dictionary<string, CountDownTimer> countDowns = new();
+    private InviteManager manager;
+    private Dictionary<string, Invite> inviteReceived = new();
+    private Dictionary<string, CountDownTimer> countDowns = new();
+    private Action unsubscribeIncoming;
+
     public void Initialize(string myId, InviteManager manager)
     {
         this.myId = myId;
@@ -14,35 +17,78 @@ public class InviteReceiver
         ListenIncoming();
     }
 
-    void ListenIncoming()
+    private void ListenIncoming()
     {
-        InviteDatabase.ListenIncoming((sender, invite) =>
+        unsubscribeIncoming = InviteDatabase.ListenIncoming((senderID, invite) =>
         {
-            if (inviteReceived.ContainsKey(sender))
+            // Trường hợp đối phương xóa/hủy lời mời (hoặc hết hạn) -> Firebase bắn sự kiện child removed
+            if (invite == null)
             {
-                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise();
-                Debug.Log("Invite đã có trong danh sách, tiến hành cập nhật");
+                RemoveInvite(senderID);
+                return;
+            }
+
+            if (inviteReceived.ContainsKey(senderID))
+            {
+                Debug.Log($"[Receiver] Cập nhật lời mời từ {senderID}");
+                inviteReceived[senderID] = invite;
+                manager.SyncPendingInvite(senderID, invite);
+                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise(new InviteEvent.OnUpdateInviteArgs { senderID = senderID});
             }
             else
             {
-                // AddInvite
-                Debug.Log("Invite chưa có trong cache, tiến hành tạo mới");
-                inviteReceived.Add(sender, invite);
+                Debug.Log($"[Receiver] Nhận lời mời mới từ {senderID}");
+                inviteReceived.Add(senderID, invite);
+                manager.SyncPendingInvite(senderID, invite);
+
                 EventBus<InviteEvent.OnAddInviteArgs>.Raise(new InviteEvent.OnAddInviteArgs
                 {
-                    senderID = sender,
+                    senderID = senderID,
                 });
             }
-            if (countDowns.TryGetValue(sender, out CountDownTimer timer))
+
+            // Thiết lập hoặc gia hạn thời gian tự hủy lời mời
+            if (countDowns.TryGetValue(senderID, out CountDownTimer timer))
             {
                 timer.RestartTimer();
             }
             else
             {
                 CountDownTimer countDown = new CountDownTimer(10);
-                countDown.Start().OnExpired(() => EventBus<InviteEvent.OnRemoveInviteArgs>.Raise(new InviteEvent.OnRemoveInviteArgs { senderID = sender }));
-                countDowns[sender] = countDown;
+                countDown.Start().OnExpired(() =>
+                {
+                    Debug.Log($"[Receiver] Lời mời từ {senderID} đã hết hạn.");
+                    RemoveInvite(senderID);
+                });
+                countDowns[senderID] = countDown;
             }
         });
+    }
+
+    public void RemoveInvite(string senderID)
+    {
+        if (inviteReceived.Remove(senderID))
+        {
+            manager.RemovePendingInvite(senderID);
+            EventBus<InviteEvent.OnRemoveInviteArgs>.Raise(new InviteEvent.OnRemoveInviteArgs { senderID = senderID });
+        }
+
+        // Dừng đếm ngược ngay lập tức khi xóa để tránh kích hoạt Callback cũ
+        if (countDowns.TryGetValue(senderID, out CountDownTimer timer))
+        {
+            timer.Stop();
+            countDowns.Remove(senderID);
+        }
+    }
+
+    public void Dispose()
+    {
+        unsubscribeIncoming?.Invoke();
+        foreach (var timer in countDowns.Values)
+        {
+            timer.Stop();
+        }
+        countDowns.Clear();
+        inviteReceived.Clear();
     }
 }

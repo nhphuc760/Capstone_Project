@@ -43,8 +43,16 @@ public class SearchPanel : MonoBehaviour
                 {
                     continue;
                 }
+
                 Presence presence = JsonConvert.DeserializeObject<Presence>(child.Child("Presence").GetRawJsonValue());
-                await NetworkDataManager.Instance.UpdatePresenceData(child.Key, presence); 
+                if (NetworkDataManager.Instance.GetPresenceUser(child.Key) != null)
+                {
+                    await NetworkDataManager.Instance.UpddatePresenceData(child.Key, presence);
+                }
+                else
+                {
+                    await NetworkDataManager.Instance.LoadPresence(child.Key, presence);
+                }
                 GameObject element = ObjectPoolManager.Ins.Get(RESAULTSEARCH_KEY, content);
                 ResultSearchUI scripts = element.GetComponent<ResultSearchUI>();
                 scripts.UpdateUI(child.Key);
@@ -64,5 +72,11 @@ public class SearchPanel : MonoBehaviour
     {
         Tag.onValidateInput -= OnValidateTag;
         Search.onClick.RemoveAllListeners();
+    }
+
+    private void OnDisable()
+    {
+        _name = null;
+        _tag = null;
     }
 }

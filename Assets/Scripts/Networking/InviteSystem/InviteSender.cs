@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
@@ -7,7 +8,9 @@ public class InviteSender // checked
 {
 
     private string myId;
-    InviteManager manager;
+    private InviteManager manager;
+    private Dictionary<string, Invite> pendingInvites = new();
+    private Dictionary<string, Action> activeListeners = new();
     public void Initialize(string myID, InviteManager manager)
     {
         this.manager = manager;
@@ -30,48 +33,71 @@ public class InviteSender // checked
             Status = InviteStatus.Pending,
             CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
         };
-        var result = await InviteDatabase.Create(receiverId, invite);
-        if (result)
+        bool isNew = await InviteDatabase.CreateOrUpdateInReceiver(receiverId, invite);
+        pendingInvites[receiverId] = invite;
+        if (isNew)
         {
-            Debug.Log("Dữ liệu invite được tạo mới, bắt đầu lắng nghe dữ liệu thay đổi");
-            Listen(receiverId, invite);
-        }
-        else
-        {
-            Debug.Log("Dữ liệu invite được update, sự kiện dữ liệu thay đổi được kích hoạt");
+            Debug.Log($"[Sender] Đã gửi lời mời mới tới {receiverId}. Bắt đầu lắng nghe phản hồi.");
+            StartListening(receiverId, invite);
         }
     }
 
-    void Listen(string receiverID, Invite invite)
+    private void StartListening(string receiverId, Invite invite)
     {
-        InviteDatabase.ListenRepply(receiverID, async status =>
+        StopListening(receiverId);
+
+        // Lắng nghe phản hồi ngay trên node Invite nằm ở phía Receiver
+        Action unsubscribe = InviteDatabase.ListenReply(receiverId, myId, async status =>
         {
             switch (status)
             {
                 case InviteStatus.Accepted:
+                    Debug.Log($"[Sender] Đối phương {receiverId} đã ACCEPT. Tiến hành Start Session...");
+                    StopListening(receiverId);
 
-                    Debug.Log("Accepted");
-                    //init runner.StartGame
-                    //Giả lập tiến trình khởi tạo session
+                    // Khởi tạo phòng multiplayer (ví dụ: Photon Fusion)
                     var result = await NetworkRunnerHandler.Ins.StartSession(invite.RoomID, 2, null);
                     if (!result.Ok || !NetworkRunnerHandler.Ins._runner.IsInSession)
                     {
                         await RoomManager.Instance.UpdateStatus(RoomStatus.Error);
                         return;
                     }
+
                     await RoomManager.Instance.UpdateStatus(RoomStatus.Ready);
-                    Debug.Log("Khởi tạo room thành công, chờ đối phương kết nối");
+                    // Dọn dẹp dữ liệu thừa trên Database sau khi kết nối thành công
+                    await InviteDatabase.RemoveInvite(receiverId, myId);
+                    pendingInvites.Remove(receiverId);
                     break;
 
                 case InviteStatus.Rejected:
-                    Debug.Log("Rejected");
-                    //Xóa lời mời
-                    await FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}").RemoveValueAsync();
-                    Debug.Log("Đã xóa lời mời");
+                    Debug.Log($"[Sender] Đối phương {receiverId} đã REJECT.");
+                    StopListening(receiverId);
+
+                    await InviteDatabase.RemoveInvite(receiverId, myId);
+                    pendingInvites.Remove(receiverId);
                     break;
             }
         });
+
+        activeListeners[receiverId] = unsubscribe;
     }
 
+    private void StopListening(string receiverId)
+    {
+        if (activeListeners.TryGetValue(receiverId, out Action unsubscribe))
+        {
+            unsubscribe?.Invoke();
+            activeListeners.Remove(receiverId);
+        }
+    }
 
+    public void Dispose()
+    {
+        foreach (var unsubscribe in activeListeners.Values)
+        {
+            unsubscribe?.Invoke();
+        }
+        activeListeners.Clear();
+        pendingInvites.Clear();
+    }
 }
