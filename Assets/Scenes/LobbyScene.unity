@@ -495,6 +495,7 @@ GameObject:
   m_Component:
   - component: {fileID: 126555771}
   - component: {fileID: 126555772}
+  - component: {fileID: 126555773}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -533,13 +534,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88f86cd0f85d4f34a9b6d13cfaf58003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyManager
-  playerPreviewLocal: {fileID: 0}
-  playerPreviewNetwork: {fileID: 0}
-  positionArray:
+  _slots:
   - {fileID: 1773119224}
   - {fileID: 186820573}
   - {fileID: 730906116}
   - {fileID: 1118465174}
+  playerPreviewLocal: {fileID: 1806445914181418058, guid: f8ee8a808ab06ef439c5c7df0f069d7d, type: 3}
+  playerPreviewNetwork: {fileID: -3894175187201863615, guid: 58eee399c4d1a4c46b1155091ccf646e, type: 3}
+--- !u!114 &126555773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126555770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 1438553860
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 126555772}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &182131097
 GameObject:
   m_ObjectHideFlags: 0
@@ -1615,7 +1635,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -221.9, y: 60.7}
+  m_AnchoredPosition: {x: -221.8999, y: 60.69995}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &345404655

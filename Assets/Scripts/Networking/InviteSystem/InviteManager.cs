@@ -68,8 +68,8 @@ public class InviteManager
                             if (waitResult == RoomStatus.Ready)
                             {
                                 Debug.Log("[Receiver] Phòng đã READY. Tiến hành kết nối...");
-                                ConnectionToken tokenTest = new ConnectionToken 
-                                { 
+                                ConnectionToken tokenTest = new ConnectionToken
+                                {
                                     userID = myID,
                                     password = null
                                 };

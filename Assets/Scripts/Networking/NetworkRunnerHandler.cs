@@ -42,7 +42,7 @@ public class NetworkRunnerHandler : MonoBehaviour
             Scene = sceneStart != null ? SceneRef.FromIndex(sceneStart.Value.buildIndex) : null,
             ConnectionToken = connectionToken,
             PlayerCount = playerCount,
-            OnGameStarted = onGameStarted,
+            OnGameStarted = onGameStarted == null ? OnGameStarted : onGameStarted,
             HostMigrationResume = hostmigrationResume,            
         });
     }
@@ -60,9 +60,29 @@ public class NetworkRunnerHandler : MonoBehaviour
             GameMode = GameMode.Client,
             SessionName = sessionName,
             ConnectionToken = connectionToken,
-            OnGameStarted = onGameStarted
+            OnGameStarted = onGameStarted == null ? OnGameStarted : onGameStarted
         });
     }    
+
+    void OnGameStarted(NetworkRunner runner)
+    {
+        Debug.Log("OnGameStarted called in StartGameArgs");
+        var foundObjects = FindObjectsByType<NetworkObject>();
+        List<NetworkObject> sceneNetworkObjects = new List<NetworkObject>();
+       
+        foreach (var obj in foundObjects)
+        {
+            if (!obj.Id.IsValid && !obj.IsValid)
+            {
+                sceneNetworkObjects.Add(obj);
+            }
+        }
+        Debug.Log($"NetworkObject in scene {SceneManager.GetActiveScene().name}: " + sceneNetworkObjects.Count);
+        if (sceneNetworkObjects.Count > 0)
+        {
+            runner.RegisterSceneObjects(SceneRef.FromIndex(SceneManager.GetSceneByName(SceneDatabase.LOBBY).buildIndex), sceneNetworkObjects.ToArray());
+        }
+    }
 
     async UniTask InitialRunner()
     {
