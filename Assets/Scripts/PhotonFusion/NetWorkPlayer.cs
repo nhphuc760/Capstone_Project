@@ -15,21 +15,6 @@ public class NetworkPlayer : NetworkBehaviour
     /// </summary>
     public NetworkInventory Inventory { get; private set; }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            if (NetworkPlayer.Local == null)
-            {
-                Debug.Log("Local Player = NULL");
-                return;
-            }
-
-            Debug.Log($"Local Player : {NetworkPlayer.Local.name}");
-            Debug.Log($"Inventory : {NetworkPlayer.Local.Inventory}");
-        }
-    }
-
     public override void Spawned()
     {
         Inventory = GetComponent<NetworkInventory>();
