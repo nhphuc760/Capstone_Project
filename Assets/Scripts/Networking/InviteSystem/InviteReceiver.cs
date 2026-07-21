@@ -31,9 +31,14 @@ public class InviteReceiver
             if (inviteReceived.ContainsKey(senderID))
             {
                 Debug.Log($"[Receiver] Cập nhật lời mời từ {senderID}");
+                Invite old = inviteReceived[senderID];
                 inviteReceived[senderID] = invite;
                 manager.SyncPendingInvite(senderID, invite);
-                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise(new InviteEvent.OnUpdateInviteArgs { senderID = senderID});
+                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise(new InviteEvent.OnUpdateInviteArgs { 
+                    senderID = senderID,
+                    OldValue = old,
+                    NewValue = invite
+                });
             }
             else
             {

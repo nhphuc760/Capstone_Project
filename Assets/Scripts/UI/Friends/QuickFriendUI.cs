@@ -29,8 +29,7 @@ public class QuickFriendUI : MonoBehaviour, IPointerClickHandler
         }
         onFriendAdded = new EventBinding<DataEvent.OnFriendAdded>(OnFriendAdded);
         onFriendRemoved = new EventBinding<DataEvent.OnFriendRemoved>(OnFriendRemoved);
-        EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
-        EventBus<DataEvent.OnFriendRemoved>.Register(onFriendRemoved);
+        SubcribeEvent();
     }
 
     void OnFriendAdded(DataEvent.OnFriendAdded args)
@@ -65,5 +64,36 @@ public class QuickFriendUI : MonoBehaviour, IPointerClickHandler
         img.raycastTarget = false;
 
         return img;
+    }
+    private void OnDestroy()
+    {
+        DesubscribeEvent();
+    }
+
+    void OnFriendPresenceChanged(string userID)
+    {
+        var presence = NetworkDataManager.Instance.GetPresenceUser(userID);
+        var avt = NetworkDataManager.Instance.GetAvatarUser(userID);
+        if (presence.Status == OnlineStatus.Online)
+        {
+            if (container.TryGetValue(userID, out var i))
+            {
+                i.sprite = avt;
+                i.transform.SetAsFirstSibling();
+            }
+        }
+    }
+
+    void SubcribeEvent()
+    {
+        EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
+        EventBus<DataEvent.OnFriendRemoved>.Register(onFriendRemoved);
+        NetworkDataManager.Instance.friendManager.OnPresenceChanged += OnFriendPresenceChanged;
+    }
+    void DesubscribeEvent()
+    {
+        EventBus<DataEvent.OnFriendAdded>.Deregister(onFriendAdded);
+        EventBus<DataEvent.OnFriendRemoved>.Deregister(onFriendRemoved);
+        NetworkDataManager.Instance.friendManager.OnPresenceChanged -= OnFriendPresenceChanged;
     }
 }

@@ -91,22 +91,25 @@ public class InvitePanelUI : MonoBehaviour
 
     private void OnInviteUpdate(InviteEvent.OnUpdateInviteArgs args)
     {
-        if (container.TryGetValue(args.senderID, out var invite))
+        if (container.TryGetValue(args.senderID, out var inviteUI))
         {
             // Reset lại thanh đếm ngược và hiệu ứng khi đối phương "spam" mời lại
-            invite.UpdateInvite();
-            invite.transform.SetAsFirstSibling(); // Đẩy lên đầu danh sách Scroll View
+            if (args.NewValue.CreateAt != args.OldValue.CreateAt)
+            {
+                inviteUI.UpdateInvite();
+                inviteUI.transform.SetAsFirstSibling(); // Đẩy lên đầu danh sách Scroll View
+            }
         }
     }
 
     private void OnInviteRemove(InviteEvent.OnRemoveInviteArgs args)
     {
         // Khi nhận sự kiện xóa (do hết hạn hoặc đối phương thu hồi từ xa)
-        if (container.TryGetValue(args.senderID, out var invite))
+        if (container.TryGetValue(args.senderID, out var inviteUI))
         {
             // Gọi dọn dẹp trực tiếp trên Element. 
             // Element này sẽ tự động chạy Animation TweenOut và tự thu hồi (Release) vào Pool
-            invite.gameObject.SetActive(false);
+            inviteUI.gameObject.SetActive(false);
 
             container.Remove(args.senderID);
             Debug.Log($"[UI] Đã dọn dẹp giao diện lời mời của {args.senderID}");
