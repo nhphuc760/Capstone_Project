@@ -14,11 +14,10 @@ public class FriendPanelUI : MonoBehaviour
     private void Awake()
     {
         Initialize(NetworkDataManager.Instance.friendManager.GetFriends());
-        NetworkDataManager.Instance.friendManager.OnPresenceChanged += OnFriendPresenceChanged;
+        Debug.Log("List friend: " + NetworkDataManager.Instance.friendManager.FriendCount);
         onFriendAdded = new EventBinding<DataEvent.OnFriendAdded>(OnFriendAddedHandle);
         onFriendRemoved = new EventBinding<DataEvent.OnFriendRemoved>(OnFriendRemoveHandle);
-        EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
-        EventBus<DataEvent.OnFriendRemoved>.Register(onFriendRemoved);
+        SubcribeEvent();
     }
     
     void OnFriendAddedHandle(DataEvent.OnFriendAdded args)
@@ -32,6 +31,7 @@ public class FriendPanelUI : MonoBehaviour
 
     void OnFriendPresenceChanged(string userID)
     {
+        Debug.Log("FriendPresence Changed");
         if (container.TryGetValue(userID, out var user))
         {
             user.UpdateUI();
@@ -70,6 +70,17 @@ public class FriendPanelUI : MonoBehaviour
         }
     }
     private void OnDestroy()
+    {
+        DesubcribeEvent();
+    }
+
+    void SubcribeEvent()
+    {
+        NetworkDataManager.Instance.friendManager.OnPresenceChanged += OnFriendPresenceChanged;
+        EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
+        EventBus<DataEvent.OnFriendRemoved>.Register(onFriendRemoved);
+    }
+    void DesubcribeEvent()
     {
         NetworkDataManager.Instance.friendManager.OnPresenceChanged -= OnFriendPresenceChanged;
         EventBus<DataEvent.OnFriendAdded>.Deregister(onFriendAdded);

@@ -56,6 +56,7 @@ public static class ImgbbUploader
     public static async UniTask<Sprite> GetAvatar(string url)
     {
         if(string.IsNullOrEmpty(url)) return null;
+        Debug.Log("Loading avatar....." + url);
         UnityWebRequest request =
        UnityWebRequestTexture.GetTexture(url);
 

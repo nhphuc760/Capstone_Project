@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 public class NetworkDataManager : MonoBehaviour
@@ -27,23 +28,23 @@ public class NetworkDataManager : MonoBehaviour
         {
             DontDestroyOnLoad(gameObject);
         }
-        @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
-
-        friendManager = new FriendManager();
-        inviteManager = new InviteManager(FirebaseManager.UserID);
+       
     }    
 
-    public async UniTask Initialize(DataSnapshot userSnapshot)
+    public async UniTask Initialize(string  jsonUserSnapshot)
     {
-        var data = await FirebaseManager.RealtimeDB.reference.Child("Users").GetValueAsync();
-        Debug.Log(data.GetRawJsonValue());
-        var presenceSnapshot = userSnapshot.Child("Presence").GetRawJsonValue();
-        myPresence = JsonConvert.DeserializeObject<Presence>(presenceSnapshot);
+        @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
+        friendManager = new FriendManager();
+        inviteManager = new InviteManager(FirebaseManager.UserID);
+        JObject obj = JObject.Parse(jsonUserSnapshot);
+        string presenceJson = obj["Presence"]?.ToString();
+        Debug.Log(jsonUserSnapshot);
+        myPresence = JsonConvert.DeserializeObject<Presence>(presenceJson);
+        await LoadPresence(FirebaseManager.UserID, myPresence);
         myPresence.Status = OnlineStatus.Online;
-        await LoadPresenceData(FirebaseManager.UserID);
         await UpdateMyPresence(myPresence);
         await @ref.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
-        await friendManager.Initialize(userSnapshot);
+        await friendManager.Initialize(jsonUserSnapshot);
     }
 
     public async UniTask UpdateMyPresence(Presence presence)
@@ -77,13 +78,13 @@ public class NetworkDataManager : MonoBehaviour
         return null;
     }
 
-    public Presence GetMyPresence() => myPresence;
     public void SetPresenceUser(string userID, Presence presence)
     {
         userPresence[userID] = presence;
     }
+    public Presence GetMyPresence() => myPresence;
 
-    public async UniTask LoadPresenceData(string userID)
+    public async UniTask LoadPresence(string userID)
     {
         if (userPresence.ContainsKey(userID))
         {
@@ -99,24 +100,39 @@ public class NetworkDataManager : MonoBehaviour
         }
 
     }
-
-    public async UniTask UpdatePresenceData(string userID, Presence presence)
+    public async UniTask LoadPresence(string userID, Presence presence)
     {
-        Presence currentPresence = GetPresenceUser(userID);
-        if (currentPresence != null)
+        if (userPresence.ContainsKey(userID))
         {
-            if (presence.AvatarUrl != currentPresence.AvatarUrl)
-            {
-                var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
-                SetAvatarUser(userID, avt);
-            }
+            return;
         }
-        else
+        var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
+        SetAvatarUser(userID, avt);
+        SetPresenceUser(userID, presence);
+    }
+    public async UniTask UpddatePresenceData(string userID, Presence newPre)
+    {
+        Debug.Log("UpdatePresence called: " + userID);
+        if (!userPresence.ContainsKey(userID))
         {
-            var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
+            Debug.Log($"userID: {userID} do not contain in userPresence");
+            foreach (var child in userPresence)
+            {
+                Debug.Log($"Key: {child.Key}    Value: {JsonConvert.SerializeObject(child.Value)}");
+            }
+            return;
+        }
+        Presence oldPre = GetPresenceUser(userID);
+        if(oldPre.AvatarUrl != newPre.AvatarUrl)
+        {
+            var avt = await ImgbbUploader.GetAvatar(newPre.AvatarUrl);
             SetAvatarUser(userID, avt);
         }
-            SetPresenceUser(userID, presence);
+        SetPresenceUser(userID, newPre);
+        Debug.Log("================UpdatePresenceData==============");
+        Debug.Log($"OldName: {oldPre.Name}  NewName: {newPre.Name}");
+        Debug.Log($"OldStatus: {oldPre.Status.ToString()}  NewName: {newPre.Status.ToString()}");
+        Debug.Log($"OldTag: {oldPre.Tag}  NewTag: {newPre.Tag}");
+        Debug.Log($"OldAvatar: {oldPre.AvatarUrl}  NewAvatar: {newPre.AvatarUrl}");
     }
-
 }

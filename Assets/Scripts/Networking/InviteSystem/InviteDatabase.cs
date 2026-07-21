@@ -1,6 +1,7 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public static class InviteDatabase
@@ -12,105 +13,139 @@ public static class InviteDatabase
     /// <param name="receiverID"></param>
     /// <param name="invite"></param>
     /// <returns></returns>
-    public static async UniTask<bool> Create(string receiverID, Invite invite) //Finished
+    public static async UniTask<bool> CreateOrUpdateInReceiver(string receiverID, Invite invite) //Finished
     {        
-        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites");   
-        var inviteSnapshot = await @ref.Child(invite.SenderID).GetValueAsync();
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{invite.SenderID}");   
+        var inviteSnapshot = await @ref.GetValueAsync();
         if (!inviteSnapshot.Exists)
         {
             await @ref.OnDisconnect().RemoveValue();
         }
-        string json = JsonUtility.ToJson(invite);
+        string json = JsonConvert.SerializeObject(invite);
         Debug.Log("InviteJson: " + json);
-        await @ref.Child(invite.SenderID).SetRawJsonValueAsync(json);
+        await @ref.SetRawJsonValueAsync(json);
         return !inviteSnapshot.Exists;
     }
 
 
-
-    public static void ListenIncoming(Action<string, Invite> callback) //Finished
+    /// <summary>
+    /// Lắng nghe các lời mời gửi ĐẾN mình (Receiver lắng nghe node của chính mình).
+    /// Trả về Action để hủy lắng nghe (Unsubscribe).
+    /// </summary>
+    public static Action ListenIncoming(Action<string, Invite> callback)
     {
         var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Invites");
-        EventHandler<ChildChangedEventArgs> handle = (sender, args) => {            
-            DataSnapshot snapshot = args.Snapshot;
-            Invite invite = JsonUtility.FromJson<Invite>(snapshot.GetRawJsonValue());            
-            callback(snapshot.Key, invite);
-            Debug.Log("Child AddedOrUpdate Invoke: Invites");
+
+        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) => {
+            if (!args.Snapshot.Exists) return;
+            Invite invite = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
+            callback(args.Snapshot.Key, invite);
         };
 
-        EventHandler<ValueChangedEventArgs> handleTimeChanged = (sender, args) =>
+        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) => {
+            if (!args.Snapshot.Exists) return;
+            Invite invite = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
+            callback(args.Snapshot.Key, invite);
+        };
+
+        // Khi đối phương (Sender) hủy/xóa lời mời
+        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) => {
+            callback(args.Snapshot.Key, null);
+        };
+
+        @ref.ChildAdded += handleChildAdded;
+        @ref.ChildChanged += handleChildChanged;
+        @ref.ChildRemoved += handleChildRemoved;
+
+        return () =>
         {
-            DataSnapshot snapshot = args.Snapshot;
-            if (snapshot.Exists)
-            {
-                string key = snapshot.Reference.Parent.Key;
-                callback(key, null);
-                Debug.Log($"Cập nhật lời mời từ: {key}");
-            }
-        };        
-        @ref.ChildAdded += handle;
-        @ref.Child("CreateAt").ValueChanged += handleTimeChanged;
-        @ref.OnDisconnect().RemoveValue();
+            @ref.ChildAdded -= handleChildAdded;
+            @ref.ChildChanged -= handleChildChanged;
+            @ref.ChildRemoved -= handleChildRemoved;
+            Debug.Log("[Firebase] Đã ngắt lắng nghe Incoming Invites.");
+        };
     }
     /// <summary>
-    /// Chỉ lắng nghe sự kiện thay đổi Status, các hành đồng thêm, xóa không quan tâm
+    /// Sender lắng nghe sự thay đổi Status của Invite đặt tại node của Receiver.
+    /// Trả về Action để hủy lắng nghe khi kết thúc luồng.
     /// </summary>
-    /// <param name="receiverID"></param>   
-    /// <param name="callback"></param>
-    public static void ListenRepply(string receiverID, Action<InviteStatus> callback) // Finished
+    public static Action ListenReply(string receiverID, string senderID, Action<InviteStatus> callback)
     {
-        Debug.Log("Đăng ký lắng nghe repply của receiver");
-        DatabaseReference @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{FirebaseManager.UserID}");
+        DatabaseReference statusRef = FirebaseManager.RealtimeDB.reference
+            .Child($"Users/{receiverID}/Invites/{senderID}/Status");
+
         EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
         {
-            if (!e.Snapshot.Exists) return;           
-            Debug.Log(e.Snapshot.Value.GetType().Name);
-            var inviteStatus = (InviteStatus)Convert.ToInt32(e.Snapshot.Value);
-            Debug.Log("Dữ liệu nhận được từ đối phương, invite status: " + inviteStatus.ToString());
-            callback(inviteStatus);
+            if (!e.Snapshot.Exists) return;
+
+            // Ép kiểu an toàn từ Firebase Number sang Enum
+            int statusValue = Convert.ToInt32(e.Snapshot.Value);
+            callback((InviteStatus)statusValue);
         };
-        EventHandler<ChildChangedEventArgs> removeHandle = null;
-        removeHandle = (sender, e) =>
+
+        statusRef.ValueChanged += changeHandle;
+
+        return () =>
         {
-            @ref.Child("Status").ValueChanged -= changeHandle;
-            @ref.ChildRemoved -= removeHandle;
+            statusRef.ValueChanged -= changeHandle;
+            Debug.Log($"[Firebase] Đã ngừng lắng nghe phản hồi tại Users/{receiverID}/Invites/{senderID}");
         };
-        @ref.Child("Status").ValueChanged += changeHandle;
-        @ref.ChildRemoved += removeHandle;
     }
- 
+
     /// <summary>
-    /// senderID as a inviteID
+    /// Cập nhật trường Status của Invite nằm tại node của chính mình (Receiver gọi khi accept/reject).
     /// </summary>
-    /// <param name="senderID"></param>
-    /// <param name="status"></param>
-    /// <returns></returns>
     public static async UniTask UpdateStatus(string senderID, InviteStatus status)
-    {               
-        await FirebaseManager.RealtimeDB.SetValue($"Users/{FirebaseManager.UserID}/Invites/{senderID}/Status", (int)status);
-    }   //checked
+    {
+        string path = $"Users/{FirebaseManager.UserID}/Invites/{senderID}/Status";
+        await FirebaseManager.RealtimeDB.SetValue(path, (int)status);
+    }
+    /// <summary>
+    /// Xóa hoàn toàn node Invite để làm sạch Database.
+    /// </summary>
+    public static async UniTask RemoveInvite(string receiverID, string senderID)
+    {
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverID}/Invites/{senderID}");
+        await @ref.RemoveValueAsync();
+    }
+    /// <summary>
+    /// Chờ đợi phòng chuyển sang trạng thái sẵn sàng (Timeout 10s).
+    /// </summary>
     public static UniTask<RoomStatus> WaitRoomInit(string roomID)
     {
-        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomID}");
-        CountDownTimer countDown = new CountDownTimer(10);
+        var statusRef = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomID}/Status");
         var tcs = new UniTaskCompletionSource<RoomStatus>();
+        CountDownTimer countDown = new CountDownTimer(10);
+
         EventHandler<ValueChangedEventArgs> handle = null;
         handle = (sender, e) =>
         {
-            if (!e.Snapshot.Exists) return;            
+            if (!e.Snapshot.Exists) return;
+
             var roomStatus = (RoomStatus)Convert.ToInt32(e.Snapshot.Value);
-            tcs.TrySetResult(roomStatus);
-            @ref.Child("Status").ValueChanged -= handle;
-            countDown.Stop();
+            if (roomStatus == RoomStatus.Ready)
+            {
+                statusRef.ValueChanged -= handle;
+                countDown.Stop();
+                tcs.TrySetResult(RoomStatus.Ready);
+            }
+            else if (roomStatus == RoomStatus.Error)
+            {
+                statusRef.ValueChanged -= handle;
+                countDown.Stop();
+                tcs.TrySetResult(RoomStatus.Error);
+            }
         };
-        @ref.Child("Status").ValueChanged += handle;
-       
+
+        statusRef.ValueChanged += handle;
+
         countDown.Start().OnExpired(() =>
         {
-            @ref.Child("Status").ValueChanged -= handle;
-            Debug.Log("Khởi tạo phòng thất bại");
+            statusRef.ValueChanged -= handle;
+            Debug.LogWarning($"[Lobby] Đợi khởi tạo phòng {roomID} quá thời gian (Timeout).");
             tcs.TrySetResult(RoomStatus.Error);
         });
+
         return tcs.Task;
     }
 }

@@ -5,6 +5,8 @@ public class InviteEvent
    public struct OnUpdateInviteArgs: IEvent
     {
         public string senderID;
+        public Invite OldValue;
+        public Invite NewValue;
     }
 
     public struct OnAddInviteArgs: IEvent
