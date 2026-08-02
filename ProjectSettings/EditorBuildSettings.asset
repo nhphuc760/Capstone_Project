@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SessionLoadingScene.unity
     guid: 133208d2319fe244aaa61612bdd2e999
+  - enabled: 1
+    path: Assets/Scenes/DungTestScene.unity
+    guid: 80af8d21434d49440811e85916611c68
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 7b97d7ae965c04e41ba45761f605b4fa, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: dff242dcd1842d94688b8f4b59f53f53, type: 3}
