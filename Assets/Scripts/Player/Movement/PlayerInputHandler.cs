@@ -6,6 +6,7 @@ using static Unity.Collections.Unicode;
 public class PlayerInputHandler : NetworkBehaviour, INetworkRunnerCallbacks
 {
     private Vector2 currentInput;
+    private bool isSprintingInput;
 
     public override void Spawned()
     {
@@ -29,13 +30,14 @@ public class PlayerInputHandler : NetworkBehaviour, INetworkRunnerCallbacks
         float vertical = Input.GetAxisRaw("Vertical");
 
         currentInput = new Vector2(horizontal, vertical).normalized;
+        isSprintingInput = Input.GetKey(KeyCode.LeftShift);
     }
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
         NetworkInputData data = new NetworkInputData();
         data.movementInput = currentInput;
-
+        data.isSprinting = isSprintingInput;
         input.Set(data);
     }
 

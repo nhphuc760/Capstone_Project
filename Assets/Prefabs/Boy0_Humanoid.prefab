@@ -144,6 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 2
+  runSpeed: 3
   rotationSpeed: 10
   acceleration: 10
   playerAnimator: {fileID: 5069102491837570882}

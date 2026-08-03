@@ -5,7 +5,7 @@ using Fusion;
 using Fusion.Sockets;
 using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.SceneManagement; // Bổ sung thư viện này để lấy buildIndex của Scene
+using UnityEngine.SceneManagement; 
 
 public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -14,8 +14,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkRunner runner;
 
     private Dictionary<PlayerRef, NetworkObject> spawnedCharacters = new Dictionary<PlayerRef, NetworkObject>();
-
-    // --- BỔ SUNG: KHỞI TẠO VÀ KẾT NỐI VÀO PHÒNG ---
     private void Start()
     {
         StartGame();
@@ -34,8 +32,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
         });
     }
-
-    // --- BỔ SUNG: SPAWN VÀ DESPAWN NHÂN VẬT ---
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
