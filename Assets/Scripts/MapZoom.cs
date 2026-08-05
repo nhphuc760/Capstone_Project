@@ -3,20 +3,20 @@
 public class MapZoom : MonoBehaviour
 {
     [Header("References")]
-    public RectTransform content;
-    public RectTransform viewport;
-    public GameObject mapPanel;
+    [SerializeField] private RectTransform content;
+    [SerializeField] private RectTransform viewport;
+    [SerializeField] private GameObject mapPanel;
 
     [Header("Zoom")]
-    public float zoomSpeed = 0.2f;
-    public float minZoom = 1f;
-    public float maxZoom = 3f;
+    [SerializeField] private float zoomSpeed = 0.2f;
+    [SerializeField] private float minZoom = 1f;
+    [SerializeField] private float maxZoom = 3f;
 
     [Header("Drag")]
-    public float dragSpeed = 1f;
+    [SerializeField] private float dragSpeed = 1f;
+   
     // Giá trị zoom hiện tại
-    private float currentZoom = 1f;
-
+    private float _currentZoom = 1f;
     private bool isDragging;
     // Lưu vị trí chuột ở frame trước
     private Vector2 lastMousePosition;
@@ -37,12 +37,12 @@ public class MapZoom : MonoBehaviour
         if (Mathf.Abs(scroll) < 0.01f)
             return;
 
-        float oldZoom = currentZoom;
+        float oldZoom = _currentZoom;
 
-        currentZoom += scroll * zoomSpeed;
-        currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
+        _currentZoom += scroll * zoomSpeed;
+        _currentZoom = Mathf.Clamp(_currentZoom, minZoom, maxZoom);
 
-        if (Mathf.Approximately(oldZoom, currentZoom))
+        if (Mathf.Approximately(oldZoom, _currentZoom))
             return;
 
         // Lấy vị trí chuột trên Content trước khi zoom
@@ -54,7 +54,7 @@ public class MapZoom : MonoBehaviour
             out beforeZoom);
 
         // Zoom
-        content.localScale = Vector3.one * currentZoom;
+        content.localScale = Vector3.one * _currentZoom;
 
         // Lấy lại vị trí sau khi zoom
         Vector2 afterZoom;
@@ -68,7 +68,7 @@ public class MapZoom : MonoBehaviour
         Vector2 delta = afterZoom - beforeZoom;
 
         // Bù lại
-        content.anchoredPosition += delta * currentZoom;
+        content.anchoredPosition += delta * _currentZoom;
 
         ClampContent();
     }

@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class WorldMapController : MonoBehaviour
 {
-    public GameObject worldMapPanel;
-    public bool isWorldMapOpen = false;
+    [SerializeField] private GameObject worldMapPanel;
+    private bool isWorldMapOpen = false;
     
     void Update()
     {
