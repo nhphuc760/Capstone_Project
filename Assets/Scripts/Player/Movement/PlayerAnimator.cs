@@ -7,7 +7,7 @@ public class PlayerAnimator : MonoBehaviour
     private Animator animator;
     private readonly int speedHash = Animator.StringToHash("Speed");
 
-    private readonly int isCarryingHash = Animator.StringToHash("IsCarrying");
+    private readonly int isGrabbingHash = Animator.StringToHash("IsGrabbing");
     private readonly int punchHash = Animator.StringToHash("Punch");
 
     private void Awake()
@@ -20,11 +20,11 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetFloat(speedHash, currentSpeed);
     }
 
-    public void SetCarryingState(bool isCarrying)
+    public void SetGrabbing(bool isGrabbing)
     {
-        animator.SetBool(isCarryingHash, isCarrying);
+        if (animator == null) return;
+        animator.SetBool(isGrabbingHash, isGrabbing);
     }
-
     public void TriggerPunch()
     {
         animator.SetTrigger(punchHash);

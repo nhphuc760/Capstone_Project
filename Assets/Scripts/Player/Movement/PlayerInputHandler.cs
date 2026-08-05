@@ -1,36 +1,44 @@
 ﻿using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
-using static Unity.Collections.Unicode;
 
 public class PlayerInputHandler : NetworkBehaviour, INetworkRunnerCallbacks
 {
     private Vector2 currentInput;
     private bool isSprintingInput;
 
+    private float mouseDeltaX;
+    private float mouseDeltaY;
+
+    [Header("Mouse Settings")]
+    [SerializeField] private float mouseSensitivity = 2f;
+
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
     public override void Spawned()
     {
-        // Đảm bảo chỉ có máy sở hữu nhân vật này mới lắng nghe phím từ bàn phím của mình
         if (!HasInputAuthority) return;
-
-        // Tự động đăng ký nhận callback từ NetworkRunner hiện tại
         NetworkRunner runner = Runner;
-        if (runner != null)
-        {
-            runner.AddCallbacks(this);
-        }
+        if (runner != null) runner.AddCallbacks(this);
     }
 
     private void Update()
     {
-        // Chỉ đọc phím nếu đây là nhân vật của chính mình
         if (!HasInputAuthority) return;
 
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
-
         currentInput = new Vector2(horizontal, vertical).normalized;
+
         isSprintingInput = Input.GetKey(KeyCode.LeftShift);
+
+        // Lấy delta chuột thô của khung hình này
+        mouseDeltaX = Input.GetAxisRaw("Mouse X") * mouseSensitivity;
+        mouseDeltaY = Input.GetAxisRaw("Mouse Y") * mouseSensitivity;
     }
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
@@ -38,10 +46,18 @@ public class PlayerInputHandler : NetworkBehaviour, INetworkRunnerCallbacks
         NetworkInputData data = new NetworkInputData();
         data.movementInput = currentInput;
         data.isSprinting = isSprintingInput;
+
+        // Truyền delta trực tiếp
+        data.lookDeltaX = mouseDeltaX;
+        data.lookDeltaY = mouseDeltaY;
+
+        // Reset lại ngay lập tức để tránh lặp dữ liệu
+        mouseDeltaX = 0f;
+        mouseDeltaY = 0f;
+
         input.Set(data);
     }
 
-    //CÁC HÀM CALLBACK KHÁC CỦA FUSION (Để trống tạm thời)
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
