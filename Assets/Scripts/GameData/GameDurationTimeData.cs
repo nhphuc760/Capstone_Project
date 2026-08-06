@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "TimeData", menuName = "Game Data/Time Data")]
-public class TimeData : ScriptableObject
+[CreateAssetMenu(fileName = "GameDurationTimeData", menuName = "Game Data/Game Duration Time Data")]
+public class GameDurationTimeData : ScriptableObject
 {
     [Header("Time Setting")]
     [Tooltip("Play time.")]
