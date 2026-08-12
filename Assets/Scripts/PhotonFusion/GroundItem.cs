@@ -33,7 +33,7 @@ public class GroundItem : FusionBehaviour
 
     public ObjectEffectData Effect => Data.effect;
 
-    public float Weight => Data.weight;
+    //public float Weight => Data.weight;
 
     public int Points => Data.objectPoints;
 
@@ -91,7 +91,7 @@ public class GroundItem : FusionBehaviour
             $"Item : {Name}\n" +
             $"ID : {ItemID}\n" +
             $"Amount : {Amount}\n" +
-            $"Weight : {Weight}\n" +
+            //$"Weight : {Weight}\n" +
             $"Points : {Points}");
     }
     #endregion

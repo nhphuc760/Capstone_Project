@@ -247,25 +247,25 @@ public class NetworkInventory : FusionBehaviour
     #endregion
 
     #region Utility
-    public float GetCurrentWeight()
-    {
-        float weight = 0;
+    // public float GetCurrentWeight()
+    // {
+    //     float weight = 0;
 
-        for (int i = 0; i < MaxSlots; i++)
-        {
-            ItemStack stack = Slots.Get(i);
+    //     for (int i = 0; i < MaxSlots; i++)
+    //     {
+    //         ItemStack stack = Slots.Get(i);
 
-            if (stack.ItemID == 0)
-                continue;
+    //         if (stack.ItemID == 0)
+    //             continue;
 
-            ObjectData data =
-                FusionManager.Instance.ItemDatabase.GetItem(stack.ItemID);
+    //         ObjectData data =
+    //             FusionManager.Instance.ItemDatabase.GetItem(stack.ItemID);
 
-            weight += data.weight * stack.Amount;
-        }
+    //         //weight += data.weight * stack.Amount;
+    //     }
 
-        return weight;
-    }
+    //     return weight;
+    // }
 
     public int GetCurrentPoints()
     {
@@ -298,7 +298,7 @@ public class NetworkInventory : FusionBehaviour
     {
         Debug.Log($"Items : {ItemCount}");
 
-        Debug.Log($"Weight : {GetCurrentWeight()}");
+        // Debug.Log($"Weight : {GetCurrentWeight()}");
 
         Debug.Log($"Points : {GetCurrentPoints()}");
     }

@@ -6,7 +6,6 @@ public enum ObjectEffectType
     Player,
 }
 
-[CreateAssetMenu(fileName = "ObjectEffectData", menuName = "Effects/Object Effect")]
 public abstract class ObjectEffectData : ScriptableObject
 {
     public ObjectEffectType EffectType;

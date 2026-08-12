@@ -68,7 +68,7 @@ public readonly struct InventoryItem
     /// <summary>
     /// Khối lượng.
     /// </summary>
-    public float Weight => Data.weight;
+    //public float Weight => Data.weight;
 
     /// <summary>
     /// Loại Item.

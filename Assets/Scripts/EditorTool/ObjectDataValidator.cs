@@ -81,8 +81,8 @@ public class ObjectDataValidator : EditorWindow
         if (data.objectPoints < 0)
             errors.Add($"{path} : Negative Points");
 
-        if (data.weight <= 0)
-            warnings.Add($"{path} : Weight <= 0");
+        // if (data.weight <= 0)
+        //     warnings.Add($"{path} : Weight <= 0");
 
         if (data.objectType == ObjectType.ItemEffect &&
             data.effect == null)
