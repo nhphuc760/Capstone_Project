@@ -23,7 +23,7 @@ public class InventoryTest : MonoBehaviour
     private int itemID5 = 5;
 
     private NetworkInventory Inventory =>
-        NetworkItem.Local?.Inventory;
+        NetworkPlayer.Local?.Inventory;
 
     private void Update()
     {

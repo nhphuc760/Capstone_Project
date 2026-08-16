@@ -3,21 +3,21 @@ using UnityEngine;
 
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(NetworkInventory))]
-public class NetworkItem : NetworkBehaviour
+public class NetworkPlayer : NetworkBehaviour
 {
-    public static NetworkItem Local { get; private set; }
+    public static NetworkPlayer Local { get; private set; }
 
     public NetworkInventory Inventory { get; private set; }
 
     private void Awake()
     {
-        Debug.Log("[NetworkItem] Awake");
+        Debug.Log("[NetworkPlayer] Awake");
     }
 
     public override void Spawned()
     {
         Debug.Log(
-            $"[NetworkItem] Spawned - " +
+            $"[NetworkPlayer] Spawned - " +
             $"Object: {Object != null}, " +
             $"InputAuthority: {Object.InputAuthority}, " +
             $"HasInputAuthority: {Object.HasInputAuthority}, " +
@@ -29,7 +29,7 @@ public class NetworkItem : NetworkBehaviour
         if (Inventory == null)
         {
             Debug.LogError(
-                "[NetworkItem] Không tìm thấy NetworkInventory!"
+                "[NetworkPlayer] Không tìm thấy NetworkInventory!"
             );
 
             return;
@@ -40,13 +40,13 @@ public class NetworkItem : NetworkBehaviour
             Local = this;
 
             Debug.Log(
-                "[NetworkItem] Local Player Registered"
+                "[NetworkPlayer] Local Player Registered"
             );
         }
         else
         {
             Debug.Log(
-                "[NetworkItem] Đây không phải Local Player."
+                "[NetworkPlayer] Đây không phải Local Player."
             );
         }
     }
@@ -55,7 +55,7 @@ public class NetworkItem : NetworkBehaviour
         NetworkRunner runner,
         bool hasState)
     {
-        Debug.Log("[NetworkItem] Despawned");
+        Debug.Log("[NetworkPlayer] Despawned");
 
         if (Object.HasInputAuthority)
         {

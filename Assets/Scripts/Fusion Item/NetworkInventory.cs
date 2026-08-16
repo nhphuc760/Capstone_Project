@@ -8,7 +8,7 @@ using UnityEngine;
 public class NetworkInventory : FusionBehaviour
 {
     public static NetworkInventory Local =>
-        NetworkItem.Local?.Inventory;
+        NetworkPlayer.Local?.Inventory;
 
     public const int MaxSlots = 20;
 
