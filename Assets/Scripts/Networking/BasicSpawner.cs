@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Fusion;
 using Fusion.Sockets;
-using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.SceneManagement; 
+using UnityEngine.SceneManagement;
 
 public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
@@ -14,66 +13,53 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkRunner runner;
 
     private Dictionary<PlayerRef, NetworkObject> spawnedCharacters = new Dictionary<PlayerRef, NetworkObject>();
-    private void Start()
-    {
-        StartGame();
-    }
 
-    private async void StartGame()
+
+    private async void Start()
     {
+        Debug.Log("Đang tự động kết nối");
         runner = gameObject.AddComponent<NetworkRunner>();
         runner.ProvideInput = true;
 
-        await runner.StartGame(new StartGameArgs()
+        var result = await runner.StartGame(new StartGameArgs()
         {
-            GameMode = GameMode.Single,
-            SessionName = "MovingOutTestRoom",
+            GameMode = GameMode.AutoHostOrClient,
+            SessionName = "DungTestScene",
             Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
             SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
         });
-    }
 
+        if (result.Ok)
+        {
+            Debug.Log("Tạo phòng thành công!");
+        }
+        else
+        {
+            Debug.LogError("Lỗi " + result.ShutdownReason);
+        }
+    }
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-        // Trong Fusion, chỉ Server/Host mới có quyền Instantiate vật thể có đồng bộ mạng
         if (runner.IsServer)
         {
-            // Random toạ độ một chút để 2 người vào không bị kẹt dính lấy nhau
-            Vector3 spawnPosition = new Vector3(UnityEngine.Random.Range(-2f, 2f), 5f, UnityEngine.Random.Range(-2f, 2f));
-
-            // Spawn Prefab xuống Scene
-            NetworkObject networkPlayerObject = runner.Spawn(playerPrefab, spawnPosition, Quaternion.identity, player);
-
-            // Lưu vào Dictionary để quản lý
-            spawnedCharacters.Add(player, networkPlayerObject);
+            runner.Spawn(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity, player);
         }
     }
-
-    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-    {
-        // Tìm xem người chơi vừa thoát có nhân vật trên Scene không
-        if (spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
-        {
-            // Xoá nhân vật đó khỏi mạng lưới và gỡ khỏi Dictionary
-            runner.Despawn(networkObject);
-            spawnedCharacters.Remove(player);
-        }
-    }
-
 
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
     {
-        string jsonToken = Encoding.UTF8.GetString(token);
-        var connectionToken = JsonConvert.DeserializeObject<ConnectionToken>(jsonToken);
-        if (connectionToken != null)
-        {
-            request.Accept();
-            Debug.Log("Chấp nhận yêu cầu từ:  " + connectionToken.userID);
-        }
+        request.Accept();
     }
-
-    // --- CÁC HÀM CÒN LẠI ĐỂ TRỐNG ---
-
+    //public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
+    //{
+    //    if (runner.IsServer)
+    //    {
+    //        Vector3 spawnPosition = new Vector3(UnityEngine.Random.Range(-2f, 2f), 5f, UnityEngine.Random.Range(-2f, 2f));
+    //        NetworkObject networkPlayerObject = runner.Spawn(playerPrefab, spawnPosition, Quaternion.identity, player);
+    //        spawnedCharacters.Add(player, networkPlayerObject);
+    //    }
+    //}
+    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
     public void OnConnectedToServer(NetworkRunner runner) { }
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }

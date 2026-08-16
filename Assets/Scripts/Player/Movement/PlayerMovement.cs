@@ -14,7 +14,8 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private PlayerAnimator playerAnimator;
 
     [Header("FPS Camera")]
-    [SerializeField] private Transform fpsCamera;
+    [SerializeField] private FPSCamera fpsCameraScript;
+    [SerializeField] private GameObject fpsCameraGameObject; // Dùng để bật/tắt theo máy
 
     private Rigidbody rb;
     private float currentYaw = 0f;
@@ -31,11 +32,11 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (HasInputAuthority)
         {
-            if (fpsCamera != null) fpsCamera.gameObject.SetActive(true);
+            if (fpsCameraGameObject != null) fpsCameraGameObject.SetActive(true);
         }
         else
         {
-            if (fpsCamera != null) fpsCamera.gameObject.SetActive(false);
+            if (fpsCameraGameObject != null) fpsCameraGameObject.SetActive(false);
         }
         currentYaw = transform.eulerAngles.y;
     }
@@ -53,14 +54,11 @@ public class PlayerMovement : NetworkBehaviour
     private void ProcessLook(float deltaX, float deltaY)
     {
         currentYaw += deltaX;
-        currentPitch -= deltaY;
-        currentPitch = Mathf.Clamp(currentPitch, -85f, 85f);
-
         transform.rotation = Quaternion.Euler(0f, currentYaw, 0f);
 
-        if (HasInputAuthority && fpsCamera != null)
+        if (HasInputAuthority && fpsCameraScript != null)
         {
-            fpsCamera.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
+            fpsCameraScript.RotateCamera(deltaY);
         }
     }
 
