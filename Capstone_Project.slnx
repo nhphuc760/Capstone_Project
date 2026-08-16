@@ -8,10 +8,10 @@
   <Project Path="Gamelogic.Extensions.csproj" />
   <Project Path="UniTask.Addressables.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Fusion.Unity.csproj" />
   <Project Path="MyUtils.csproj" />
   <Project Path="ImageCropper.Runtime.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="ParrelSync.csproj" />
   <Project Path="UniTask.Editor.csproj" />

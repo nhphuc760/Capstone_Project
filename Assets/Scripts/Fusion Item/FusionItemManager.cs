@@ -1,9 +1,9 @@
 using UnityEngine;
 using Fusion;
 
-public class FusionManager : MonoBehaviour
+public class FusionItemManager : MonoBehaviour
 {
-    public static FusionManager Instance;
+    public static FusionItemManager Instance;
 
     [Header("Database")]
     [SerializeField] private ItemDatabase itemDatabase;

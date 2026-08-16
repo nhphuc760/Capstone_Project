@@ -69,6 +69,9 @@ public class GroundItem : FusionBehaviour
     /// </summary>
     public bool TryPickup(NetworkInventory inventory)
     {
+        if (!Object.HasStateAuthority)
+            return false;
+
         if (inventory == null)
             return false;
 
@@ -91,7 +94,6 @@ public class GroundItem : FusionBehaviour
             $"Item : {Name}\n" +
             $"ID : {ItemID}\n" +
             $"Amount : {Amount}\n" +
-            //$"Weight : {Weight}\n" +
             $"Points : {Points}");
     }
     #endregion
