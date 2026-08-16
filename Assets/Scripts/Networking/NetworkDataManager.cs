@@ -54,6 +54,10 @@ public class NetworkDataManager : MonoBehaviour
         await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence").SetRawJsonValueAsync(jsonMyData);
     }
 
+    public async UniTask UpdateMyOnlineStatus(OnlineStatus status)
+    {
+        await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence/Status").SetValueAsync((int)status);
+    }
 
     public Sprite GetAvatarUser(string userID)
     {

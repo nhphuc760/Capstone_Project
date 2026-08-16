@@ -1,4 +1,6 @@
 using Cysharp.Threading.Tasks;
+using Firebase.Database;
+using Fusion;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
@@ -63,7 +65,7 @@ public class RoomManager : MonoBehaviour
             CurrentRoom.Members.Add(memberID);
             if (CurrentRoom.Members.Count == CurrentRoom.MaxPlayerCount)
             {
-                UpdateStatus(RoomStatus.Full);
+                UpdateStatus(RoomStatus.Full).Forget();
                 Debug.LogWarning("Room is full");
             }
             string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
@@ -88,7 +90,7 @@ public class RoomManager : MonoBehaviour
             CurrentRoom.Members.Remove(memberID);
             if (CurrentRoom.Members.Count < CurrentRoom.MaxPlayerCount)
             {
-               UpdateStatus(RoomStatus.Ready);
+               UpdateStatus(RoomStatus.Ready).Forget();
             }
             string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
             await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Members").SetRawJsonValueAsync(memberJson);
@@ -103,21 +105,46 @@ public class RoomManager : MonoBehaviour
         Debug.Log("UpdateStatus: " + status.ToString());
     }
 
-    public async UniTask<bool> JoinRoom(string roomID)
+
+
+
+    public async UniTask JoinRoom(string roomID)
     {
-        await UniTask.Delay(1000); // Simulate room joining delay
+        FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomID}").ValueChanged += RoomChangedHandle;
         Debug.Log("Join success");
-        return true; // Simulate successful join
+        await UniTask.CompletedTask;
     }
     public async UniTask LeaveRoom()
-    {    
+    {
         if (_currentRoom == null) return;
-        if(_currentRoom.HostID == FirebaseManager.UserID)
+        if (_currentRoom.HostID == FirebaseManager.UserID)
         {
             await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{_currentRoom.RoomID}").RemoveValueAsync();
         }
-        await UniTask.Delay(500); // Simulate room leaving delay
         _currentRoom = null;
+        FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{_currentRoom.RoomID}").ValueChanged -= RoomChangedHandle;
         Debug.Log("Leave success");
     }
+
+
+    
+    void RoomChangedHandle(object sender, ValueChangedEventArgs args)
+    {
+        if (args.Snapshot.Exists)
+        {
+            string rawJson = args.Snapshot.GetRawJsonValue();
+            Room newRoom = JsonConvert.DeserializeObject<Room>(rawJson);
+            if (newRoom != null)
+            {
+                _currentRoom = newRoom;
+            }
+        }
+        else
+        {
+            LeaveRoom().Forget();
+        }
+    }
+
+
+
 }

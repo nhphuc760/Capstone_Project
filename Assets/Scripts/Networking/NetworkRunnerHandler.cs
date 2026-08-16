@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Fusion.Sockets;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 
 public class NetworkRunnerHandler : MonoBehaviour
 {
@@ -17,7 +18,7 @@ public class NetworkRunnerHandler : MonoBehaviour
     public static NetworkRunnerHandler Ins { get; private set; }
     public bool InMatch { get; private set; } = false;
     public bool InParty { get; private set; } = false;
-    private void Awake()
+    private async void Awake()
     {
         if (Ins != null && Ins != this)
         {
@@ -25,6 +26,8 @@ public class NetworkRunnerHandler : MonoBehaviour
             return;
         }
         Ins = this;
+
+        await StartSession("Test", 2, null);
     }
 
 

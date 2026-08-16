@@ -40,7 +40,7 @@ public class StatsMediator
         modifiers[modifier.statType].Remove(modifier);
         dirtyFlag[modifier.statType] = true;
     }
-    public void Update(float deltaTime)
+    public void Tick(float deltaTime)
     {
         foreach (var i in modifiers)
         {

@@ -5,7 +5,7 @@ using UnityEngine;
 
 
 [CreateAssetMenu(fileName = "CharacterStats", menuName = "ScriptableObjects/CharacterStats")]
-[DrawWithTriInspector]
+//[DrawWithTriInspector]
 public class CharacterStats : ScriptableObject
 {
     public List<Stat> stats;

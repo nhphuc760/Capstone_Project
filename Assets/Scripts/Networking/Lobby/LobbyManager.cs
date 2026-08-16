@@ -1,4 +1,7 @@
-﻿using Fusion;
+﻿using System.Text;
+using Cysharp.Threading.Tasks;
+using Fusion;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
@@ -12,7 +15,8 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     [Networked, Capacity(4)]
     public NetworkDictionary<PlayerRef, int> _playerSlotIndices => default;
-
+    [Networked, Capacity(4)]
+    public NetworkDictionary<PlayerRef, NetworkString<_32>> _userIDs => default;
 
     public static LobbyManager Ins { get; private set; }
 
@@ -34,11 +38,13 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
             }
         }
         IsSpawned = true;
+        NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.InParty).Forget();
     }
     private void Awake()
     {
         Ins = this;
         ShowLocalPreview();
+
     }
 
 
@@ -86,6 +92,11 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         if (!_playerSlotIndices.ContainsKey(player))
         {
             HandlePlayerJoined(player);
+            var token = Runner.GetPlayerConnectionToken(player);
+            if (token != null)
+            {
+                RoomManager.Instance.AddMembers(_userIDs[player].Value).Forget();
+            }
         }
     }
 
@@ -102,6 +113,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         {
           
         });
+       
     }
 
 
@@ -112,6 +124,7 @@ public class LobbyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         if (!_playerSlotIndices.ContainsKey(player))
         {
             _playerSlotIndices.Remove(player);
+            RoomManager.Instance.RemoveMembers(_userIDs[player].Value).Forget();
         }
     }
 }

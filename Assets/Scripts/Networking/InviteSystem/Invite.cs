@@ -1,6 +1,4 @@
 using System;
-using System.Security;
-using Firebase.Firestore;
 
 [Serializable]
 public class Invite 

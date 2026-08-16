@@ -9,6 +9,8 @@ using UnityEngine;
 public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
 
+
+
     public void OnConnectedToServer(NetworkRunner runner)
     {
 
@@ -16,18 +18,27 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
     {
-
+        
     }
 
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
     {
         string jsonToken = Encoding.UTF8.GetString(token);
         var connectionToken = JsonConvert.DeserializeObject<ConnectionToken>(jsonToken);
-        if(connectionToken != null )
+        RoomStatus status = RoomManager.Instance.CurrentRoom.Status;
+        if(status != RoomStatus.Waiting && status != RoomStatus.Ready)
         {
-            request.Accept();
-            Debug.Log("Chấp nhận yêu cầu từ:  " + connectionToken.userID);
+            request.Refuse();
+            return;
         }
+        else
+        {
+            if (connectionToken != null)
+            {
+                request.Accept();
+                Debug.Log("Chấp nhận yêu cầu từ:  " + connectionToken.userID);
+            }
+        }       
     }
 
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data)
@@ -47,6 +58,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
+        if (NetworkPlayer.Local != null)
+        {
+            var inputData = NetworkPlayer.Local.GetInput();
+            input.TrySet(inputData);
+        }
+       
     }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
@@ -63,6 +80,13 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
+        if (LobbyManager.Ins != null && runner.IsServer)
+        {
+            var token = runner.GetPlayerConnectionToken(player);
+            string jsonToken = Encoding.UTF8.GetString(token);
+            var obj = JsonConvert.DeserializeObject<ConnectionToken>(jsonToken);
+            LobbyManager.Ins._userIDs.Add(player, obj.userID);
+        }
 
     }
 
@@ -96,5 +120,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)
     {
+
     }
 }
