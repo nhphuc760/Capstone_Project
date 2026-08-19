@@ -1,49 +1,53 @@
-using Fusion;
 using UnityEngine;
+using Fusion;
 
 public class InventoryTest : MonoBehaviour
 {
-    private NetworkInventory inventory;
+    private NetworkInventory personalInventory;
+    private SharedInventory sharedInventory;
+    private InventoryMode inventoryManager;
+    private NetworkObject playerObject;
 
     private void Awake()
     {
-        Debug.Log("InventoryTest Awake");
-        inventory = GetComponent<NetworkInventory>();
-        Debug.Log(
-        $"InventoryTest Awake | " +
-        $"GameObject={gameObject.name} | " +
-        $"Inventory={inventory}"
-    );
+        personalInventory =
+            GetComponent<NetworkInventory>();
+
+        playerObject =
+            GetComponent<NetworkObject>();
+
+        inventoryManager =
+            FindFirstObjectByType<InventoryMode>();
+
+        if (inventoryManager != null)
+        {
+            sharedInventory =
+                inventoryManager.SharedInventory;
+        }
     }
 
     private void Update()
     {
-        if (inventory == null)
-            Debug.Log(
-            $"Inventory Object={inventory.Object.Id} | " +
-            $"InputAuthority={inventory.Object.HasInputAuthority} | " +
-            $"StateAuthority={inventory.Object.HasStateAuthority}"
-        );
-        
-        if (!inventory.Object.HasInputAuthority)
+        if (playerObject == null)
+                Debug.Log(
+        $"[{playerObject.InputAuthority}] " +
+        $"InputAuthority={playerObject.HasInputAuthority} | " +
+        $"StateAuthority={playerObject.HasStateAuthority}"
+    );
+
+        if (inventoryManager == null)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            Debug.Log(
-                $"GameObject={gameObject.name} | " +
-                $"ObjectId={inventory.Object.Id} | " +
-                $"InputAuthority={inventory.Object.InputAuthority} | " +
-                $"HasInputAuthority={inventory.Object.HasInputAuthority} | " +
-                $"StateAuthority={inventory.Object.HasStateAuthority}"
-            );
-        }
+        // Chỉ Player sở hữu object mới nhận input
+        if (!playerObject.HasInputAuthority)
+            return;
 
+        // DEBUG INPUT CLIENT
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log(
-                $"InputAuthority: {inventory.Object.HasInputAuthority}, " +
-                $"StateAuthority: {inventory.Object.HasStateAuthority}"
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 1"
             );
 
             TestAddPotion();
@@ -51,106 +55,332 @@ public class InventoryTest : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 2"
+            );
+
             TestAddBomb();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 3"
+            );
+
             TestRemovePotion();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            TestCheckPotion();
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 4"
+            );
+
+            TestCheckInventory();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 5"
+            );
+
             PrintInventory();
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} " +
+                $"pressed 6"
+            );
+
+            SplitInventory();
+        }
     }
+
+    // =====================================================
+    // ADD POTION
+    // =====================================================
 
     private void TestAddPotion()
     {
-        if (inventory.Object.HasStateAuthority)
+        if (inventoryManager.mode == Mode.SharedInv)
         {
-            bool result = inventory.AddItem(1, 3);
+            if (sharedInventory == null)
+                return;
 
-            Debug.Log($"Add Potion x3: {result}");
+            PlayerRef owner =
+                playerObject.InputAuthority;
+
+            if (sharedInventory.Object.HasStateAuthority)
+            {
+                bool result =
+                    sharedInventory.AddItem(
+                        1,
+                        3,
+                        owner
+                    );
+
+                Debug.Log(
+                    $"[HOST] Potion x3 → {owner} | {result}"
+                );
+            }
+            else
+            {
+                sharedInventory.RPC_AddItem(
+                    1,
+                    3,
+                    owner
+                );
+            }
+
+            return;
+        }
+
+        // PERSONAL
+        if (personalInventory == null)
+            return;
+
+        if (personalInventory.Object.HasStateAuthority)
+        {
+            bool result =
+                personalInventory.AddItem(1, 3);
+
+            Debug.Log(
+                $"[HOST] Personal Potion x3 → {result}"
+            );
         }
         else
         {
-            inventory.RPC_AddItem(1, 3);
-
-            Debug.Log("Requested Host to add Potion x3");
+            personalInventory.RPC_AddItem(1, 3);
         }
     }
+
+    // =====================================================
+    // ADD BOMB
+    // =====================================================
 
     private void TestAddBomb()
     {
-        if (inventory.Object.HasStateAuthority)
+        if (inventoryManager.mode == Mode.SharedInv)
         {
-            bool result = inventory.AddItem(2, 2);
-            Debug.Log($"Add Bomb x2: {result}");
+            if (sharedInventory == null)
+                return;
+
+            PlayerRef owner =
+                playerObject.InputAuthority;
+
+            if (sharedInventory.Object.HasStateAuthority)
+            {
+                bool result =
+                    sharedInventory.AddItem(
+                        2,
+                        2,
+                        owner
+                    );
+
+                Debug.Log(
+                    $"[HOST] Bomb x2 → {owner} | {result}"
+                );
+            }
+            else
+            {
+                sharedInventory.RPC_AddItem(
+                    2,
+                    2,
+                    owner
+                );
+            }
+
+            return;
+        }
+
+        // PERSONAL
+        if (personalInventory == null)
+            return;
+
+        if (personalInventory.Object.HasStateAuthority)
+        {
+            bool result =
+                personalInventory.AddItem(2, 2);
+
+            Debug.Log(
+                $"[HOST] Personal Bomb x2 → {result}"
+            );
         }
         else
         {
-            inventory.RPC_AddItem(2, 2);
-            Debug.Log("Requested Host to add Bomb x2");
+            personalInventory.RPC_AddItem(2, 2);
         }
     }
+
+    // =====================================================
+    // REMOVE POTION
+    // =====================================================
 
     private void TestRemovePotion()
     {
-        if (inventory.Object.HasStateAuthority)
+        if (inventoryManager.mode == Mode.SharedInv)
         {
-            bool result = inventory.RemoveItem(1, 2);
-            Debug.Log($"Remove Potion x2: {result}");
+            Debug.Log(
+                "[INPUT] Remove Shared Potion chưa implement."
+            );
+
+            return;
+        }
+
+        if (personalInventory == null)
+            return;
+
+        if (personalInventory.Object.HasStateAuthority)
+        {
+            bool result =
+                personalInventory.RemoveItem(1, 2);
+
+            Debug.Log(
+                $"[HOST] Remove Personal Potion x2 → {result}"
+            );
         }
         else
         {
-            inventory.RPC_RemoveItem(1, 2);
-            Debug.Log("Requested Host to remove Potion x2");
+            personalInventory.RPC_RemoveItem(1, 2);
         }
     }
 
-    private void TestCheckPotion()
-    {
-        int amount = inventory.GetItemAmount(1);
-        Debug.Log($"Potion amount: {amount}");
+    // =====================================================
+    // CHECK
+    // =====================================================
 
-        int bombAmount = inventory.GetItemAmount(2);
-        Debug.Log($"Bomb amount: {bombAmount}");       
-    }
-
-    private void PrintInventory()
+    private void TestCheckInventory()
     {
-        for (int i = 0; i < inventory.Capacity; i++)
+        if (inventoryManager.mode == Mode.SharedInv)
         {
-            InventoryItem slot = inventory.GetSlot(i);
+            int potion = 0;
+            int bomb = 0;
 
-            if (slot.IsEmpty)
+            for (int i = 0;
+                 i < sharedInventory.Capacity;
+                 i++)
             {
-                Debug.Log($"Slot {i}: Empty");
-                continue;
-            }
+                SharedInventoryItem slot =
+                    sharedInventory.GetSlot(i);
 
-            ItemSO data = inventory.Database.GetItem(slot.itemID);
+                if (slot.IsEmpty)
+                    continue;
 
-            if (data == null)
-            {
-                Debug.LogError(
-                    $"Slot {i}: Cannot find ItemSO for ID {slot.itemID}"
-                );
-                continue;
+                if (slot.itemID == 1)
+                    potion += slot.amount;
+
+                if (slot.itemID == 2)
+                    bomb += slot.amount;
             }
 
             Debug.Log(
+                $"[SHARED] Potion={potion} | Bomb={bomb}"
+            );
+
+            return;
+        }
+
+        int personalPotion =
+            personalInventory.GetItemAmount(1);
+
+        int personalBomb =
+            personalInventory.GetItemAmount(2);
+
+        Debug.Log(
+            $"[PERSONAL] " +
+            $"Potion={personalPotion} | " +
+            $"Bomb={personalBomb}"
+        );
+    }
+
+    // =====================================================
+    // PRINT
+    // =====================================================
+
+    private void PrintInventory()
+    {
+        if (inventoryManager.mode == Mode.SharedInv)
+        {
+            Debug.Log("[SHARED INVENTORY]");
+
+            for (int i = 0;
+                 i < sharedInventory.Capacity;
+                 i++)
+            {
+                SharedInventoryItem slot =
+                    sharedInventory.GetSlot(i);
+
+                if (slot.IsEmpty)
+                    continue;
+
+                ItemSO data =
+                    sharedInventory.Database.GetItem(
+                        slot.itemID
+                    );
+
+                if (data == null)
+                    continue;
+
+                Debug.Log(
+                    $"Slot {i}: " +
+                    $"{data.ItemName} x{slot.amount} " +
+                    $"Owner={slot.owner}"
+                );
+            }
+
+            return;
+        }
+
+        Debug.Log("[PERSONAL INVENTORY]");
+
+        for (int i = 0;
+             i < personalInventory.Capacity;
+             i++)
+        {
+            InventoryItem slot =
+                personalInventory.GetSlot(i);
+
+            if (slot.IsEmpty)
+                continue;
+
+            ItemSO data =
+                personalInventory.Database.GetItem(
+                    slot.itemID
+                );
+
+            if (data == null)
+                continue;
+
+            Debug.Log(
                 $"Slot {i}: " +
-                $"{data.ItemName} " +
-                $"x{slot.amount} " +
-                $"(ID: {slot.itemID})"
+                $"{data.ItemName} x{slot.amount}"
             );
         }
+    }
+
+    // =====================================================
+    // SPLIT
+    // =====================================================
+
+    private void SplitInventory()
+    {
+        if (inventoryManager.mode != Mode.SharedInv)
+        {
+            Debug.Log(
+                "[INPUT] Inventory already Personal."
+            );
+
+            return;
+        }
+
+        inventoryManager.RPC_SplitInventory();
     }
 }
