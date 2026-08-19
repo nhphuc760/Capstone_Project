@@ -3,21 +3,49 @@ using UnityEngine;
 
 public class InventoryTest : MonoBehaviour
 {
-    [SerializeField]
     private NetworkInventory inventory;
 
     private void Awake()
     {
         Debug.Log("InventoryTest Awake");
+        inventory = GetComponent<NetworkInventory>();
+        Debug.Log(
+        $"InventoryTest Awake | " +
+        $"GameObject={gameObject.name} | " +
+        $"Inventory={inventory}"
+    );
     }
 
     private void Update()
     {
         if (inventory == null)
+            Debug.Log(
+            $"Inventory Object={inventory.Object.Id} | " +
+            $"InputAuthority={inventory.Object.HasInputAuthority} | " +
+            $"StateAuthority={inventory.Object.HasStateAuthority}"
+        );
+        
+        if (!inventory.Object.HasInputAuthority)
             return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            Debug.Log(
+                $"GameObject={gameObject.name} | " +
+                $"ObjectId={inventory.Object.Id} | " +
+                $"InputAuthority={inventory.Object.InputAuthority} | " +
+                $"HasInputAuthority={inventory.Object.HasInputAuthority} | " +
+                $"StateAuthority={inventory.Object.HasStateAuthority}"
+            );
+        }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
+            Debug.Log(
+                $"InputAuthority: {inventory.Object.HasInputAuthority}, " +
+                $"StateAuthority: {inventory.Object.HasStateAuthority}"
+            );
+
             TestAddPotion();
         }
 
@@ -43,20 +71,20 @@ public class InventoryTest : MonoBehaviour
     }
 
     private void TestAddPotion()
-{
-    if (inventory.Object.HasStateAuthority)
     {
-        bool result = inventory.AddItem(1, 3);
+        if (inventory.Object.HasStateAuthority)
+        {
+            bool result = inventory.AddItem(1, 3);
 
-        Debug.Log($"Add Potion x3: {result}");
-    }
-    else
-    {
-        inventory.RPC_AddItem(1, 3);
+            Debug.Log($"Add Potion x3: {result}");
+        }
+        else
+        {
+            inventory.RPC_AddItem(1, 3);
 
-        Debug.Log("Requested Host to add Potion x3");
+            Debug.Log("Requested Host to add Potion x3");
+        }
     }
-}
 
     private void TestAddBomb()
     {
