@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: a9c0d2a9b73bb674a9902f059854f71a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/MatrixFloatPropertyDrawer.cs
+  uploadId: 876412

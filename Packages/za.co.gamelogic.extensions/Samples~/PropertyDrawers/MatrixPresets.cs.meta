@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: dabb0d8314ed4a4196fb251eabbbdd38
+timeCreated: 1763771016
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Samples~/PropertyDrawers/MatrixPresets.cs
+  uploadId: 876412

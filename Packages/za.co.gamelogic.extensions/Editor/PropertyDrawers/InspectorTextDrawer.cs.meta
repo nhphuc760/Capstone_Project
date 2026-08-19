@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: ca8ad78f9e724cb5b059617faa7a5b42
+timeCreated: 1763780904
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/InspectorTextDrawer.cs
+  uploadId: 876412

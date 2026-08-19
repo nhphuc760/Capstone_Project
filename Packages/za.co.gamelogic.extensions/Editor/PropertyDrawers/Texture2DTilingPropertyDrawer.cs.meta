@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: f580d2368e8ef58439b914d78330ea28
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/Texture2DTilingPropertyDrawer.cs
+  uploadId: 876412

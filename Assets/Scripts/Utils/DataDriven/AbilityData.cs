@@ -16,7 +16,7 @@ class AbilityData : ScriptableObject
 }
 
 [Serializable]
-public abstract class AbilityEffect 
+public abstract class AbilityEffect     
 {
     public abstract void Execute(GameObject caster, GameObject target);
 }

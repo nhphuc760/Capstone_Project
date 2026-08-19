@@ -236,7 +236,7 @@ public class EmailLogin : MonoBehaviour
     // Log in
     public void LogIn()
     {
-        if (!checkPasswordMatch()) return;
+        if (!checkValidation()) return;
 
         //loadingScreen.SetActive(true);
 
@@ -248,12 +248,56 @@ public class EmailLogin : MonoBehaviour
         auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(task => {
             if (task.IsCanceled)
             {
-                Debug.LogError("LogIn was canceled.");
+                Debug.Log("LogIn was canceled.");
                 return;
             }
             if (task.IsFaulted)
             {
-                Debug.LogError("LogIn encountered an error: " + task.Exception);
+                Debug.Log("LogIn encountered an error: " + task.Exception);
+
+                FirebaseException firebaseException =
+                    task.Exception.GetBaseException() as FirebaseException;
+
+                if (firebaseException != null)
+                {
+                    AuthError error = (AuthError)firebaseException.ErrorCode;
+
+                    switch (error)
+                    {
+                        case AuthError.WrongPassword:
+                            openEmailPasswordNotificationPanel("Incorrect password.");
+                            break;
+
+                        case AuthError.InvalidEmail:
+                            openEmailPasswordNotificationPanel("Invalid email.");
+                            break;
+
+                        case AuthError.UserNotFound:
+                            openEmailPasswordNotificationPanel("Account does not exist.");
+                            break;
+
+                        case AuthError.InvalidCredential:
+                            openEmailPasswordNotificationPanel("Incorrect email or password.");
+                            break;
+
+                        case AuthError.UserDisabled:
+                            openEmailPasswordNotificationPanel("This account has been disabled.");
+                            break;
+
+                        case AuthError.NetworkRequestFailed:
+                            openEmailPasswordNotificationPanel("Network error. Please try again.");
+                            break;
+
+                        default:
+                            openEmailPasswordNotificationPanel("Login failed. Please check your email and password.");
+                            break;
+                    }
+                }
+                else
+                {
+                    openEmailPasswordNotificationPanel("Login failed.");
+                }
+
                 return;
             }
 
@@ -281,7 +325,7 @@ public class EmailLogin : MonoBehaviour
         });
     }
 
-    public bool checkPasswordMatch()
+    public bool checkValidation()
     {
         if (string.IsNullOrWhiteSpace(LoginEmail.text))
         {
@@ -426,7 +470,6 @@ public class EmailLogin : MonoBehaviour
         forgotPasswordPanel.SetActive(false);
         loginUI.SetActive(true);
     }
-
     #endregion
 
     #region remember me functionality
@@ -439,6 +482,7 @@ public class EmailLogin : MonoBehaviour
         );
 
         PlayerPrefs.Save();
+        Debug.Log("Remember Me toggled: " + rememberMeToggle.isOn);
     }
 
     private void LoadRememberedEmail()

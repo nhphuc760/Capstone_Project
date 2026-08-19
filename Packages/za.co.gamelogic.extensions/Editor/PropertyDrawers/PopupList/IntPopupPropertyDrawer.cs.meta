@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: bc9ffb8d99f64f1dba42b2226154e4cc
+timeCreated: 1723908846
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/PopupList/IntPopupPropertyDrawer.cs
+  uploadId: 876412
