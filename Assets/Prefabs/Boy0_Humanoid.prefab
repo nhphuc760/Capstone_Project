@@ -277,6 +277,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7781634074256247682}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1969301345541948579}
   m_SourcePrefab: {fileID: 100100000, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
 --- !u!1 &145691932250815452 stripped
 GameObject:
@@ -397,6 +400,7 @@ MonoBehaviour:
   - {fileID: 1991262617048217685}
   - {fileID: 8204383579087705532}
   - {fileID: 7781634074256247682}
+  - {fileID: -1969301345541948579}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &8204383579087705532
 MonoBehaviour:
@@ -435,6 +439,22 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   playerAnimator: {fileID: 5069102491837570882}
+--- !u!114 &-1969301345541948579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 145691932250815452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c07cc6624a30e9c4a8b193f987a279fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDropItem
+  fpsCamera: {fileID: 5584939112622867694}
+  playerAnimator: {fileID: 5069102491837570882}
+  dropForwardOffset: 1.2
+  dropForce: 5
 --- !u!4 &670555474684502374 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
