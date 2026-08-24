@@ -274,6 +274,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8204383579087705532}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7781634074256247682}
   m_SourcePrefab: {fileID: 100100000, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
 --- !u!1 &145691932250815452 stripped
 GameObject:
@@ -393,6 +396,7 @@ MonoBehaviour:
   - {fileID: 5123605526751399738}
   - {fileID: 1991262617048217685}
   - {fileID: 8204383579087705532}
+  - {fileID: 7781634074256247682}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &8204383579087705532
 MonoBehaviour:
@@ -413,6 +417,24 @@ MonoBehaviour:
     m_Bits: 256
   grabDistance: 3
   pullForce: 15
+--- !u!114 &7781634074256247682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 145691932250815452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15610ccdfaef7bb4cb77648251907507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRaycast
+  fpsCamera: {fileID: 5584939112622867694}
+  interactDistance: 3
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  playerAnimator: {fileID: 5069102491837570882}
 --- !u!4 &670555474684502374 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 55143e835ea824ee8a1d602a4cb25105, type: 3}
