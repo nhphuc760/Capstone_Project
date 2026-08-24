@@ -69,27 +69,38 @@ public class PlayerMovement : NetworkBehaviour
         float targetSpeed = 0f;
         if (moveDirection.sqrMagnitude > 0.01f)
         {
-            targetSpeed = isSprinting ? runSpeed : moveSpeed;
+            bool canSprint = isSprinting && (inputDirection.y > 0);
+            targetSpeed = canSprint ? runSpeed : moveSpeed;
         }
 
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Runner.DeltaTime * acceleration);
 
-        if (currentSpeed > 0.01f)
-        {
-            Vector3 nextPosition = rb.position + moveDirection * currentSpeed * Runner.DeltaTime;
-            rb.MovePosition(nextPosition);
-        }
+        Vector3 targetVelocity = moveDirection * currentSpeed;
+        targetVelocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = targetVelocity;
     }
 
     private void UpdateAnimation(Vector2 inputDirection, bool isSprinting)
     {
         if (playerAnimator == null) return;
-
-        float animSpeed = inputDirection.magnitude;
-        if (animSpeed > 0)
+        Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+        bool canSprint = isSprinting && (inputDirection.y > 0) && (localVelocity.z > 0);
+        float speedMultiplier = canSprint ? (runSpeed / moveSpeed) : 1f;
+        float dirX = inputDirection.x;
+        float dirZ = inputDirection.y * (canSprint ? speedMultiplier : 1f);
+        if (inputDirection.y < 0)
         {
-            animSpeed = isSprinting ? 1f : 0.5f;
+            dirZ = -1f;
         }
-        playerAnimator.UpdateMovement(animSpeed);
+        else if (inputDirection.y == 0)
+        {
+            dirZ = 0f;
+        }
+        if (inputDirection.x != 0 && inputDirection.y == 0)
+        {
+            dirX = inputDirection.x > 0 ? 1f : -1f;
+            dirZ = 0f;
+        }
+        playerAnimator.UpdateMovement(dirX, dirZ);
     }
 }

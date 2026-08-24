@@ -5,7 +5,8 @@ using Fusion;
 public class PlayerAnimator : MonoBehaviour
 {
     private Animator animator;
-    private readonly int speedHash = Animator.StringToHash("Speed");
+    private readonly int dirXHash = Animator.StringToHash("DirX");
+    private readonly int dirZHash = Animator.StringToHash("DirZ");
 
     private readonly int isGrabbingHash = Animator.StringToHash("IsGrabbing");
     private readonly int punchHash = Animator.StringToHash("Punch");
@@ -18,9 +19,11 @@ public class PlayerAnimator : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void UpdateMovement(float currentSpeed)
+    public void UpdateMovement(float dirX, float dirZ)
     {
-        animator.SetFloat(speedHash, currentSpeed);
+        if (animator == null) return;
+        animator.SetFloat(dirXHash, dirX);
+        animator.SetFloat(dirZHash, dirZ);
     }
 
     public void SetGrabbing(bool isGrabbing)

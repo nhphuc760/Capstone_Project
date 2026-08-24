@@ -42,7 +42,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     {
         if (runner.IsServer)
         {
-            runner.Spawn(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity, player);
+            runner.Spawn(playerPrefab, new Vector3(0, 5, 0), Quaternion.identity, player);
         }
     }
 
