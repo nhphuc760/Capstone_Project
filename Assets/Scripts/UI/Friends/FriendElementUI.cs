@@ -161,9 +161,9 @@ public class FriendElementUI : MonoBehaviour
 
                 case OnlineStatus.InParty:
                     bool requestJoinInteracable = true;
-                    if (RoomManager.Instance != null && RoomManager.Instance.CurrentRoom != null)
+                    if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
                     {
-                        if (RoomManager.Instance.CurrentRoom.Members.Contains(userID))
+                        if (RoomDatabaseManager.Instance.CurrentRoom.Members.Contains(userID))
                         {
                             requestJoinInteracable = false;
                         }

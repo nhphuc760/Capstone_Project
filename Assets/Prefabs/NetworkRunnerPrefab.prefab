@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3026629451289809990}
   - component: {fileID: 7458064907983213089}
   - component: {fileID: 2665540625799161829}
+  - component: {fileID: 7641774618254931434}
   m_Layer: 0
   m_Name: NetworkRunnerPrefab
   m_TagString: Untagged
@@ -87,3 +88,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0d6578bd27945e42b9a011d0db6d229, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BasicSpawner
+  playerPrefabs:
+    RawGuidValue: 8491258c41850ad448118363fb1dfe8d
+--- !u!114 &7641774618254931434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1337743137260482644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 498416b30f9b6184aa4947d276364519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputManager

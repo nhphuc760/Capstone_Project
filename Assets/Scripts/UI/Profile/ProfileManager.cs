@@ -63,7 +63,7 @@ public class ProfileManager : MonoBehaviour
     /// </summary>
     public void ProfileClick()
     {
-        if (!IsEditing || RoomManager.Instance.CurrentRoom == null)
+        if (!IsEditing || RoomDatabaseManager.Instance.CurrentRoom == null)
         {
             panel.gameObject.SetActive(true);
         }

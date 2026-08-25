@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa3ed5164ba221841b367dcf211c9bc7, type: 3}
+  m_Name: Zone_Red
+  m_EditorClassIdentifier: Assembly-CSharp::ZoneSpawnConfig
+  zoneType: 2
+  debugColor: {r: 1, g: 0, b: 0, a: 1}
+  radius: 4
+  spawnableItems:
+  - prefab: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+    weight: 30
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 9025445585508119793, guid: 690473f3d858eb84e8907e74a7bbeee0, type: 3}
+    weight: 20
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 2842403539854231460, guid: 673b86b5a9af6e841bbe7d0fd5103b16, type: 3}
+    weight: 20
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 2262979560908630428, guid: cb41206f809d0614485d691f937fdd68, type: 3}
+    weight: 10
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: -6243198722043147703, guid: adc9c4ddbc2003646b8bf20b241a11c5, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}

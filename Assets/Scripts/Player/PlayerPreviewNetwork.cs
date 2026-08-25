@@ -10,10 +10,10 @@ public class PlayerPreviewNetwork : NetworkBehaviour
 
     public async override void Spawned()
     {
-       await  UniTask.WaitUntil(() => LobbyManager.Ins.IsSpawned);
-        if (LobbyManager.Ins._playerSlotIndices.TryGet(Object.InputAuthority, out int index))
+       await  UniTask.WaitUntil(() => SessionManager.Ins.IsSpawned);
+        if (SessionManager.Ins._playerSlotIndices.TryGet(Object.InputAuthority, out int index))
         {
-          var spawnPoint =  LobbyManager.Ins.GetSpawnPoint(index);
+          var spawnPoint =  SessionManager.Ins.GetSpawnPoint(index);
           transform.position = spawnPoint.position;
         }
     }
