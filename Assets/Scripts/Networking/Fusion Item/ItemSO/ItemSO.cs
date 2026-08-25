@@ -26,8 +26,13 @@ public class ItemSO : ScriptableObject
 
     public int ItemId => itemId;
     public string ItemName => itemName;
+    public ItemType ItemType => itemType;
+
+    public Sprite Icon => icon;
+    public GameObject ObjectPrefab => objectPrefab;
+
     public bool Stackable => stackable;
-    public int MaxStack => maxStack;    
+    public int MaxStack => maxStack;   
 
     private void OnValidate() //dùng để kiểm tra và điều chỉnh giá trị maxStack khi stackable thay đổi
     {

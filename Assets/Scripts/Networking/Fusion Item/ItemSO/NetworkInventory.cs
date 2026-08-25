@@ -22,7 +22,7 @@ public class NetworkInventory : NetworkBehaviour
 {
     [Header("Inventory")]
     [SerializeField]
-    private const int capacity = 20;
+    private const int capacity = 30;
 
 
     [Header("Database")]
