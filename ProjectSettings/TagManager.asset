@@ -13,9 +13,9 @@ TagManager:
   - UI
   - Enemy
   - Obstacle
-  - MiniMapIcon
-  - Player
-  - Ground
+  - Grabable
+  - Interactable
+  - 
   - 
   - 
   - 
