@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 320479475576630225}
   - component: {fileID: 8399224992288487024}
   - component: {fileID: 3855452015184541356}
+  - component: {fileID: -8071226945322945420}
   m_Layer: 0
   m_Name: Test
   m_TagString: Untagged
@@ -52,6 +53,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 8399224992288487024}
+  - {fileID: -8071226945322945420}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &8399224992288487024
 MonoBehaviour:
@@ -78,3 +80,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bb7306ec9a09de4a9405e60c483f701, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryTest
+--- !u!114 &-8071226945322945420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303788741792168109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a83ad8f1e798ef49876fc5a98d0f304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDebug

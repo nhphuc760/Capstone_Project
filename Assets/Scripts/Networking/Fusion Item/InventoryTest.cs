@@ -3,47 +3,30 @@ using UnityEngine;
 
 public class InventoryTest : MonoBehaviour
 {
-    private NetworkInventory inventory;
+    private NetworkInventory personalInventory;
+    private NetworkObject playerObject;
 
     private void Awake()
     {
-        Debug.Log("InventoryTest Awake");
-        inventory = GetComponent<NetworkInventory>();
-        Debug.Log(
-        $"InventoryTest Awake | " +
-        $"GameObject={gameObject.name} | " +
-        $"Inventory={inventory}"
-    );
+        personalInventory =
+            GetComponent<NetworkInventory>();
+
+        playerObject =
+            GetComponent<NetworkObject>();
     }
 
     private void Update()
     {
-        if (inventory == null)
-            Debug.Log(
-            $"Inventory Object={inventory.Object.Id} | " +
-            $"InputAuthority={inventory.Object.HasInputAuthority} | " +
-            $"StateAuthority={inventory.Object.HasStateAuthority}"
-        );
-        
-        if (!inventory.Object.HasInputAuthority)
+        if (playerObject == null)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            Debug.Log(
-                $"GameObject={gameObject.name} | " +
-                $"ObjectId={inventory.Object.Id} | " +
-                $"InputAuthority={inventory.Object.InputAuthority} | " +
-                $"HasInputAuthority={inventory.Object.HasInputAuthority} | " +
-                $"StateAuthority={inventory.Object.HasStateAuthority}"
-            );
-        }
+        if (!playerObject.HasInputAuthority)
+            return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log(
-                $"InputAuthority: {inventory.Object.HasInputAuthority}, " +
-                $"StateAuthority: {inventory.Object.HasStateAuthority}"
+                $"[INPUT] Player {playerObject.InputAuthority} pressed 1"
             );
 
             TestAddPotion();
@@ -51,105 +34,139 @@ public class InventoryTest : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} pressed 2"
+            );
+
             TestAddBomb();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} pressed 3"
+            );
+
             TestRemovePotion();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            TestCheckPotion();
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} pressed 4"
+            );
+
+            TestCheckInventory();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
+            Debug.Log(
+                $"[INPUT] Player {playerObject.InputAuthority} pressed 5"
+            );
+
             PrintInventory();
         }
     }
 
     private void TestAddPotion()
     {
-        if (inventory.Object.HasStateAuthority)
-        {
-            bool result = inventory.AddItem(1, 3);
-
-            Debug.Log($"Add Potion x3: {result}");
-        }
-        else
-        {
-            inventory.RPC_AddItem(1, 3);
-
-            Debug.Log("Requested Host to add Potion x3");
-        }
+        AddPersonalItem(1, 3, "Potion");
     }
 
     private void TestAddBomb()
     {
-        if (inventory.Object.HasStateAuthority)
+        AddPersonalItem(2, 2, "Bomb");
+    }
+
+    private void AddPersonalItem(
+        int itemID,
+        int amount,
+        string itemName)
+    {
+        if (personalInventory == null)
+            return;
+
+        if (personalInventory.Object.HasStateAuthority)
         {
-            bool result = inventory.AddItem(2, 2);
-            Debug.Log($"Add Bomb x2: {result}");
+            bool result =
+                personalInventory.AddItem(itemID, amount);
+
+            Debug.Log(
+                $"[HOST] Personal {itemName} x{amount} -> {result}"
+            );
         }
         else
         {
-            inventory.RPC_AddItem(2, 2);
-            Debug.Log("Requested Host to add Bomb x2");
+            personalInventory.RPC_AddItem(itemID, amount);
         }
     }
 
     private void TestRemovePotion()
     {
-        if (inventory.Object.HasStateAuthority)
+        if (personalInventory == null)
+            return;
+
+        if (personalInventory.Object.HasStateAuthority)
         {
-            bool result = inventory.RemoveItem(1, 2);
-            Debug.Log($"Remove Potion x2: {result}");
+            bool result =
+                personalInventory.RemoveItem(1, 2);
+
+            Debug.Log(
+                $"[HOST] Remove Personal Potion x2 -> {result}"
+            );
         }
         else
         {
-            inventory.RPC_RemoveItem(1, 2);
-            Debug.Log("Requested Host to remove Potion x2");
+            personalInventory.RPC_RemoveItem(1, 2);
         }
     }
 
-    private void TestCheckPotion()
+    private void TestCheckInventory()
     {
-        int amount = inventory.GetItemAmount(1);
-        Debug.Log($"Potion amount: {amount}");
+        if (personalInventory == null)
+            return;
 
-        int bombAmount = inventory.GetItemAmount(2);
-        Debug.Log($"Bomb amount: {bombAmount}");       
+        int personalPotion =
+            personalInventory.GetItemAmount(1);
+
+        int personalBomb =
+            personalInventory.GetItemAmount(2);
+
+        Debug.Log(
+            $"[PERSONAL] Potion={personalPotion} | Bomb={personalBomb}"
+        );
     }
 
     private void PrintInventory()
     {
-        for (int i = 0; i < inventory.Capacity; i++)
+        if (personalInventory == null)
+            return;
+
+        Debug.Log(
+            $"[PERSONAL INVENTORY] Player {playerObject.InputAuthority}"
+        );
+
+        for (int i = 0;
+             i < personalInventory.Capacity;
+             i++)
         {
-            InventoryItem slot = inventory.GetSlot(i);
+            InventoryItem slot =
+                personalInventory.GetSlot(i);
 
             if (slot.IsEmpty)
-            {
-                Debug.Log($"Slot {i}: Empty");
                 continue;
-            }
 
-            ItemSO data = inventory.Database.GetItem(slot.itemID);
+            ItemSO data =
+                personalInventory.Database.GetItem(
+                    slot.itemID
+                );
 
             if (data == null)
-            {
-                Debug.LogError(
-                    $"Slot {i}: Cannot find ItemSO for ID {slot.itemID}"
-                );
                 continue;
-            }
 
             Debug.Log(
-                $"Slot {i}: " +
-                $"{data.ItemName} " +
-                $"x{slot.amount} " +
-                $"(ID: {slot.itemID})"
+                $"Slot {i}: {data.ItemName} x{slot.amount}"
             );
         }
     }

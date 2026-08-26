@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: 1
   itemName: Metal
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4e190ec18f673f4448576e994863af7f, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 1
-  maxStack: 100
+  maxStack: 99
