@@ -659,6 +659,7 @@ GameObject:
   - component: {fileID: 5816453605207640125}
   - component: {fileID: 1138996785574348735}
   - component: {fileID: 4933714085852605442}
+  - component: {fileID: -2548998381593953869}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -701,6 +702,11 @@ MonoBehaviour:
   moveSpeed: 5
   gatherRanged: 2
   mineInterval: 1
+  _equipTool: 0
+  _wood: 0
+  _copperOre: 0
+  _ironOre: 0
+  _goldOre: 0
 --- !u!114 &4041010651174595068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -722,6 +728,7 @@ MonoBehaviour:
   - {fileID: 5816453605207640125}
   - {fileID: 1138996785574348735}
   - {fileID: 4933714085852605442}
+  - {fileID: -2548998381593953869}
   ForceRemoteRenderTimeframe: 0
 --- !u!54 &-7849153057991330858
 Rigidbody:
@@ -818,6 +825,19 @@ MonoBehaviour:
   regenInterval: 1
   regenDelayAfterUse: 2
   _CurrentStamina: 0
+--- !u!114 &-2548998381593953869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88151f5dc7525ad4ca96240a0c48250d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkInventory
+  database: {fileID: 11400000, guid: b85efbd77e5676c4ea3a71e60335f96c, type: 2}
 --- !u!1 &2184306403840850342
 GameObject:
   m_ObjectHideFlags: 0

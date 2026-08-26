@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 07e31f95c67af124ea85ea416ce8aa70
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/chatgpt_suggestion.md
+  uploadId: 876412

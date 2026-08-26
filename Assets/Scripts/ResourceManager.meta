@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Scripts/ResourceManager.meta
 guid: d4bc5fd699597364cbbcab7b81a73da7
+========
+guid: fff340278d6d4d045b3e617b15b895f2
+>>>>>>>> Huy-Dev:Assets/ProceduralUIImage.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

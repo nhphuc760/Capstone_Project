@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6566ff944e41a2641ad477ac9532e377
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/chatgpt_bugs.md
+  uploadId: 876412

@@ -19,7 +19,7 @@ public class NetworkPlayer : NetworkBehaviour
     [SerializeField] float moveSpeed = 5f;
 
     [Networked] NetworkButtons previousInput { get; set; }
-    // Inventory inventory;
+    public NetworkInventory inventory { get; private set; }
 
     //Resource Exploitation
     [SerializeField] float gatherRanged = 1.5f;
@@ -43,6 +43,7 @@ public class NetworkPlayer : NetworkBehaviour
     {
         Health = GetComponent<HealthComponent>();
         Stamina = GetComponent<StaminaComponent>();
+        inventory = GetComponent<NetworkInventory>();
     }
 
 

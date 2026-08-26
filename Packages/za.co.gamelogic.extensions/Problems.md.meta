@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 79844f7bb4825c54e8a8842ddb32c3f7
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 19323
+  packageName: Gamelogic Extensions
+  packageVersion: 4.6.0
+  assetPath: Packages/za.co.gamelogic.extensions/Problems.md
+  uploadId: 876412
