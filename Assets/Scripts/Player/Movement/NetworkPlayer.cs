@@ -65,17 +65,6 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
 
-    private void Update()
-    {
-        //if (!Object.HasInputAuthority) return;
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            Debug.Log("SetTool update");
-            equipTool = ToolType.Axe;
-        }
-    }
-
-
     public override void FixedUpdateNetwork()
     {
         if (GetInput(out NetworkInputData data))
@@ -106,6 +95,11 @@ public class NetworkPlayer : NetworkBehaviour
             }
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
+        }
+
+        if (transform.position.y <= -10f)
+        {
+            controller.SetPosition(Vector3.one);
         }
     }
 
