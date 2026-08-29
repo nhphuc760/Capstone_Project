@@ -75,10 +75,13 @@ public class InviteManager
                                 };
                                 string jsonToken = JsonConvert.SerializeObject(tokenTest);
                                 byte[] token = Encoding.UTF8.GetBytes(jsonToken);
-                                await NetworkRunnerHandler.Ins.JoinSession(invite.RoomID, token);
-
+                                var result = await NetworkRunnerHandler.Ins.JoinSession(invite.RoomID, token);
+                                if (result.Ok) 
+                                {
+                                    NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.InParty).Forget();
+                                }
                                 // Vào game thành công -> dọn dẹp lời mời
-                                receiver.RemoveInvite(senderID);
+                                    receiver.RemoveInvite(senderID);
                             }
                             else
                             {

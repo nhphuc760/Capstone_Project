@@ -15,4 +15,13 @@ public static class TextureUtils
         RenderTexture.ReleaseTemporary(rt);
         return result;
     }
+    public static Sprite ToSprite(this Texture2D source)
+    {
+        Sprite newSprite = Sprite.Create(
+            source,
+            new Rect(0, 0, source.width, source.height),
+            new Vector2(.5f, .5f)
+            );
+        return newSprite;
+    }
 }

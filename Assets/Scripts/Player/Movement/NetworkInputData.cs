@@ -1,10 +1,19 @@
 ﻿using Fusion;
 using UnityEngine;
 
+
+public enum ButtonType
+{
+    Jump,
+    Interact,
+    EquipTool
+}
+
+
 public struct NetworkInputData : INetworkInput
 {
-    public Vector2 movementInput;
-    public NetworkBool isSprinting;
-    public float lookDeltaX; 
-    public float lookDeltaY;
+    public NetworkButtons button;
+    public Vector3 moveDirection;
+    public Vector2 pitchYaw;
+     
 }

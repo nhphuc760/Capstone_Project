@@ -54,6 +54,10 @@ public class NetworkDataManager : MonoBehaviour
         await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence").SetRawJsonValueAsync(jsonMyData);
     }
 
+    public async UniTask UpdateMyOnlineStatus(OnlineStatus status)
+    {
+        await FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Presence/Status").SetValueAsync((int)status);
+    }
 
     public Sprite GetAvatarUser(string userID)
     {
@@ -128,11 +132,6 @@ public class NetworkDataManager : MonoBehaviour
             var avt = await ImgbbUploader.GetAvatar(newPre.AvatarUrl);
             SetAvatarUser(userID, avt);
         }
-        SetPresenceUser(userID, newPre);
-        Debug.Log("================UpdatePresenceData==============");
-        Debug.Log($"OldName: {oldPre.Name}  NewName: {newPre.Name}");
-        Debug.Log($"OldStatus: {oldPre.Status.ToString()}  NewName: {newPre.Status.ToString()}");
-        Debug.Log($"OldTag: {oldPre.Tag}  NewTag: {newPre.Tag}");
-        Debug.Log($"OldAvatar: {oldPre.AvatarUrl}  NewAvatar: {newPre.AvatarUrl}");
+        SetPresenceUser(userID, newPre);        
     }
 }

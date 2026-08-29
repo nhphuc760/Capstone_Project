@@ -202,6 +202,7 @@ public class KidsControlScript : MonoBehaviour
   {
     _Animator = this.GetComponent<Animator>();
     _Ctrl = this.GetComponent<CharacterController>();
+
     _View_Camera = GameObject.Find("Main Camera");
     _HillEdge = GameObject.Find("HillEdge");
     _KickObj = GameObject.Find("KickObj");

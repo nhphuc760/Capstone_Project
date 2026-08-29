@@ -24,7 +24,7 @@ public class NetworkRunnerHandler : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        Ins = this;
+        Ins = this;       
     }
 
 

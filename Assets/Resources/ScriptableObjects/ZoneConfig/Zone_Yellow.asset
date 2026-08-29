@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa3ed5164ba221841b367dcf211c9bc7, type: 3}
+  m_Name: Zone_Yellow
+  m_EditorClassIdentifier: Assembly-CSharp::ZoneSpawnConfig
+  zoneType: 1
+  debugColor: {r: 1, g: 1, b: 0, a: 1}
+  radius: 6.5
+  spawnableItems:
+  - prefab: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+    weight: 70
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 2262979560908630428, guid: cb41206f809d0614485d691f937fdd68, type: 3}
+    weight: 30
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}

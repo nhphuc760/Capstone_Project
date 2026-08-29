@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa3ed5164ba221841b367dcf211c9bc7, type: 3}
+  m_Name: Zone_Green
+  m_EditorClassIdentifier: Assembly-CSharp::ZoneSpawnConfig
+  zoneType: 0
+  debugColor: {r: 0, g: 1, b: 0, a: 1}
+  radius: 9
+  spawnableItems:
+  - prefab: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+    weight: 50
+    scaleMin: {x: 0.5, y: 0.5, z: 0.5}
+    scaleMax: {x: 1, y: 1, z: 1}
+  - prefab: {fileID: 9025445585508119793, guid: 690473f3d858eb84e8907e74a7bbeee0, type: 3}
+    weight: 25
+    scaleMin: {x: 0.5, y: 0.5, z: 0.5}
+    scaleMax: {x: 1, y: 1, z: 1}
+  - prefab: {fileID: 2842403539854231460, guid: 673b86b5a9af6e841bbe7d0fd5103b16, type: 3}
+    weight: 20
+    scaleMin: {x: 0.5, y: 0.5, z: 0.5}
+    scaleMax: {x: 1, y: 1, z: 1}

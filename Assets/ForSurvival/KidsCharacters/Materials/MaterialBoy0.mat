@@ -104,6 +104,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _Alpha_Clip: 1
+    - _Alpha_Threshold: 0.5
     - _Blend: 0
     - _BumpScale: 1
     - _ClearCoatMask: 0

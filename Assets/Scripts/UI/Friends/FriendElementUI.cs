@@ -111,36 +111,9 @@ public class FriendElementUI : MonoBehaviour
         // 3. Hiển thị thông tin tên & trạng thái
         nameTag.text = $"{presence.Name} #{presence.Tag}";
         status.text = GetStatusText(presence.Status);
-
+        TriggerButtonWithOnlineStatus(presence.Status);
         // 4. Bật/Tắt các nút tương ứng dựa trên trạng thái
-        if (presence.Status != OnlineStatus.Offline)
-        {
-            // Đẩy bạn bè đang hoạt động lên đầu danh sách hiển thị
-            transform.SetAsFirstSibling();
-
-            switch (presence.Status)
-            {
-                case OnlineStatus.Online:
-                    invite.gameObject.SetActive(true);
-                    requestJoin.gameObject.SetActive(false);
-                    break;
-
-                case OnlineStatus.InMatch:
-                    invite.gameObject.SetActive(false);
-                    requestJoin.gameObject.SetActive(false);
-                    break;
-
-                case OnlineStatus.InParty:
-                    invite.gameObject.SetActive(false);
-                    requestJoin.gameObject.SetActive(true);
-                    break;
-            }
-        }
-        else
-        {
-            invite.gameObject.SetActive(false);
-            requestJoin.gameObject.SetActive(false);
-        }
+        
     }
 
     private string GetStatusText(OnlineStatus onlineStatus)
@@ -166,5 +139,44 @@ public class FriendElementUI : MonoBehaviour
     {
         if (invite != null) invite.onClick.RemoveListener(OnInviteClick);
         if (requestJoin != null) requestJoin.onClick.RemoveListener(OnRequestJoinClick);
+    }
+    void TriggerButtonWithOnlineStatus(OnlineStatus status)
+    {
+        if (status != OnlineStatus.Offline)
+        {
+            // Đẩy bạn bè đang hoạt động lên đầu danh sách hiển thị
+            transform.SetAsFirstSibling();
+
+            switch (status)
+            {
+                case OnlineStatus.Online:
+                    invite.gameObject.SetActive(true);
+                    requestJoin.gameObject.SetActive(false);
+                    break;
+
+                case OnlineStatus.InMatch:
+                    invite.gameObject.SetActive(false);
+                    requestJoin.gameObject.SetActive(false);
+                    break;
+
+                case OnlineStatus.InParty:
+                    bool requestJoinInteracable = true;
+                    if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
+                    {
+                        if (RoomDatabaseManager.Instance.CurrentRoom.Members.Contains(userID))
+                        {
+                            requestJoinInteracable = false;
+                        }
+                    }
+                    invite.gameObject.SetActive(false);
+                    requestJoin.gameObject.SetActive(requestJoinInteracable);
+                    break;
+            }
+        }
+        else
+        {
+            invite.gameObject.SetActive(false);
+            requestJoin.gameObject.SetActive(false);
+        }
     }
 }

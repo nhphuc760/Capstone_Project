@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ForSurvival.meta
 guid: 4d07888fc08694baa929599aeb5ae08e
+========
+guid: bc58df0e531810d4eb73bd13ee839582
+>>>>>>>> Huy-Dev:Assets/Packages.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

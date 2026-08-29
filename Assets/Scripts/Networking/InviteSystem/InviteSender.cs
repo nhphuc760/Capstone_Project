@@ -18,21 +18,25 @@ public class InviteSender // checked
     }
 
     public async void SendInvite(string receiverId)
-    {
-
+    {       
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
-        var currentRoom = RoomManager.Instance.CurrentRoom;
+        var currentRoom = RoomDatabaseManager.Instance.CurrentRoom;
         if (currentRoom == null)
         {
-            currentRoom = await RoomManager.Instance.CreateRoom();
+            currentRoom = await RoomDatabaseManager.Instance.CreateRoom();
         }
-        Invite invite = new Invite()
+        else if (currentRoom.Members.Contains(receiverId)) 
         {
-            RoomID = currentRoom.RoomID,
-            SenderID = myId,
-            Status = InviteStatus.Pending,
-            CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
-        };
+            return;
+        }
+
+        Invite invite = new Invite()
+            {
+                RoomID = currentRoom.RoomID,
+                SenderID = myId,
+                Status = InviteStatus.Pending,
+                CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
+            };
         bool isNew = await InviteDatabase.CreateOrUpdateInReceiver(receiverId, invite);
         pendingInvites[receiverId] = invite;
         if (isNew)
@@ -59,11 +63,11 @@ public class InviteSender // checked
                     var result = await NetworkRunnerHandler.Ins.StartSession(invite.RoomID, 2, null);
                     if (!result.Ok || !NetworkRunnerHandler.Ins._runner.IsInSession)
                     {
-                        await RoomManager.Instance.UpdateStatus(RoomStatus.Error);
+                        await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Error);
                         return;
                     }
 
-                    await RoomManager.Instance.UpdateStatus(RoomStatus.Ready);
+                    await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready);
                     // Dọn dẹp dữ liệu thừa trên Database sau khi kết nối thành công
                     await InviteDatabase.RemoveInvite(receiverId, myId);
                     pendingInvites.Remove(receiverId);

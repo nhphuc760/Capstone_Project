@@ -63,7 +63,7 @@ public class ProfileManager : MonoBehaviour
     /// </summary>
     public void ProfileClick()
     {
-        if (!IsEditing || RoomManager.Instance.CurrentRoom == null)
+        if (!IsEditing || RoomDatabaseManager.Instance.CurrentRoom == null)
         {
             panel.gameObject.SetActive(true);
         }
@@ -116,12 +116,16 @@ public class ProfileManager : MonoBehaviour
                 CancelProcess();
                 return;
             }
+            
 
             ImageCropper.Instance.Hide();
 
             // 3. Upload
             UpdateState(ProfileEditState.Uploading);
             Texture2D resize = croppedAvatar.ResizeTexture(256, 256);
+            Sprite avt = resize.ToSprite();
+            avatar.sprite = avt;
+            Avatar.sprite = avt;
             Destroy(croppedAvatar); // Giải phóng RAM sớm
             byte[] uploadBytes = resize.EncodeToJPG(90);
             Debug.Log($"Upload Size: {uploadBytes.Length / 1024f:F2} KB");

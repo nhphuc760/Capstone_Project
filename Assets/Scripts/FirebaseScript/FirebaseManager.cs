@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
-using Firebase.Extensions;
-using Firebase.Firestore;
-using UnityEngine;
 
 public static class FirebaseManager
 {
@@ -24,21 +20,7 @@ public static class FirebaseManager
             }
             return string.Empty; // Hoặc trả về null tùy bạn xử lý
         }
-    }
-    public static class FireStore
-    {
-        public static FirebaseFirestore doc = FirebaseFirestore.DefaultInstance;
-        public static async UniTask SetValue(string path, object value)
-        {
-            await doc.Document(path).SetAsync(value);
-
-        }
-        public static async UniTask<DocumentSnapshot> GetValue(string path)
-        {
-            DocumentSnapshot snap = await doc.Document(path).GetSnapshotAsync();
-            return snap;
-        }
-    }
+    }   
 
     public static class RealtimeDB
     {
