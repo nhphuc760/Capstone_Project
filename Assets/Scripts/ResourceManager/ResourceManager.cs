@@ -63,11 +63,7 @@ public class ResourceManager : NetworkBehaviour
 
             Vector3 spawnPosition = new Vector3(p.position.x, 0f, p.position.y);
             Quaternion spawnRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            Runner.Spawn(prefab, spawnPosition, spawnRotation, onBeforeSpawned: (runner, obj) =>
-            {
-                obj.transform.parent = objectsParent;
-                obj.GetBehaviour<ResourceNode>().postition = spawnPosition;
-            });
+            Runner.Spawn(prefab, spawnPosition, spawnRotation);
             // Tìm thông tin scale tương ứng từ Config
             //SpawnableItem itemData = p.config.spawnableItems.Find(i => i.prefab == prefab);
             //if (itemData.scaleMin != Vector3.zero && itemData.scaleMax != Vector3.zero)

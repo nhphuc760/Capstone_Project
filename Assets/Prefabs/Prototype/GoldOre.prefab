@@ -347,6 +347,7 @@ GameObject:
   - component: {fileID: 6522025421946802089}
   - component: {fileID: -4294047337720846147}
   - component: {fileID: -6243198722043147703}
+  - component: {fileID: -8609405947295116146}
   m_Layer: 9
   m_Name: GoldOre
   m_TagString: Untagged
@@ -384,6 +385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a06cdd983cd999249aaf7e595d0b99d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResourceNode
+  _postition: {x: 0, y: 0, z: 0}
   resourceType: 3
   requiredTool: 2
   maxAmount: 100
@@ -408,4 +410,22 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: -4294047337720846147}
+  - {fileID: -8609405947295116146}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &-8609405947295116146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7620805961106780448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0

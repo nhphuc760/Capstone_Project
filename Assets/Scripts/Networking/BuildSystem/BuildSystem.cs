@@ -1,4 +1,6 @@
-﻿using Fusion;
+﻿using System;
+using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
 
 public class BuildSystem : NetworkBehaviour
@@ -15,9 +17,15 @@ public class BuildSystem : NetworkBehaviour
     StructureDataSO _curStructureSO;
     [SerializeField] LayerMask _layerObstacleBuild;
     [SerializeField] LayerMask _groundMask;
+
+    Vector3Int _cellPos;
+
+
+
     public override void Spawned()
     {
        if(_playerCam == null) _playerCam = GetComponentInChildren<Camera>();
+       if(!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -41,8 +49,8 @@ public class BuildSystem : NetworkBehaviour
             int x = Mathf.FloorToInt(hitInfor.point.x);
             int y = Mathf.FloorToInt(hitInfor.point.y);
             int z = Mathf.FloorToInt(hitInfor.point.z);
-            previewPos = new Vector3(x, y, z) + Vector3.one * 0.5f;
-            Vector2Int cellPos = new Vector2Int(x, z);          
+            _cellPos = new Vector3Int(x,y , z);            
+            previewPos = _cellPos + Vector3.one * 0.5f;
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -52,7 +60,8 @@ public class BuildSystem : NetworkBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             // Request build
-            RPC_BuildRequest(_curStructureSO._id, previewPos, previewRot);
+            Debug.Log(_cellPos);
+            RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
         }
 
         if (Input.GetMouseButtonDown(1))
@@ -60,37 +69,55 @@ public class BuildSystem : NetworkBehaviour
             //Hủy hành động build
             _curStructureSO = null;
         }
-
     }
 
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3 buildPos, Quaternion buildRot)
+    void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3Int buildPos, Quaternion buildRot)
     {
-        if (Object.HasStateAuthority)
+        //if (Object.HasStateAuthority)
+        //{
+        //    Debug.Log("This fuction called on Host");
+        //    Debug.Log($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
+        //    StructureDataSO structSO = _structDatabase.GetStructSO(_idStruct.Value);
+        //    if (structSO == null)
+        //    {
+        //        Debug.Log("Struct invalid");
+        //        return;
+        //    }
+        //    //Check cost
+        //    IBuildStategy buildStrategy = GetStrategyBuild(structSO);
+        //    if(buildStrategy != null && buildStrategy.CanBuild(Runner, buildPos))
+        //    {
+        //        Debug.Log("Can build" + _curStructureSO._name + $" for {Object.InputAuthority}");
+        //        buildStrategy.Build(Runner, buildPos);
+        //    }
+        //}
+
+        Debug.Log("This fuction called on Host");
+        Debug.Log($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
+        IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct);
+        if (buildStrategy != null && buildStrategy.CanBuild(Runner,Object.InputAuthority, buildPos))
         {
-            Debug.Log("This fuction called on Host");
-            StructureDataSO structSO = _structDatabase.GetStructSO(_idStruct.Value);
-            if (structSO == null)
-            {
-                Debug.Log("Struct invalid");
-                return;
-            }
-            Runner.Spawn(structSO.prefabs, buildPos, buildRot);
+            Debug.Log("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");
+            buildStrategy.Build(Runner,Object.InputAuthority, buildPos);
         }
-    }    
+
+
+
+    }
 
     public void PickStruct(string _idStruct)
     {
-        StructureDataSO _struct = _structDatabase.GetStructSO(_idStruct);
-        if (_struct == null) return;
-        meshFilters = _struct.prefabs.GetComponentsInChildren<MeshFilter>();
+        StructureDataSO _structSO = _structDatabase.GetStructSO(_idStruct);
+        if (_structSO == null) return;
+        meshFilters = _structSO.prefabs.GetComponentsInChildren<MeshFilter>();
         if (meshFilters.Length == 0)
         {
             Debug.LogWarning("Prefabs không có mesh");
             return;
         }
-        _curStructureSO = _struct;
+        _curStructureSO = _structSO;
     }
 
     void RenderPreview()

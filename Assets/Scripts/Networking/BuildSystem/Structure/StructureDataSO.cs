@@ -1,17 +1,25 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using Fusion;
-using TriInspector;
 using UnityEngine;
 
 
 public enum StructureType
 {
-    Attack,
-    Defense,
-    Buff
+    Wall,
+    Door,
+    Turret,
+    ElectricTower,
+    Trap,
 }
 
+public enum StructureCategory
+{
+    None,
+    Attack,//Tower, Turret, Trap
+    Defense,//Shield, Wall, Door
+    Support,//Buff, Heal
+
+}
 
 
 
@@ -23,6 +31,7 @@ public class StructureDataSO : ScriptableObject
     public string _name;
     public string _description;
     public StructureType structureType;
+    public StructureCategory structureCategory;
     public StructureCost costBuild;
     public GameObject prefabs;
  }

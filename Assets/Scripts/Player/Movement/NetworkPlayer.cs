@@ -64,6 +64,7 @@ public class NetworkPlayer : NetworkBehaviour
 
     }
 
+    
 
     public override void FixedUpdateNetwork()
     {

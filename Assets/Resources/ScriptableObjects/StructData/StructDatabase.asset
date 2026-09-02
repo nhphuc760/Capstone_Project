@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: StructDatabase
   m_EditorClassIdentifier: Assembly-CSharp::StructDatabase
   structsList:
+  - {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}
   - {fileID: 11400000, guid: dde95cba76ec23b4483d6ba1e0b6bf9d, type: 2}

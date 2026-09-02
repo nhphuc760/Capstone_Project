@@ -50,4 +50,17 @@ public static class Utils
                 cancellationToken: token);
         }
     }
+
+    public static int ToKey(this Vector3Int v)
+    {
+        return (v.x & 0x3FF) << 20 | (v.y & 0x3FF) << 10 | (v.z & 0x3FF);
+    }
+    public static Vector3Int FromKey(this int key)
+    {
+        int x = (key >> 20) & 0x3FF;
+        int y = (key >> 10) & 0x3FF;
+        int z = key & 0x3FF;
+        return new Vector3Int(x, y, z);
+    }
+
 }
