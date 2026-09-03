@@ -4,8 +4,11 @@ using Fusion;
 public enum ItemType
 {
     None,
-    Weapon,
-    Consumable
+    Blood,
+    Mana,
+    Armor,
+    Explosive,
+    
 }
 
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Online Inventory/ItemSO")]
