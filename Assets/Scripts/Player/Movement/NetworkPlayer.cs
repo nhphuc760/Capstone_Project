@@ -27,7 +27,7 @@ public class NetworkPlayer : NetworkBehaviour
     [Networked] public ToolType equipTool { get; set; }
     [Networked] TickTimer mineIntervalTimer { get; set; }
 
-    readonly List<LagCompensatedHit> hits = new List<LagCompensatedHit>(5);
+    readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
     [Networked] public int wood { get; set; }
     [Networked] public int copperOre { get; set; }
@@ -37,7 +37,7 @@ public class NetworkPlayer : NetworkBehaviour
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
-
+    
 
     public void Awake()
     {
@@ -163,10 +163,10 @@ public class NetworkPlayer : NetworkBehaviour
             Vector3 center = transform.position + Vector3.up * .5f;
             Vector3 extents = new Vector3(gatherRanged, 1f, gatherRanged);
             DrawLog.DrawCube(center, extents, Color.red);
-            int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, hits, 1 << 9, HitOptions.IncludePhysX, true);
+            int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, resourcesHit, 1 << 9, HitOptions.IncludePhysX, true);
             if (hitsCount == 0) return;
             HashSet<ResourceNode> test = new HashSet<ResourceNode>();
-            test = hits.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
+            test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
             foreach (var i in test)
             {
                 Debug.Log("Collider Hit: " + i.transform.name);              

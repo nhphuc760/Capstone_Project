@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
@@ -9,43 +9,33 @@ public class WallBuildStrategy : IBuildStategy
     readonly int _widthMap;
     readonly int _heightMap;
     readonly LayerMask _layerObstacleBuild;
-    readonly LayerMask _groundMask;
     readonly StructureDataSO wallSO;
     readonly StructureDataSO doorSO;
-    public WallBuildStrategy(StructureManager structureManager, int widthMap, int heightMap, LayerMask layerObstacleBuild, LayerMask groundMask, StructureDataSO wallSO, StructureDataSO doorSO)
+
+    public WallBuildStrategy(StructureManager structureManager, int widthMap, int heightMap, LayerMask layerObstacleBuild, StructureDataSO wallSO, StructureDataSO doorSO)
     {
+        
         this.structureManager = structureManager;
         _widthMap = widthMap;
         _heightMap = heightMap;
         _layerObstacleBuild = layerObstacleBuild;
-        _groundMask = groundMask;
         this.wallSO = wallSO;
         this.doorSO = doorSO;
-        
+
     }
     public void Build(NetworkRunner runner, PlayerRef playerRef, Vector3Int cell)
     {
         if (!runner.IsServer) return;
-        var wallsDoor = GetWallAndDoor();
+        var walls = structureManager.WithPlayerRef(playerRef).WithType(StructureType.Wall).Get();
         
-        Debug.Log("wallsDoor Count = " + wallsDoor.Count);
-        if (EnclosedChecker.CheckFromNewCell(cell, wallsDoor.Keys.ToHashSet(), out List<Vector3Int> enClosedList, _widthMap, _heightMap))
-        {
-            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallsDoor.Keys.ToHashSet(), (cell) =>
-            {
-                if(wallsDoor.TryGetValue(cell, out StructureBase wall))
-                {
-                    return playerRef == wall.Object.InputAuthority;
-                }
-                else
-                {
-                    return false;
-                }
-            });
+        Utils.EditorLogOnly("wallsDoor Count = " + walls.Count);
+        if (EnclosedChecker.CheckFromNewCell(cell, walls.Keys.ToHashSet(), out List<Vector3Int> enClosedList, _widthMap, _heightMap))
+        {                        
+            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, walls.Keys.ToHashSet());
             StructureBase doorObj = runner.Spawn(doorSO.prefabs, doorPos + Vector3.one * 0.5f, Quaternion.identity, playerRef).GetBehaviour<StructureBase>();
             if (doorPos != cell)
             {
-                StructureBase wallAtDoorPos = wallsDoor[doorPos];
+                StructureBase wallAtDoorPos = walls[doorPos];
                 wallAtDoorPos.transform.position = cell + Vector3.one * 0.5f;                
                 structureManager.SetStructure(doorPos, doorObj);
                 structureManager.SetStructure(cell, wallAtDoorPos);
@@ -54,6 +44,7 @@ public class WallBuildStrategy : IBuildStategy
             {
                 structureManager.SetStructure(cell, doorObj);
             }
+            structureManager.SetEnclosedZone(playerRef, enClosedList);
         }
         else
         {
@@ -63,15 +54,68 @@ public class WallBuildStrategy : IBuildStategy
     }
     Collider[] results = new Collider[2];
    
-    public bool CanBuild(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell)
-    {
+    public BuildValidationResult CanBuild(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell)
+    {       
+        Utils.EditorLogOnly("WallBuildStategy Check CanBuild");
+        var doors = structureManager.WithType(StructureType.Door).Get();
+        var myDoor = doors.Where(kvp => kvp.Value.Object.InputAuthority == playerRef);       
+        if (myDoor.Count() != 0)
+        {
+            return new BuildValidationResult
+            {
+                Reason = BuildFailReason.DoorCompleted,
+                Message = "Kiến trúc đã hoàn chỉnh"
+            };
+        }
+        var neighbors = EnclosedChecker.GetNeighborS4Cell(cell, _widthMap, _heightMap);
+        var neighborIsOtherPlayer = GetWallAndDoor().Where(kvp => { return neighbors.Contains(kvp.Key) && kvp.Value.Object.InputAuthority != playerRef; });
+        if (neighborIsOtherPlayer.Count() != 0)
+        {
+            return new BuildValidationResult
+            {
+                Reason = BuildFailReason.InvalidPosition,
+                Message = "👉 Bố cấm mày xây sát tường người khác. "
+            };
+        }
+
+        //Check enclosed exist door
+        var myWalls = structureManager.WithPlayerRef(playerRef).WithType(StructureType.Wall).Get();
+        if(EnclosedChecker.CheckFromNewCell(cell, myWalls.Keys.ToHashSet(), out var EnclosedList, _widthMap, _heightMap))
+        {
+            foreach (var i in EnclosedList)
+            {
+                if (doors.ContainsKey(i))
+                {
+                    return new BuildValidationResult 
+                    { 
+                        Reason = BuildFailReason.OtherDoorInSafeZone,
+                        Message = "Đã có người chơi xây thành trong khu an toàn, Hãy chọn nơi khác"
+
+                    };
+                    
+
+                }
+            }
+        }
+
+
         Vector3 center = cell + Vector3.one * 0.5f;
         Vector3 offset = new Vector3(-0.01f, 0, -0.01f);
         Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f) + offset;
         int count = Physics.OverlapBoxNonAlloc(center, halfExtents, results, Quaternion.identity, _layerObstacleBuild);
         DrawLog.DrawCube(center, halfExtents, Color.blue, Time.deltaTime);
-        if (count == 0) return true;
-        return false;
+        if (count == 0)
+        {
+            return BuildValidationResult.OK();
+        }
+        else
+        {
+            return new BuildValidationResult
+            {
+                Reason = BuildFailReason.OccupiedByStructure,
+                Message = "Không thể xây, có vật cản"
+            };
+        }            
     }
 
 

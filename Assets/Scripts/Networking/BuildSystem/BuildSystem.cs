@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
 
@@ -12,20 +13,37 @@ public class BuildSystem : NetworkBehaviour
     Vector3 previewPos = Vector3.one;
     Quaternion previewRot = Quaternion.identity;
     [SerializeField] Camera _playerCam;
-    
+
     public StructDatabase _structDatabase;
     StructureDataSO _curStructureSO;
     [SerializeField] LayerMask _layerObstacleBuild;
-    [SerializeField] LayerMask _groundMask;
+    [SerializeField] LayerMask _groundMask;  
 
     Vector3Int _cellPos;
+    BuildValidationResult buildValidationResult = default;
+
+    public event Action<BuildValidationResult> buildFailReason;
+    public Vector3Int CellPos
+    {
+        get => _cellPos; private set
+        {
+            if (value != _cellPos)
+            {
+                _cellPos = value;
+                buildValidationResult = CheckValidCell();
+            }
+        }
+    }
+
 
 
 
     public override void Spawned()
     {
-       if(_playerCam == null) _playerCam = GetComponentInChildren<Camera>();
-       if(!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
+        if (_playerCam == null) _playerCam = GetComponentInChildren<Camera>();
+        if (!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
+        if (Object.HasInputAuthority)
+            Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();
     }
 
     private void Update()
@@ -37,31 +55,21 @@ public class BuildSystem : NetworkBehaviour
             PickStruct("1093");
         }
 
-        if (_playerCam == null) 
-        {
-            Debug.LogWarning("PlayerCam null");
-            return; 
-        }
-        if (_curStructureSO == null) return;
-        Ray ray = _playerCam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hitInfor, 100f, _groundMask))
-        {
-            int x = Mathf.FloorToInt(hitInfor.point.x);
-            int y = Mathf.FloorToInt(hitInfor.point.y);
-            int z = Mathf.FloorToInt(hitInfor.point.z);
-            _cellPos = new Vector3Int(x,y , z);            
-            previewPos = _cellPos + Vector3.one * 0.5f;
-        }
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            previewRot *= Quaternion.Euler(0, 90, 0);
-        }
+
 
         if (Input.GetMouseButtonDown(0))
         {
             // Request build
-            Debug.Log(_cellPos);
-            RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
+            Utils.EditorLogOnly(_cellPos);
+            if (buildValidationResult.Success)
+            {
+                RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
+            }
+            else
+            {
+                buildFailReason?.Invoke(buildValidationResult);
+                Utils.EditorLogOnly(buildValidationResult.Message);
+            }
         }
 
         if (Input.GetMouseButtonDown(1))
@@ -72,35 +80,59 @@ public class BuildSystem : NetworkBehaviour
     }
 
 
+    //BuildValidationResult CheckCostBuild(StructureBase structure)
+    //{
+
+    //}
+
+    void IntervalPhysicsCast()
+    {
+        if (_playerCam == null)
+        {
+            Debug.LogWarning("PlayerCam null");
+            return;
+        }
+        if (_curStructureSO == null) return;
+        Ray ray = _playerCam.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hitInfor, 100f, _groundMask))
+        {
+            int x = Mathf.FloorToInt(hitInfor.point.x);
+            int y = Mathf.FloorToInt(hitInfor.point.y);
+            int z = Mathf.FloorToInt(hitInfor.point.z);
+            CellPos = new Vector3Int(x, y, z);
+            previewPos = _cellPos + Vector3.one * 0.5f;
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            previewRot *= Quaternion.Euler(0, 90, 0);
+        }
+    }
+
+
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3Int buildPos, Quaternion buildRot)
     {
-        //if (Object.HasStateAuthority)
-        //{
-        //    Debug.Log("This fuction called on Host");
-        //    Debug.Log($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
-        //    StructureDataSO structSO = _structDatabase.GetStructSO(_idStruct.Value);
-        //    if (structSO == null)
-        //    {
-        //        Debug.Log("Struct invalid");
-        //        return;
-        //    }
-        //    //Check cost
-        //    IBuildStategy buildStrategy = GetStrategyBuild(structSO);
-        //    if(buildStrategy != null && buildStrategy.CanBuild(Runner, buildPos))
-        //    {
-        //        Debug.Log("Can build" + _curStructureSO._name + $" for {Object.InputAuthority}");
-        //        buildStrategy.Build(Runner, buildPos);
-        //    }
-        //}
 
-        Debug.Log("This fuction called on Host");
-        Debug.Log($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
+        Utils.EditorLogOnly("This fuction called on Host");
+        Utils.EditorLogOnly($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
         IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct);
-        if (buildStrategy != null && buildStrategy.CanBuild(Runner,Object.InputAuthority, buildPos))
+        //Debug.Log("BuildStategy exist " + buildStrategy != null);
+        if (buildStrategy != null)
         {
-            Debug.Log("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");
-            buildStrategy.Build(Runner,Object.InputAuthority, buildPos);
+
+            BuildValidationResult buildValidation = buildStrategy.CanBuild(Runner, Object.InputAuthority, buildPos);
+            Debug.Log("Check CanBuild");
+            if (buildValidation.Success)
+            {
+                Utils.EditorLogOnly("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");
+                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);
+            }
+            else
+            {
+                Utils.EditorLogOnly(buildValidation.Message);
+            }
+
+
         }
 
 
@@ -122,16 +154,16 @@ public class BuildSystem : NetworkBehaviour
 
     void RenderPreview()
     {
-        if(meshFilters == null || meshFilters.Length == 0) return;
+        if (meshFilters == null || meshFilters.Length == 0) return;
         foreach (var i in meshFilters)
         {
-            if(i.sharedMesh == null) continue;
+            if (i.sharedMesh == null) continue;
             Matrix4x4 matrix = Matrix4x4.TRS(
                 previewPos,
                 previewRot,
                 i.transform.localScale
                 );
-            Graphics.DrawMesh(i.sharedMesh, matrix, CheckValidCell() ? _transparentGreenMaterial : _transparentRedMaterial, 0);
+            Graphics.DrawMesh(i.sharedMesh, matrix, buildValidationResult.Success ? _transparentGreenMaterial : _transparentRedMaterial, 0);
         }
     }
 
@@ -141,14 +173,8 @@ public class BuildSystem : NetworkBehaviour
         RenderPreview();
     }
 
-    Collider[] results = new Collider[2];
-    public bool CheckValidCell()
+    BuildValidationResult CheckValidCell()
     {
-        Vector3 center = previewPos;
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);
-        int count = Physics.OverlapBoxNonAlloc(center, halfExtents, results, Quaternion.identity, _layerObstacleBuild);
-        DrawLog.DrawCube(center, halfExtents, Color.blue, Time.deltaTime);
-        if (count == 0) return true;
-        return false;
-    }    
+        return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id).CanBuild(Runner, Object.InputAuthority, _cellPos);
+    }
 }

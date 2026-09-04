@@ -19,7 +19,7 @@ MonoBehaviour:
       Data: 3100000030000000390000003400000000000000000000000000000000000000
   _name: Door
   _description: "X\xE2y d\u1EF1ng th\xE0nh"
-  structureType: 1
+  structureType: 2
   structureCategory: 2
   costBuild:
     Wood: 0

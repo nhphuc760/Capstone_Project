@@ -5,6 +5,14 @@ using UnityEngine;
 
 public static class Utils
 {
+
+
+    public static void EditorLogOnly(object message)
+    {
+#if UNITY_EDITOR
+        Debug.Log(message);
+#endif
+    }
     public static async UniTaskVoid DelayCall(float seconds, System.Action action, PlayerLoopTiming timing = PlayerLoopTiming.Update, DelayType delayType = DelayType.DeltaTime, CancellationToken token = default)
     {
         int delayMiliseconds = Mathf.RoundToInt(seconds * 1000);
@@ -51,10 +59,22 @@ public static class Utils
         }
     }
 
+
+    /// <summary>
+    /// Hash một Vector3Int thành int để làm key
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
     public static int ToKey(this Vector3Int v)
     {
         return (v.x & 0x3FF) << 20 | (v.y & 0x3FF) << 10 | (v.z & 0x3FF);
     }
+
+    /// <summary>
+    /// Unserialize key Int thành Vector3Int
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public static Vector3Int FromKey(this int key)
     {
         int x = (key >> 20) & 0x3FF;

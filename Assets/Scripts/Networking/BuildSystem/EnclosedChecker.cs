@@ -41,7 +41,7 @@ public static class EnclosedChecker
       new Vector3Int( 1,0,  0), // phải
 };
 
-    static Vector3Int[] GetNeighborS8Cell(Vector3Int cell, int width, int height)
+    public static Vector3Int[] GetNeighborS8Cell(Vector3Int cell, int width, int height)
     {
         List<Vector3Int> result = new List<Vector3Int>();
         foreach (var dir in Dirs8)
@@ -58,7 +58,7 @@ public static class EnclosedChecker
 
 
 
-    static Vector3Int[] GetNeighborS4Cell(Vector3Int cell, int width, int height)
+    public static Vector3Int[] GetNeighborS4Cell(Vector3Int cell, int width, int height)
     {
 
         List<Vector3Int> result = new List<Vector3Int>();

@@ -19,7 +19,7 @@ MonoBehaviour:
       Data: 3100000030000000390000003300000000000000000000000000000000000000
   _name: Wall
   _description: "X\xE2y d\u1EF1ng th\xE0nh"
-  structureType: 0
+  structureType: 1
   structureCategory: 2
   costBuild:
     Wood: 0
