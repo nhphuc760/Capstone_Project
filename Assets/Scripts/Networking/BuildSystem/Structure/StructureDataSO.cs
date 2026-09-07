@@ -33,8 +33,13 @@ public class StructureDataSO : ScriptableObject
     public string _description;
     public StructureType structureType;
     public StructureCategory structureCategory;
-    public StructureCost costBuild;
+    //Build Requirement
+    [SerializeReference]
+    public StructRequirement[] buildRequirement;
     public GameObject prefabs;
+    //Upgrade Requirement
+    //[SerializeReference]
+    public StructLevelData[] levels;
  }
 
 

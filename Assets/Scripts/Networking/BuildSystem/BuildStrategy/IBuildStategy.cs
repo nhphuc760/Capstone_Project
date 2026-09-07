@@ -6,7 +6,8 @@ public  interface IBuildStategy
 {
     
     BuildValidationResult CanBuild(NetworkRunner runner,PlayerRef playerRef , Vector3Int cell);
-    void Build(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell);   
+    void Build(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell);
+    void Destroy(NetworkRunner runner, NetworkObject obj);
 }
 
 public struct BuildValidationResult

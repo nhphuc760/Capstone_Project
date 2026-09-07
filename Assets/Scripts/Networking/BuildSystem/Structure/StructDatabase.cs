@@ -17,7 +17,7 @@ public class StructDatabase : ScriptableObject
     [Button]
     public void BakeStructData()
     {
-        structsList = Resources.LoadAll<StructureDataSO>("").ToList();
+        structsList = Resources.LoadAll<StructureDataSO>("ScriptableObjects/StructData").ToList();
         Initialize();
     }
 

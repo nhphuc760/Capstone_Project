@@ -28,20 +28,21 @@ public class WallBuildStrategy : IBuildStategy
         if (!runner.IsServer) return;
         var walls = structureManager.WithPlayerRef(playerRef).WithType(StructureType.Wall).Get();
         
-        Utils.EditorLogOnly("wallsDoor Count = " + walls.Count);
         if (EnclosedChecker.CheckFromNewCell(cell, walls.Keys.ToHashSet(), out List<Vector3Int> enClosedList, _widthMap, _heightMap))
-        {                        
+        {
             Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, walls.Keys.ToHashSet());
+            Debug.Log($"Cell {cell}\t Door {doorPos}");
             StructureBase doorObj = runner.Spawn(doorSO.prefabs, doorPos + Vector3.one * 0.5f, Quaternion.identity, playerRef).GetBehaviour<StructureBase>();
             if (doorPos != cell)
             {
                 StructureBase wallAtDoorPos = walls[doorPos];
-                wallAtDoorPos.transform.position = cell + Vector3.one * 0.5f;                
+                wallAtDoorPos.Object.GetComponent<NetworkTransform>().Teleport(cell + Vector3.one * 0.5f);                
                 structureManager.SetStructure(doorPos, doorObj);
                 structureManager.SetStructure(cell, wallAtDoorPos);
             }
             else
             {
+                Debug.Log("Wall Không ở góc chết");
                 structureManager.SetStructure(cell, doorObj);
             }
             structureManager.SetEnclosedZone(playerRef, enClosedList);
@@ -135,5 +136,31 @@ public class WallBuildStrategy : IBuildStategy
         }
         return null;
     }
-    
+
+    NetworkObject _door;
+
+    public void Destroy(NetworkRunner runner, NetworkObject obj)
+    {
+
+        //if (obj == null || !obj.IsValid) return;
+
+        //var structEntry = structureManager.GetStructures().First(x => x.Value.Object == obj);
+
+        ////if (structEntry.Equals(defa))
+        ////{
+
+        ////}
+
+        //if (obj.TryGetBehaviour<Door>(out var door))
+        //{
+
+
+            
+
+        //}
+        //else if(obj.TryGetBehaviour<Wall>(out var wall))
+        //{ 
+        //    //if(EnclosedChecker.)
+        //}
+    }
 }

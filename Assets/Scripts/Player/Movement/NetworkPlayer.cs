@@ -7,16 +7,29 @@ using UnityEngine;
 using System.Linq;
 
 
-public class NetworkPlayer : NetworkBehaviour
+public struct NetworkResourcePlayer : INetworkStruct
+{
+    public int Wood;
+    public int IronOre;
+    public int CopperOre;
+    public int GoldOre;
+}
+
+public class NetworkPlayer : NetworkBehaviour, IAffector
 {
     public static NetworkPlayer Local { get; private set; }
+
+    [SerializeField] StatsBase baseStats;
+
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
+
+    public Stats Stats { get; private set; }
+
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
     [SerializeField] float jumpForce = 8f;
-    [SerializeField] float moveSpeed = 5f;
 
     [Networked] NetworkButtons previousInput { get; set; }
     public NetworkInventory inventory { get; private set; }
@@ -29,15 +42,16 @@ public class NetworkPlayer : NetworkBehaviour
 
     readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
-    [Networked] public int wood { get; set; }
-    [Networked] public int copperOre { get; set; }
-    [Networked] public int ironOre { get; set; }
-    [Networked] public int goldOre { get; set; }
-    public int pros { get; set; }
+    [Networked]
+    public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
     
+
+
+
+
 
     public void Awake()
     {
@@ -60,18 +74,30 @@ public class NetworkPlayer : NetworkBehaviour
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        equipTool = ToolType.Axe;
-
+        Stats = new Stats(baseStats);
+        Health ??= GetComponent<HealthComponent>();
+        Stamina ??= GetComponent<StaminaComponent>();
+        Health.Initialize(Stats);
+        Stamina.Initialize(Stats);
     }
 
-    
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && HasStateAuthority)
+        {
+            AddModifier(new TimeModifier(StatsType.Speed, ModifierType.Flat, 10, duration: 5f));
+        }
+    }
 
     public override void FixedUpdateNetwork()
     {
+
+        Stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * moveSpeed;
+            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.Speed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -82,7 +108,6 @@ public class NetworkPlayer : NetworkBehaviour
                 Debug.Log("SetTool FixedUpdate");
                 if (Object.HasStateAuthority)
                 {
-                    wood = 50;
                     equipTool = ToolType.Axe;
                 }
                 //RPC_TestSet();
@@ -184,18 +209,24 @@ public class NetworkPlayer : NetworkBehaviour
         switch (type)
         {
             case ResourceType.WOOD:
-                wood += amount;
+                resourcePlayer.Wood += amount;
                 break;
             case ResourceType.IRON:
-                ironOre += amount;
+                resourcePlayer.IronOre += amount;
                 break;
             case ResourceType.COPPER:
-                copperOre += amount;
+                resourcePlayer.CopperOre += amount;
                 break;
             case ResourceType.GOLD:
-                goldOre += amount;
+                resourcePlayer.GoldOre += amount;
                 break;
         }
 
     }
+
+    public void AddModifier(IModifier modifier)
+    {
+        Stats.AddModifier(modifier);
+    }   
+   
 }

@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 3641558622713172925}
   - component: {fileID: 3237204067203253375}
   - component: {fileID: 7078275431947282497}
-  - component: {fileID: 6149610226781775736}
   - component: {fileID: -3533347604012199926}
   - component: {fileID: 3893083561986623833}
+  - component: {fileID: -2486531027449734585}
   m_Layer: 0
   m_Name: Door
   m_TagString: Untagged
@@ -115,19 +115,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6149610226781775736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5172976552091184941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97803f2d3e8a09940ae71ef2652fb9b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Wall
-  StructureDataSO: {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}
 --- !u!114 &-3533347604012199926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,8 +132,8 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 6149610226781775736}
   - {fileID: 3893083561986623833}
+  - {fileID: -2486531027449734585}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &3893083561986623833
 MonoBehaviour:
@@ -165,3 +152,17 @@ MonoBehaviour:
   SyncParent: 0
   _autoAOIOverride: 1
   DisableSharedModeInterpolation: 0
+--- !u!114 &-2486531027449734585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5172976552091184941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b90d96ae529764b4b810666a150e2f4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Door
+  _Level: 2
+  StructureDataSO: {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}

@@ -31,9 +31,20 @@ public class StructureManager : NetworkBehaviour
        return enclosedZone.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key.FromKey()).ToList();
     }
 
+
+    public void ClearEnclosedZone(PlayerRef player)
+    {
+        if (!HasStateAuthority) return;
+        var keys = enclosedZone.Where(x => x.Value == player).Select(kvp => kvp.Key).ToList();
+        foreach (var k in keys)
+        {
+            enclosedZone.Remove(k);
+        }
+    }
     public void SetEnclosedZone(PlayerRef playerRef, List<Vector3Int> zones)
     {
-        if (!Object.HasStateAuthority) return;
+        if (!Object.HasStateAuthority) return;        
+
         foreach (var kvp in enclosedZone)
         {
             var key = kvp.Key;

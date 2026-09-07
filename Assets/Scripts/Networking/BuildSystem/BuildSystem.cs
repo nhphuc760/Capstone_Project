@@ -53,6 +53,7 @@ public class BuildSystem : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             PickStruct("1093");
+            
         }
 
 
@@ -60,7 +61,6 @@ public class BuildSystem : NetworkBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             // Request build
-            Utils.EditorLogOnly(_cellPos);
             if (buildValidationResult.Success)
             {
                 RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
