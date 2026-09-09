@@ -1,21 +1,3 @@
-<<<<<<< Updated upstream
-using UnityEngine;
-
-public class NetworkMoney : MonoBehaviour
-{
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-}
-=======
 using Fusion;
 using UnityEngine;
 
@@ -61,4 +43,3 @@ public class NetworkMoney : NetworkBehaviour
         return amount >= 0 && Money >= amount;
     }
 }
->>>>>>> Stashed changes

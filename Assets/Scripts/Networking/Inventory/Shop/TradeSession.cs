@@ -1,25 +1,7 @@
-<<<<<<< Updated upstream
-using UnityEngine;
-
-public class TradeSession : MonoBehaviour
-{
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-=======
 using Fusion;
 using UnityEngine;
 
-public class TradeSession : NetworkBehaviour
-{
-    public enum SessionState
+public enum SessionState
     {
         Waiting,
         Ready,
@@ -37,6 +19,8 @@ public class TradeSession : NetworkBehaviour
         Cancelled,
         Failed
     }
+public class TradeSession : NetworkBehaviour
+{
 
     private const int NoBidValue = -1;
 
@@ -285,6 +269,5 @@ public class TradeSession : NetworkBehaviour
         }
 
         return playerObject.GetComponent<NetworkInventory>();
->>>>>>> Stashed changes
     }
 }
