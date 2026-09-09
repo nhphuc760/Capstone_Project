@@ -1,13 +1,12 @@
-﻿using Firebase;
+﻿using System;
+using Firebase;
 using Firebase.Database;
 using Firebase.Extensions;
 using UnityEngine;
 
 public class Bootstrap : MonoBehaviour
 {
-    [SerializeField] FirstTimeSetup firstTimeSetup;
-
-
+    [SerializeField] FirstTimeSetup firstTimeSetup;    
     private void Awake()
     {
         // Bước 1: Kiểm tra các dependency (thư viện hệ thống phụ thuộc) trên thiết bị

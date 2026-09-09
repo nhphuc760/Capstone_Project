@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
   itemId: 2
   itemName: Wood
-  itemType: 2
+  itemType: 1
   icon: {fileID: 21300000, guid: decc33e0428e74349941f54fe6299753, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 1
