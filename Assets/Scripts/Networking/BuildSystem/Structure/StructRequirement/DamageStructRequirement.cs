@@ -23,7 +23,7 @@ public class DamageStructRequirement : StructRequirement
         return new UpgradeResult {Reason = UpgradeFailReason.NotEnoughDamage, Message = "Chưa gây đủ sát thương" };
     }
 
-    public override StructRequirement Clone(StructureBase structBase) 
+    public override StructRequirement CreateInstance(StructureBase structBase) 
     {
         if (structBase is not StructAttackBase structAttack)
         {

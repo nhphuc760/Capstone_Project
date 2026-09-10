@@ -31,7 +31,7 @@ public class ResourceRequirement : StructRequirement
         }
     }
 
-    public override StructRequirement Clone(StructureBase structBase)
+    public override StructRequirement CreateInstance(StructureBase structBase)
     {
         return new ResourceRequirement 
         { 

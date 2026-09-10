@@ -5,17 +5,15 @@ public class Door : StructureBase
 {
 
 
-
+    
     public override void Spawned()
     {
-        base.Spawned();
-        Debug.Log("Door spawn");
-        Debug.Log("Door Level: " + Level);
+        base.Spawned();             
     }
 
     public override void Operation()
     {
-       
+
     }
 
     public override void UpgradeLogic()
@@ -23,19 +21,7 @@ public class Door : StructureBase
         Debug.Log("Door upgrade");
     }
 
-    private void OnMouseDown()
-    {
-        Debug.Log("OnMouseDown: " + gameObject.name);
-        var canUpgrade = CanUpgrade();
-        if (canUpgrade.Success)
-        {
-            RPC_RequestUpgrade();
-        }
-        else
-        {
-            Debug.Log(canUpgrade.Message);
-        }
-    }
+    
 
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -55,5 +41,13 @@ public class Door : StructureBase
         }
     }
 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+
+    public void RPC_SetActiveNetworked(bool value)
+    {        
+       gameObject.SetActive(value);
+    }
+
+   
 
 }

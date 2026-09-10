@@ -1,20 +1,31 @@
+using Fusion;
 using UnityEngine;
+using UnityEngine.Localization.SmartFormat.Utilities;
+using WebSocketSharp;
 
 public interface IModifier
 {
-    StatsType TargetStat { get; }
-    int Priority { get; }
-    object Source{ get; }
+
+    ModifierDataSO ModifierDataSO { get; }
+    NetworkObject Source{ get; }
 
     int Apply(int currentValue, int baseValue);
 }
 
 public interface IAffector
 {
-    void AddModifier(IModifier modifier);
+    void AddModifier(string idMod, NetworkObject source);
+
 }
 
-public enum ModifierType 
+public enum ModifierType : byte
+{
+    StatModifier,
+    TimeModifier
+}
+
+
+public enum ModApplyType 
 {
     Flat,
     PercentAdd,

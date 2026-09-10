@@ -12,7 +12,7 @@ public abstract class StructRequirement
     }
 
 
-    public abstract StructRequirement Clone(StructureBase structBase);
+    public abstract StructRequirement CreateInstance(StructureBase structBase);
 
     public abstract UpgradeResult CheckRequirement();
 

@@ -65,7 +65,6 @@ public static class EnclosedChecker
         foreach (var dir in Dirs4)
         {
             Vector3Int neighbor = cell + dir;
-            Debug.Log("Neighbor: " + neighbor);
             if (neighbor.x >= 1 && neighbor.x < width - 1 && neighbor.z >= 1 && neighbor.z < height - 1)
             {
                 result.Add(neighbor);
@@ -97,24 +96,14 @@ public static class EnclosedChecker
             Vector3Int cur = stack.Pop();
             component.Add(cur);
             var neighbors = GetNeighborS4Cell(cur, width, height);
-            Debug.Log("Neighbors COunt = " + neighbors.Length);
-            if (neighbors.Length != 0)
-            {
-                foreach (var i in neighbors)
-                {
-                    Debug.Log($"Neighbor: {i}");
-                }
-            }
             foreach (var dir in neighbors)
             {
                 if (!walls.Contains(dir)) 
                 {
-                    Debug.Log($"Wall not contains {dir}");
                     continue; 
                 }
                 if (visited.Contains(dir)) 
                 {
-                    Debug.Log($"Wall already visited {dir}");
                     continue; 
                 }
                 visited.Add(dir);
@@ -133,17 +122,14 @@ public static class EnclosedChecker
         List<Vector3Int> component = GetConnectedComponent(cell, wallsWithNew, width, height);
 
         if (component.Count == 0){
-            Debug.Log("Component = 0");
             enclosedList = null;
             return false; 
         }
-        Debug.Log("Component Count = " + component.Count);
         BoudingBox boudingBox = GetBoundingCNC(component, width, height);
         int startX = boudingBox.startX;
         int startY = boudingBox.startY;
         int endX = boudingBox.endX;
         int endY = boudingBox.endY;
-        Debug.Log("Bounding Box: " + boudingBox.ToString());
         //flood fill
         HashSet<Vector3Int> reachable = new HashSet<Vector3Int>();
         Queue<Vector3Int> queue = new Queue<Vector3Int>();
@@ -159,8 +145,6 @@ public static class EnclosedChecker
             TryEnqueue(new Vector3Int(endX, 0, y), wallsWithNew, reachable, queue, boudingBox);
         }
 
-        Debug.Log("Reachable Count = " + reachable.Count);
-        Debug.Log("queue Count = " + queue.Count);
 
         // lan tỏa
         while (queue.Count > 0)
@@ -188,7 +172,6 @@ public static class EnclosedChecker
                 // Có vùng bị cô lập
             }
         }
-        Debug.Log("Enclosed Count: " + enclosedList.Count);
         return enclosedList.Count != 0;
     }
     static void TryEnqueue(Vector3Int cell, HashSet<Vector3Int> walls, HashSet<Vector3Int> reachable, Queue<Vector3Int> queue, BoudingBox boudingBox)

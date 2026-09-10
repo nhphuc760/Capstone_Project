@@ -2,7 +2,6 @@
 using Fusion;
 using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
-using Fusion.LagCompensation;
 using UnityEngine;
 using System.Linq;
 
@@ -74,7 +73,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats);
+        Stats = new Stats(baseStats, Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         Health.Initialize(Stats);
@@ -84,10 +83,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && HasStateAuthority)
+        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
         {
-            AddModifier(new TimeModifier(StatsType.Speed, ModifierType.Flat, 10, duration: 5f));
+            RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
         }
+
     }
 
     public override void FixedUpdateNetwork()
@@ -105,7 +105,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             }
             if (data.button.WasPressed(previousInput, ButtonType.EquipTool))
             {
-                Debug.Log("SetTool FixedUpdate");
                 if (Object.HasStateAuthority)
                 {
                     equipTool = ToolType.Axe;
@@ -130,7 +129,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
     }
 
 
-    public bool TryGather(ResourceNode nodeRes)
+    public bool TryGather(ResourceNode nodeRes, object source = null)
     {
         Debug.Log("TryGather");
         if (!Health.IsAlive)
@@ -222,11 +221,22 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
                 break;
         }
 
+    } 
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
+    {
+        NetworkObject source = null;
+        if (sourceID != default)
+        {
+            source = Runner.FindObject(sourceID);
+        }       
+        
+        AddModifier(modID.Value, source);
     }
 
-    public void AddModifier(IModifier modifier)
-    {
-        Stats.AddModifier(modifier);
-    }   
-   
+    public void AddModifier(string idMod, NetworkObject source = null)
+    {        
+        Stats.AddModifierById(idMod, source);
+    }  
 }

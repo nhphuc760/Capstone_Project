@@ -22,21 +22,24 @@ MonoBehaviour:
   structureType: 2
   structureCategory: 2
   buildRequirement:
-  - rid: -2
+  - rid: 2532482226284134474
   prefabs: {fileID: 5172976552091184941, guid: d2fcbdbbd1972d7499a34dc8e90159db, type: 3}
-  upgrades:
-  - LevelRequire: 1
-    requirements:
-    - rid: 2532482178405892177
+  levels:
+  - Level: 1
+    Stats:
+      stats:
+        _serializedList:
+        - Key: 2
+          Value: 10
+    upgradeRequirement:
+      requirements: []
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 2532482178405892177
+    - rid: 2532482226284134474
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
-        Wood: 10
-        IronOre: 1000
+        Wood: 0
+        IronOre: 0
         CopperOre: 0
         GoldOre: 0

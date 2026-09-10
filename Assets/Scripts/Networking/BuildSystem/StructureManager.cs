@@ -63,19 +63,14 @@ public class StructureManager : NetworkBehaviour
     {        
         StructureDataSO structureDataSO = _structDatabase.GetStructSO(_structDataID.Value);
         StructureType type = structureDataSO.structureType;
-        if (type == StructureType.Wall)
+        if (type == StructureType.Wall || type == StructureType.Door)
         {
 
             IBuildStategy @var = buildStategies.Find(s => s is WallBuildStrategy);
             if (@var != null)
             {
-                Debug.Log("Found existing WallBuildStrategy");
                 return @var;
-            }
-            else
-            {
-                Debug.Log("Creating new WallBuildStrategy");
-            }
+            }            
             IBuildStategy wallBuildStrategy = new WallBuildStrategy(
                 this,
                 100, 100,
@@ -110,10 +105,7 @@ public class StructureManager : NetworkBehaviour
     }
 
     public bool AddStructure(Vector3Int cell, StructureBase structureObject)
-    {
-        if (!Object.HasStateAuthority)
-            return false;
-
+    {       
         if (structureObject == null || structureObject.Object == null)
             return false;
 
@@ -123,10 +115,7 @@ public class StructureManager : NetworkBehaviour
     }
 
     public bool RemoveStructure(Vector3Int cell)
-    {
-        if (!Object.HasStateAuthority)
-            return false;
-
+    {        
         int hash = cell.ToKey();
 
         return structures.Remove(hash);

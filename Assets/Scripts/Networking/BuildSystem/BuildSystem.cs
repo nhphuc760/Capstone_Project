@@ -58,7 +58,7 @@ public class BuildSystem : NetworkBehaviour
 
 
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && _curStructureSO != null)
         {
             // Request build
             if (buildValidationResult.Success)
@@ -68,7 +68,6 @@ public class BuildSystem : NetworkBehaviour
             else
             {
                 buildFailReason?.Invoke(buildValidationResult);
-                Utils.EditorLogOnly(buildValidationResult.Message);
             }
         }
 
@@ -121,7 +120,6 @@ public class BuildSystem : NetworkBehaviour
         {
 
             BuildValidationResult buildValidation = buildStrategy.CanBuild(Runner, Object.InputAuthority, buildPos);
-            Debug.Log("Check CanBuild");
             if (buildValidation.Success)
             {
                 Utils.EditorLogOnly("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");

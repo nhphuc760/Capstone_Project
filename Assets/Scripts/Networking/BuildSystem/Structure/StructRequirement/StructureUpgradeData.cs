@@ -11,41 +11,80 @@ public class StructureUpgradeData : StructRequirement
 
     public override UpgradeResult CheckRequirement()
     {
-        foreach (var i in requirements)
+        // An toàn khi requirements null hoặc rỗng
+        if (requirements == null || requirements.Length == 0)
         {
-            UpgradeResult result = i.CheckRequirement();
-            if(!result.Success) return result;
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.None,
+                Message = ""
+            };
         }
-        return new UpgradeResult { Reason = UpgradeFailReason.None, Message = "" };
+
+        foreach (var req in requirements)
+        {
+            // Bỏ qua phần tử null
+            if (req == null) continue;
+
+            UpgradeResult result = req.CheckRequirement();
+            if (!result.Success)
+                return result;
+        }
+
+        return new UpgradeResult
+        {
+            Reason = UpgradeFailReason.None,
+            Message = ""
+        };
     }
 
-    public override StructRequirement Clone(StructureBase structBase)
+    public override StructRequirement CreateInstance(StructureBase structBase)
     {
-        this.structAuthority = structBase;
-        return new StructureUpgradeData
+        // Không mutate object gốc
+        var clone = new StructureUpgradeData
         {
-            structAuthority = structBase,
-            //cost = this.cost.Clone(structBase) as ResourceRequirement,
-            requirements = this.requirements.Select(x => x.Clone(structBase)).ToArray()
+            structAuthority = structBase
         };
+
+        // Clone requirements an toàn
+        if (requirements == null || requirements.Length == 0)
+        {
+            clone.requirements = Array.Empty<StructRequirement>();
+            return clone;
+        }
+
+        // Lọc null + clone từng phần tử
+        clone.requirements = requirements
+            .Where(x => x != null)
+            .Select(x => x.CreateInstance(structBase))
+            .Where(x => x != null)          // phòng trường hợp Clone trả về null
+            .ToArray();
+
+        return clone;
     }
 
     public override void Destroy()
     {
-        foreach (var i in requirements)
+        if (requirements == null) return;
+
+        foreach (var req in requirements)
         {
-            i.Destroy();
+            req?.Destroy();
         }
 
+        requirements = null;
     }
 
     public override string Information()
     {
-        string s = string.Empty;
-        foreach (var i in requirements)
-        {
-            s += i.Information() + '\n';
-        }
-        return s.TrimEnd('\n');
+        if (requirements == null || requirements.Length == 0)
+            return string.Empty;
+
+        return string.Join("\n",
+            requirements
+                .Where(x => x != null)
+                .Select(x => x.Information())
+                .Where(s => !string.IsNullOrEmpty(s))
+        );
     }
 }

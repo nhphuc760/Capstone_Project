@@ -6,5 +6,5 @@ public class StructLevelData
 {
     public int Level;
     public StatsBase Stats;
-    public StructureUpgradeData[] upgrades;
+    public StructureUpgradeData upgradeRequirement;
 }

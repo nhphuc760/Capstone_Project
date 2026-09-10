@@ -2,11 +2,14 @@
 using System.Linq;
 using Fusion;
 using Unity.VisualScripting;
+using UnityEngine;
 
 public abstract class StructureBase : NetworkBehaviour
 {
     [Networked]
     public int Level {  get; set; }
+    [Networked] 
+    NetworkBool IsUpgradeable {  get; set; }
     public StructureDataSO StructureDataSO;
     StructureUpgradeData _currentUpgradeData;
     //public StructureManager Manager { get; set; }
@@ -15,34 +18,121 @@ public abstract class StructureBase : NetworkBehaviour
     public override void Spawned()
     {
         base.Spawned();
+
         Level = 1;
-        _currentUpgradeData = StructureDataSO.levels.First().upgrades.First().Clone(this) as StructureUpgradeData;
+        IsUpgradeable = false;
+        _currentUpgradeData = null;
+
+        if (StructureDataSO == null || StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
+            return;
+
+        var firstLevelData = StructureDataSO.levels[0];
+        if (firstLevelData == null || firstLevelData.upgradeRequirement == null)
+            return;
+
+        _currentUpgradeData = firstLevelData.upgradeRequirement.CreateInstance(this) as StructureUpgradeData;
+        IsUpgradeable = _currentUpgradeData != null;
     }
 
     public UpgradeResult CanUpgrade()
     {
-        if (StructureDataSO.levels[Level - 1] == null || StructureDataSO.levels[Level - 1].upgrades.Length == 0) 
-            return new UpgradeResult { Reason = UpgradeFailReason.NonUpgradable, Message = "" };
-
-        if (Level > StructureDataSO.levels[Level - 1].upgrades.Length)
+        if (StructureDataSO == null || StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
         {
-            return new UpgradeResult { Reason = UpgradeFailReason.MaxLevel, Message = "Công trình đã đạt cấp tối đa" };
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.NonUpgradable,
+                Message = "Công trình này không thể nâng cấp"
+            };
         }
 
+
+
+        if (Level >= StructureDataSO.levels.Length)
+        {
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.MaxLevel,
+                Message = "Công trình đã đạt cấp tối đa"
+            };
+        }
+        if (Level < 1)
+        {
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.NonUpgradable,
+                Message = "Level không hợp lệ"
+            };
+        }
+
+        var nextLevelData = StructureDataSO.levels[Level]; // index = Level (vì Level bắt đầu từ 1)
+        if (nextLevelData == null || nextLevelData.upgradeRequirement == null)
+        {
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.NonUpgradable,
+                Message = "Không có dữ liệu nâng cấp cho cấp tiếp theo"
+            };
+        }
+
+        // 5. Chưa khởi tạo được _currentUpgradeData
+        if (_currentUpgradeData == null)
+        {
+            return new UpgradeResult
+            {
+                Reason = UpgradeFailReason.NonUpgradable,
+                Message = "Không thể nâng cấp"
+            };
+        }
 
         return _currentUpgradeData.CheckRequirement();
     }
+    /// <summary>
+    /// Nâng cấp an toàn. Chỉ chạy khi CanUpgrade() thành công.
+    /// </summary>
     public void Upgrade()
     {
-        if (!Object.HasStateAuthority) return;
-        if (CanUpgrade().Success)
+        if (!Object.HasStateAuthority)
+            return;
+
+        UpgradeResult result = CanUpgrade();
+        if (!result.Success)
         {
-            Level++;
-            _currentUpgradeData.Destroy();
-
-            _currentUpgradeData = StructureDataSO.levels[Level - 1].upgrades[Level - 1]?.Clone(this) as StructureUpgradeData;
-
+            Debug.LogWarning($"[StructureBase] Không thể nâng cấp: {result.Message} ({result.Reason})");
+            return;
         }
+
+        // Tăng level
+        Level++;
+
+        // Hủy requirement cũ
+        if (_currentUpgradeData != null)
+        {
+            _currentUpgradeData.Destroy();
+            _currentUpgradeData = null;
+        }
+
+        // Gán requirement mới cho level vừa đạt được (nếu còn level tiếp theo)
+        if (Level < StructureDataSO.levels.Length)
+        {
+            var nextLevelData = StructureDataSO.levels[Level];
+            if (nextLevelData != null && nextLevelData.upgradeRequirement != null)
+            {
+                _currentUpgradeData = nextLevelData.upgradeRequirement.CreateInstance(this) as StructureUpgradeData;
+                IsUpgradeable = _currentUpgradeData != null;
+            }
+            else
+            {
+                IsUpgradeable = false;
+            }
+        }
+        else
+        {
+            // Đã max level
+            IsUpgradeable = false;
+        }
+
+        // Gọi logic nâng cấp riêng của từng loại công trình
+        UpgradeLogic();
     }
 
     public virtual void Destroy()
@@ -53,6 +143,13 @@ public abstract class StructureBase : NetworkBehaviour
 
     public abstract void UpgradeLogic();
 
+    private void OnMouseDown()
+    {
+        if (Runner.LocalPlayer != Object.InputAuthority) return;
+        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id);
+        Debug.Log("Strategy: " + strategy != null ? strategy.GetType().Name : "null");
+        strategy.Destroy(Runner, Object);
+    }
 }
 
 

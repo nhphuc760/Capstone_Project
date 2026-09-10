@@ -28,7 +28,7 @@ public class LevelStructRequirement : StructRequirement
         }
     }
 
-    public override StructRequirement Clone(StructureBase structBase)
+    public override StructRequirement CreateInstance(StructureBase structBase)
     {
         return new LevelStructRequirement
         {

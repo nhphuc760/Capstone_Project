@@ -29,14 +29,27 @@ public class WallBuildStrategy : IBuildStategy
         var walls = structureManager.WithPlayerRef(playerRef).WithType(StructureType.Wall).Get();
         
         if (EnclosedChecker.CheckFromNewCell(cell, walls.Keys.ToHashSet(), out List<Vector3Int> enClosedList, _widthMap, _heightMap))
-        {
+        {           
+
             Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, walls.Keys.ToHashSet());
-            Debug.Log($"Cell {cell}\t Door {doorPos}");
-            StructureBase doorObj = runner.Spawn(doorSO.prefabs, doorPos + Vector3.one * 0.5f, Quaternion.identity, playerRef).GetBehaviour<StructureBase>();
+            StructureBase doorObj;
+            if (Door != null)
+            {
+                Door.RPC_SetActiveNetworked(true);
+                doorObj = this.Door;                
+            }
+            else
+            {
+                doorObj = runner.Spawn(doorSO.prefabs, doorPos + Vector3.one * 0.5f, Quaternion.identity, playerRef).GetBehaviour<StructureBase>();
+            }
+
+            doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + Vector3.one * 0.5f);
+
             if (doorPos != cell)
             {
                 StructureBase wallAtDoorPos = walls[doorPos];
-                wallAtDoorPos.Object.GetComponent<NetworkTransform>().Teleport(cell + Vector3.one * 0.5f);                
+                wallAtDoorPos.Object.GetComponent<NetworkTransform>().Teleport(cell + Vector3.one * 0.5f);   
+                
                 structureManager.SetStructure(doorPos, doorObj);
                 structureManager.SetStructure(cell, wallAtDoorPos);
             }
@@ -137,30 +150,93 @@ public class WallBuildStrategy : IBuildStategy
         return null;
     }
 
-    NetworkObject _door;
 
     public void Destroy(NetworkRunner runner, NetworkObject obj)
     {
+        Debug.Log("Destroy called");
 
-        //if (obj == null || !obj.IsValid) return;
+        if (!runner.IsServer) return;
+        if(obj == null) return;
 
-        //var structEntry = structureManager.GetStructures().First(x => x.Value.Object == obj);
-
-        ////if (structEntry.Equals(defa))
-        ////{
-
-        ////}
-
-        //if (obj.TryGetBehaviour<Door>(out var door))
-        //{
+        //Tìm cell của object bị destroy
 
 
-            
+        var structures = structureManager.WithPlayerRef(obj.InputAuthority).WithCategory(StructureCategory.Defense).Get(); // lấy wallandoors
+        var structureEntry = structures.FirstOrDefault(x => x.Value.Object == obj);
 
-        //}
-        //else if(obj.TryGetBehaviour<Wall>(out var wall))
-        //{ 
-        //    //if(EnclosedChecker.)
-        //}
+        if(structureEntry.Value == null)
+        {
+            Debug.LogWarning("Không tìm thấy Structure tương ứng");
+            return;
+        }
+        Vector3Int cell = structureEntry.Key;
+        StructureBase structure = structureEntry.Value;       
+        //Xử lý door
+        if (obj.TryGetBehaviour<Door>(out var door))
+        {
+            Debug.Log("Despawn Door");
+            structureManager.ClearEnclosedZone(obj.InputAuthority);
+            structureManager.RemoveStructure(cell);
+            this.Door = null;
+            runner.Despawn(obj);
+            return;
+        }
+
+        //Xử lý wall
+        var wallsAndDoor = structures.Where(kvp => {
+            StructureType type = kvp.Value.StructureDataSO.structureType;
+            return type == StructureType.Wall || type == StructureType.Door;
+        }).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+
+        var temporaryDisableDoor = wallsAndDoor.FirstOrDefault(kvp => kvp.Value.StructureDataSO.structureType == StructureType.Door);
+        var Door = temporaryDisableDoor.Value as Door;
+
+        HashSet<Vector3Int> wallCells = wallsAndDoor.Keys.ToHashSet();        
+        if (obj.TryGetBehaviour<Wall>(out var wall))
+        {          
+            wallCells.Remove(cell);
+
+            bool stillEnclosed = false;
+            List<Vector3Int> newEnclosedList = new List<Vector3Int>();
+            if(wallCells.Count > 0)
+            {
+                Vector3Int anyCell = wallCells.First();
+                stillEnclosed = EnclosedChecker.CheckFromNewCell
+                    (
+                    anyCell,
+                    wallCells,
+                    out newEnclosedList,
+                    _widthMap,
+                    _heightMap
+                    );
+            }
+
+            if (!stillEnclosed)
+            {
+                structureManager.ClearEnclosedZone(obj.InputAuthority);
+
+                if (Door != null)
+                {
+                    Debug.Log("Set door active false");
+                    wallCells.Remove(temporaryDisableDoor.Key);
+                    Door.RPC_SetActiveNetworked(false);
+                    this.Door = Door;
+                    structureManager.RemoveStructure(temporaryDisableDoor.Key);
+                }
+                Debug.Log("Vòng kín bị phá vỡ -> Clear EnclosedList");
+            }
+            else
+            {
+                structureManager.SetEnclosedZone(obj.InputAuthority, newEnclosedList);
+            }
+
+            structureManager.RemoveStructure(cell);
+            runner.Despawn(obj);
+
+        }
     }
+
+
+    Door Door;
 }
