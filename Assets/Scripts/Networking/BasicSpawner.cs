@@ -114,9 +114,10 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
         //}
         if (runner.IsServer)
         {
-            runner.Spawn(playerPrefabs, Vector3.zero, Quaternion.identity, player, (runner, obj) => 
+            runner.Spawn(playerPrefabs, new Vector3(10f, 1, 10f), Quaternion.identity, player, (runner, obj) => 
             {
                 obj.name = player.ToString();
+                runner.SetPlayerObject(player, obj);
             });
         }
     }

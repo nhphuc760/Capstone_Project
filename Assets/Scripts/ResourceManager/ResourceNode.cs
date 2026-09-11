@@ -21,8 +21,7 @@ public enum ToolType
 
 
 public class ResourceNode : NetworkBehaviour
-{
-    [Networked] public Vector3 postition { get; set; }
+{   
 
     [SerializeField] ResourceType resourceType;
     [SerializeField] ToolType requiredTool = ToolType.None;
@@ -48,10 +47,6 @@ public class ResourceNode : NetworkBehaviour
 
     public override void Spawned()
     {
-        if (!Object.HasStateAuthority)
-        {
-            transform.position = postition;
-        }
         CurrentAmount = maxAmount;
     }
 
