@@ -1,5 +1,6 @@
 using UnityEngine;
 using Fusion;
+using System;
 
 public struct InventoryItem : INetworkStruct
 {
@@ -18,11 +19,13 @@ public struct InventoryItem : INetworkStruct
         itemID == 0 || amount <= 0;
 }
 
+
+
 public class NetworkInventory : NetworkBehaviour
 {
     [Header("Inventory")]
     [SerializeField]
-    private const int capacity = 30;
+    private const int capacity = 20;
 
 
     [Header("Database")]
@@ -31,6 +34,7 @@ public class NetworkInventory : NetworkBehaviour
 
 
     [Networked, Capacity(capacity)]
+    [OnChangedRender(nameof(OnChangeRender))]
     private NetworkArray<InventoryItem> Items => default;
 
 
@@ -39,6 +43,15 @@ public class NetworkInventory : NetworkBehaviour
 
     public ItemDatabase Database => database;
 
+    public event Action OnInventoryChanged;
+
+
+
+    void OnChangeRender()
+    {
+        Debug.Log("Inventory Change Render");
+        OnInventoryChanged?.Invoke();
+    }
 
     public override void Spawned()
     {
@@ -52,6 +65,18 @@ public class NetworkInventory : NetworkBehaviour
                 $"{name}: ItemDatabase is not assigned."
             );
         }
+    }
+
+
+    private void Update()
+    {
+        //Test
+        if (Input.GetKeyDown(KeyCode.T) && HasInputAuthority)
+        {
+            RPC_AddItem(1, 10);
+        }
+        
+
     }
 
     #region Host add item
@@ -135,8 +160,6 @@ public class NetworkInventory : NetworkBehaviour
                 emptySlot,
                 new InventoryItem(itemID, amountToAdd)
             );
-
-
             amount -= amountToAdd;
         }
 
@@ -191,8 +214,6 @@ public class NetworkInventory : NetworkBehaviour
 
 
             Items.Set(i, slot);
-
-
             if (amount <= 0)
                 return true;
         }
@@ -257,6 +278,11 @@ public class NetworkInventory : NetworkBehaviour
 
 
         return database.GetItem(slot.itemID);
+    }
+
+    public ItemSO GetItemDataByID(int _id)
+    {
+        return database.GetItem(_id);
     }
 
     // FIND EMPTY SLOT
