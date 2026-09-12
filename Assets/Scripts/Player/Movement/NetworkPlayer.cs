@@ -2,21 +2,33 @@
 using Fusion;
 using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
-using Fusion.LagCompensation;
 using UnityEngine;
 using System.Linq;
 
 
-public class NetworkPlayer : NetworkBehaviour
+public struct NetworkResourcePlayer : INetworkStruct
+{
+    public int Wood;
+    public int IronOre;
+    public int CopperOre;
+    public int GoldOre;
+}
+
+public class NetworkPlayer : NetworkBehaviour, IAffector
 {
     public static NetworkPlayer Local { get; private set; }
+
+    [SerializeField] StatsBase baseStats;
+
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
+
+    public Stats Stats { get; private set; }
+
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
     [SerializeField] float jumpForce = 8f;
-    [SerializeField] float moveSpeed = 5f;
 
     [Networked] NetworkButtons previousInput { get; set; }
     public NetworkInventory inventory { get; private set; }
@@ -27,16 +39,17 @@ public class NetworkPlayer : NetworkBehaviour
     [Networked] public ToolType equipTool { get; set; }
     [Networked] TickTimer mineIntervalTimer { get; set; }
 
-    readonly List<LagCompensatedHit> hits = new List<LagCompensatedHit>(5);
+    readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
-    [Networked] public int wood { get; set; }
-    [Networked] public int copperOre { get; set; }
-    [Networked] public int ironOre { get; set; }
-    [Networked] public int goldOre { get; set; }
-    public int pros { get; set; }
+    [Networked]
+    public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
+
+
+
+
 
 
     public void Awake()
@@ -60,28 +73,56 @@ public class NetworkPlayer : NetworkBehaviour
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        equipTool = ToolType.Axe;
+        Stats = new Stats(baseStats, Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        Health ??= GetComponent<HealthComponent>();
+        Stamina ??= GetComponent<StaminaComponent>();
+        Health.Initialize(Stats);
+        Stamina.Initialize(Stats);
+
+        if (HasInputAuthority)
+        {
+
+            //Subcribe Inventory Event
+            var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
+            Debug.Log(inventoryUI.gameObject.name);
+            Debug.Log("InventoryUI: " + inventoryUI == null);
+            if (inventoryUI != null)
+            {
+                Debug.Log("Register event InventoryChanged");
+                inventoryUI.SetInventory(inventory);
+                inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
+            }
+
+
+            //Subcribe RadialMenu event
+            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+            if (radialmenu != null)
+            {
+                radialmenu.onSelectIndex += OnRadialMenuSelected;
+            }
+        }
+
 
     }
 
 
     private void Update()
     {
-        //if (!Object.HasInputAuthority) return;
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
         {
-            Debug.Log("SetTool update");
-            equipTool = ToolType.Axe;
+            RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
         }
-    }
 
+    }
 
     public override void FixedUpdateNetwork()
     {
+
+        Stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * moveSpeed;
+            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.Speed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -89,10 +130,8 @@ public class NetworkPlayer : NetworkBehaviour
             }
             if (data.button.WasPressed(previousInput, ButtonType.EquipTool))
             {
-                Debug.Log("SetTool FixedUpdate");
                 if (Object.HasStateAuthority)
                 {
-                    wood = 50;
                     equipTool = ToolType.Axe;
                 }
                 //RPC_TestSet();
@@ -107,10 +146,36 @@ public class NetworkPlayer : NetworkBehaviour
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
         }
+
+        if (transform.position.y <= -10f)
+        {
+            controller.SetPosition(Vector3.one);
+        }
     }
 
+    private void OnDestroy()
+    {
+        if (HasInputAuthority)
+        {
+            if (inventory)
+            {
+                var InventoryUI = GetComponentInChildren<InventoryUI>();
 
-    public bool TryGather(ResourceNode nodeRes)
+                if (InventoryUI != null)
+                {
+                    inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
+                }
+            }
+            var radialMenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+            if (radialMenu != null)
+            {
+                radialMenu.onSelectIndex -= OnRadialMenuSelected;
+            }
+
+        }
+    }
+
+    public bool TryGather(ResourceNode nodeRes, object source = null)
     {
         Debug.Log("TryGather");
         if (!Health.IsAlive)
@@ -142,7 +207,7 @@ public class NetworkPlayer : NetworkBehaviour
             return false;
         }
 
-        Vector3 dirToNode =( nodeRes.transform.position - transform.position).normalized;
+        Vector3 dirToNode = (nodeRes.transform.position - transform.position).normalized;
         if (!(Vector3.Dot(dirToNode, transform.forward) > 0))
         {
             Debug.Log("Player không úp mặt vào node");
@@ -168,13 +233,13 @@ public class NetworkPlayer : NetworkBehaviour
             Vector3 center = transform.position + Vector3.up * .5f;
             Vector3 extents = new Vector3(gatherRanged, 1f, gatherRanged);
             DrawLog.DrawCube(center, extents, Color.red);
-            int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, hits, 1 << 9, HitOptions.IncludePhysX, true);
+            int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, resourcesHit, 1 << 9, HitOptions.IncludePhysX, true);
             if (hitsCount == 0) return;
             HashSet<ResourceNode> test = new HashSet<ResourceNode>();
-            test = hits.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
+            test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
             foreach (var i in test)
             {
-                Debug.Log("Collider Hit: " + i.transform.name);              
+                Debug.Log("Collider Hit: " + i.transform.name);
                 Debug.Log($"Node != null ? {i != null}");
                 TryGather(i);
             }
@@ -189,18 +254,63 @@ public class NetworkPlayer : NetworkBehaviour
         switch (type)
         {
             case ResourceType.WOOD:
-                wood += amount;
+                resourcePlayer.Wood += amount;
                 break;
             case ResourceType.IRON:
-                ironOre += amount;
+                resourcePlayer.IronOre += amount;
                 break;
             case ResourceType.COPPER:
-                copperOre += amount;
+                resourcePlayer.CopperOre += amount;
                 break;
             case ResourceType.GOLD:
-                goldOre += amount;
+                resourcePlayer.GoldOre += amount;
                 break;
         }
 
     }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
+    {
+        NetworkObject source = null;
+        if (sourceID != default)
+        {
+            source = Runner.FindObject(sourceID);
+        }
+
+        AddModifier(modID.Value, source);
+    }
+
+    public void AddModifier(string idMod, NetworkObject source = null)
+    {
+        Stats.AddModifierById(idMod, source);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestUseTool(ToolType toolUse)
+    {
+        equipTool = toolUse;
+    }
+
+    void OnRadialMenuSelected(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                RPC_RequestUseTool(ToolType.Screwdriver);
+                break;
+            case 1:
+                RPC_RequestUseTool(ToolType.PickAxe);
+                break;
+            case 2:
+                RPC_RequestUseTool(ToolType.None);
+                break;
+            case 3:
+                RPC_RequestUseTool(ToolType.Axe);
+                break;
+        }
+    }
+
+
+
 }

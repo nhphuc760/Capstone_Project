@@ -22,7 +22,7 @@ MonoBehaviour:
   maxSmoothUnscaledTime: 0.15
   rewindCallbackMode: 0
   showUnityEditorReport: 0
-  logBehaviour: 0
+  logBehaviour: 2
   drawGizmos: 1
   defaultRecyclable: 0
   defaultAutoPlay: 3
@@ -41,7 +41,7 @@ MonoBehaviour:
     showPanel: 0
     audioEnabled: 1
     physicsEnabled: 1
-    physics2DEnabled: 1
+    physics2DEnabled: 0
     spriteEnabled: 1
     uiEnabled: 1
     uiToolkitEnabled: 1
@@ -49,7 +49,7 @@ MonoBehaviour:
     tk2DEnabled: 0
     deAudioEnabled: 0
     deUnityExtendedEnabled: 0
-    epoOutlineEnabled: 1
+    epoOutlineEnabled: 0
   createASMDEF: 0
   showPlayingTweens: 0
   showPausedTweens: 0
