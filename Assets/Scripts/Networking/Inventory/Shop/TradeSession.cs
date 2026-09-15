@@ -1,40 +1,29 @@
 using Fusion;
 using UnityEngine;
 
-public enum SessionState
-    {
-        Waiting,
-        Ready,
-        Running,
-        Finished,
-        Cancelled
-    }
+public enum TradeSessionState
+{
+    None,
+    Active,
+    Completed,
+    Cancelled
+}
 
-    public enum AuctionResult
-    {
-        None,
-        Sold,
-        NoBid,
-        Tie,
-        Cancelled,
-        Failed
-    }
+public enum Bidder
+{
+    None,
+    Player_1,
+    Player_2
+}
+
 public class TradeSession : NetworkBehaviour
 {
-
-    private const int NoBidValue = -1;
-
-    [Networked]
-    public SessionState State { get; private set; }
+    // =========================================================
+    // NETWORKED SESSION STATE
+    // =========================================================
 
     [Networked]
-    public AuctionResult Result { get; private set; }
-
-    [Networked]
-    public PlayerRef PlayerA { get; private set; }
-
-    [Networked]
-    public PlayerRef PlayerB { get; private set; }
+    public TradeSessionState State { get; private set; }
 
     [Networked]
     public int ItemID { get; private set; }
@@ -43,231 +32,655 @@ public class TradeSession : NetworkBehaviour
     public int ItemAmount { get; private set; }
 
     [Networked]
-    public int PlayerABid { get; private set; }
+    public int CurrentBid { get; private set; }
 
     [Networked]
-    public int PlayerBBid { get; private set; }
+    public Bidder CurrentBidder { get; private set; }
+
+
+    // =========================================================
+    // NETWORKED PLAYERS
+    // =========================================================
 
     [Networked]
-    public PlayerRef Winner { get; private set; }
+    public PlayerRef Player1 { get; private set; }
 
     [Networked]
-    public int WinningBid { get; private set; }
+    public PlayerRef Player2 { get; private set; }
 
-    [Header("Trade")]
-    [SerializeField]
-    private ItemDatabase database;
+
+    // =========================================================
+    // LOCAL HELPERS
+    // =========================================================
+
+    public bool IsActive =>
+        State == TradeSessionState.Active;
+
+    public bool IsCompleted =>
+        State == TradeSessionState.Completed;
+
+    public bool IsCancelled =>
+        State == TradeSessionState.Cancelled;
+
+
+    // =========================================================
+    // SPAWNED
+    // =========================================================
 
     public override void Spawned()
     {
         base.Spawned();
 
-        if (database == null)
-        {
-            database = Resources.Load<ItemDatabase>("ItemData");
-
-            if (database == null)
-            {
-                Debug.LogError($"{name}: ItemDatabase not found.");
-            }
-        }
-    }
-
-    public bool Setup(PlayerRef playerA, PlayerRef playerB, int itemID, int itemAmount = 1)
-    {
         if (!Object.HasStateAuthority)
-            return false;
+            return;
 
-        if (!playerA.IsRealPlayer || !playerB.IsRealPlayer || playerA == playerB)
-            return false;
+        State = TradeSessionState.None;
 
-        if (itemAmount <= 0)
-            return false;
+        ItemID = 0;
+        ItemAmount = 0;
 
-        if (database == null || database.GetItem(itemID) == null)
-            return false;
+        CurrentBid = 0;
+        CurrentBidder = Bidder.None;
 
-        PlayerA = playerA;
-        PlayerB = playerB;
-        ItemID = itemID;
-        ItemAmount = itemAmount;
-        PlayerABid = NoBidValue;
-        PlayerBBid = NoBidValue;
-        Winner = default;
-        WinningBid = 0;
-        Result = AuctionResult.None;
-        State = SessionState.Ready;
-
-        return true;
-    }
-
-    public bool StartAuction()
-    {
-        if (!Object.HasStateAuthority)
-            return false;
-
-        if (State != SessionState.Ready)
-            return false;
-
-        State = SessionState.Running;
-        Result = AuctionResult.None;
-
-        return true;
-    }
-
-    public bool PlaceBid(PlayerRef player, int bidAmount)
-    {
-        if (!Object.HasStateAuthority)
-            return false;
-
-        if (State != SessionState.Running)
-            return false;
-
-        if (bidAmount <= 0)
-            return false;
-
-        if (player == PlayerA)
-        {
-            PlayerABid = bidAmount;
-            return true;
-        }
-
-        if (player == PlayerB)
-        {
-            PlayerBBid = bidAmount;
-            return true;
-        }
-
-        return false;
-    }
-
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_PlaceBid(int bidAmount, RpcInfo info = default)
-    {
-        PlaceBid(info.Source, bidAmount);
-    }
-
-    public bool FinishAuction()
-    {
-        if (!Object.HasStateAuthority)
-            return false;
-
-        if (State != SessionState.Running)
-            return false;
-
-        PlayerRef winner;
-        int winningBid;
-
-        if (!TryGetWinner(out winner, out winningBid))
-        {
-            State = SessionState.Finished;
-            return false;
-        }
-
-        NetworkInventory inventory = GetInventory(winner);
-
-        if (inventory == null)
-        {
-            Debug.LogWarning($"TRADE FAILED | Winner={winner} has no NetworkInventory.");
-            Result = AuctionResult.Failed;
-            State = SessionState.Finished;
-            return false;
-        }
-
-        if (!inventory.Object.HasStateAuthority)
-        {
-            Debug.LogWarning($"TRADE FAILED | Winner={winner} inventory has no state authority.");
-            Result = AuctionResult.Failed;
-            State = SessionState.Finished;
-            return false;
-        }
-
-        if (database == null || database.GetItem(ItemID) == null)
-        {
-            Debug.LogWarning($"TRADE FAILED | ItemID={ItemID} not found in TradeSession database.");
-            Result = AuctionResult.Failed;
-            State = SessionState.Finished;
-            return false;
-        }
-
-        if (!inventory.AddItem(ItemID, ItemAmount))
-        {
-            Debug.LogWarning(
-                $"TRADE FAILED | Could not add Item={ItemID} x{ItemAmount} to Winner={winner} inventory."
-            );
-            Result = AuctionResult.Failed;
-            State = SessionState.Finished;
-            return false;
-        }
-
-        Winner = winner;
-        WinningBid = winningBid;
-        Result = AuctionResult.Sold;
-        State = SessionState.Finished;
+        Player1 = PlayerRef.None;
+        Player2 = PlayerRef.None;
 
         Debug.Log(
-            $"TRADE SOLD | Winner={winner} | Item={ItemID} x{ItemAmount} | Bid={winningBid}"
+            "[TradeSession] Spawned and initialized."
         );
-
-        return true;
     }
 
-    public bool Cancel()
+
+    // =========================================================
+    // START SESSION
+    // =========================================================
+
+    public void StartSession(
+        PlayerRef player1,
+        PlayerRef player2,
+        int itemID,
+        int itemAmount,
+        int startingBid)
     {
         if (!Object.HasStateAuthority)
-            return false;
+            return;
 
-        if (State == SessionState.Finished ||
-            State == SessionState.Cancelled)
+        // -----------------------------------------------------
+        // VALIDATION
+        // -----------------------------------------------------
+
+        if (State != TradeSessionState.None)
         {
-            return false;
+            Debug.LogWarning(
+                "[TradeSession] Cannot start session. " +
+                $"Current State={State}"
+            );
+
+            return;
         }
 
-        Result = AuctionResult.Cancelled;
-        State = SessionState.Cancelled;
+        if (player1 == PlayerRef.None)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Player1 is invalid."
+            );
 
-        return true;
+            return;
+        }
+
+        if (player2 == PlayerRef.None)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Player2 is invalid."
+            );
+
+            return;
+        }
+
+        if (player1 == player2)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Player1 and Player2 " +
+                "cannot be the same."
+            );
+
+            return;
+        }
+
+        if (itemID <= 0)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Invalid ItemID."
+            );
+
+            return;
+        }
+
+        if (itemAmount <= 0)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Invalid ItemAmount."
+            );
+
+            return;
+        }
+
+        if (startingBid < 0)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Starting bid cannot be negative."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // SET SESSION DATA
+        // -----------------------------------------------------
+
+        Player1 = player1;
+        Player2 = player2;
+
+        ItemID = itemID;
+        ItemAmount = itemAmount;
+
+        CurrentBid = startingBid;
+        CurrentBidder = Bidder.None;
+
+        State = TradeSessionState.Active;
+
+        Debug.Log(
+            $"[TradeSession] Started | " +
+            $"Player1={Player1} | " +
+            $"Player2={Player2} | " +
+            $"ItemID={ItemID} | " +
+            $"Amount={ItemAmount} | " +
+            $"StartingBid={CurrentBid}"
+        );
     }
 
-    private bool TryGetWinner(out PlayerRef winner, out int winningBid)
+
+    // =========================================================
+    // RPC - PLAYER REQUEST BID
+    // =========================================================
+
+    [Rpc(
+        RpcSources.All,
+        RpcTargets.StateAuthority
+    )]
+    public void RPC_PlaceBid(
+        int bidAmount,
+        RpcInfo info = default)
     {
-        winner = default;
-        winningBid = 0;
+        PlayerRef sender = info.Source;
 
-        bool playerAHasBid = PlayerABid != NoBidValue;
-        bool playerBHasBid = PlayerBBid != NoBidValue;
+        Debug.Log(
+            $"[TradeSession] Bid request received | " +
+            $"Sender={sender} | " +
+            $"Bid={bidAmount}"
+        );
 
-        if (!playerAHasBid && !playerBHasBid)
-        {
-            Result = AuctionResult.NoBid;
-            return false;
-        }
-
-        if (PlayerABid == PlayerBBid)
-        {
-            Result = AuctionResult.Tie;
-            return false;
-        }
-
-        if (PlayerABid > PlayerBBid)
-        {
-            winner = PlayerA;
-            winningBid = PlayerABid;
-            return true;
-        }
-
-        winner = PlayerB;
-        winningBid = PlayerBBid;
-        return true;
+        ProcessBid(
+            sender,
+            bidAmount
+        );
     }
 
-    private NetworkInventory GetInventory(PlayerRef player)
+
+    // =========================================================
+    // PROCESS BID
+    // =========================================================
+
+    private void ProcessBid(
+        PlayerRef sender,
+        int bidAmount)
     {
-        if (!Runner.TryGetPlayerObject(player, out NetworkObject playerObject))
+        if (!Object.HasStateAuthority)
+            return;
+
+        // -----------------------------------------------------
+        // CHECK SESSION
+        // -----------------------------------------------------
+
+        if (State != TradeSessionState.Active)
         {
-            return null;
+            Debug.LogWarning(
+                "[TradeSession] Bid rejected. " +
+                $"Session State={State}"
+            );
+
+            return;
         }
 
-        return playerObject.GetComponent<NetworkInventory>();
+        // -----------------------------------------------------
+        // CHECK PARTICIPANT
+        // -----------------------------------------------------
+
+        if (!IsParticipant(sender))
+        {
+            Debug.LogWarning(
+                $"[TradeSession] Bid rejected. " +
+                $"Player {sender} is not a participant."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CHECK BID RANGE
+        // -----------------------------------------------------
+
+        if (bidAmount < 10 || bidAmount > 100)
+        {
+            Debug.LogWarning(
+                $"[TradeSession] Bid rejected. " +
+                $"Bid must be between 10 and 100. " +
+                $"Requested={bidAmount}"
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CHECK HIGHER THAN CURRENT BID
+        // -----------------------------------------------------
+
+        if (bidAmount <= CurrentBid)
+        {
+            Debug.LogWarning(
+                $"[TradeSession] Bid rejected. " +
+                $"CurrentBid={CurrentBid} | " +
+                $"RequestedBid={bidAmount}"
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // ACCEPT BID
+        // -----------------------------------------------------
+
+        CurrentBid = bidAmount;
+
+        CurrentBidder = GetBidder(sender);
+
+        Debug.Log(
+            $"[TradeSession] Bid accepted | " +
+            $"Bidder={CurrentBidder} | " +
+            $"Player={sender} | " +
+            $"Bid={CurrentBid}"
+        );
+    }
+
+
+    // =========================================================
+    // CHECK PARTICIPANT
+    // =========================================================
+
+    private bool IsParticipant(PlayerRef player)
+    {
+        return player == Player1 ||
+               player == Player2;
+    }
+
+
+    // =========================================================
+    // GET BIDDER
+    // =========================================================
+
+    private Bidder GetBidder(PlayerRef player)
+    {
+        if (player == Player1)
+            return Bidder.Player_1;
+
+        if (player == Player2)
+            return Bidder.Player_2;
+
+        return Bidder.None;
+    }
+
+
+    // =========================================================
+    // COMPLETE SESSION - RPC
+    // =========================================================
+
+    [Rpc(
+        RpcSources.All,
+        RpcTargets.StateAuthority
+    )]
+    public void RPC_CompleteSession(
+        RpcInfo info = default)
+    {
+        PlayerRef sender = info.Source;
+
+        Debug.Log(
+            $"[TradeSession] Complete request received | " +
+            $"Sender={sender}"
+        );
+
+        ProcessCompleteSession(sender);
+    }
+
+
+    // =========================================================
+    // PROCESS COMPLETE
+    // =========================================================
+
+    private void ProcessCompleteSession(
+        PlayerRef sender)
+    {
+        if (!Object.HasStateAuthority)
+            return;
+
+        // -----------------------------------------------------
+        // CHECK SESSION
+        // -----------------------------------------------------
+
+        if (State != TradeSessionState.Active)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Complete rejected. " +
+                $"Session State={State}"
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CHECK PARTICIPANT
+        // -----------------------------------------------------
+
+        if (!IsParticipant(sender))
+        {
+            Debug.LogWarning(
+                $"[TradeSession] Complete rejected. " +
+                $"Player {sender} is not a participant."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CHECK BIDDER
+        // -----------------------------------------------------
+
+        if (CurrentBidder == Bidder.None)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Cannot complete. " +
+                "There is no valid bidder."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // GET WINNER
+        // -----------------------------------------------------
+
+        PlayerRef winner = GetWinningPlayer();
+
+        if (winner == PlayerRef.None)
+        {
+            Debug.LogError(
+                "[TradeSession] Cannot complete. " +
+                "Winning PlayerRef is invalid."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // COMPLETE
+        // -----------------------------------------------------
+
+        State = TradeSessionState.Completed;
+
+        Debug.Log(
+            $"[TradeSession] Completed | " +
+            $"Winner={CurrentBidder} | " +
+            $"WinningPlayer={winner} | " +
+            $"FinalBid={CurrentBid}"
+        );
+
+        // TODO:
+        // 1. Kiểm tra tiền của winner
+        // 2. Trừ tiền winner
+        // 3. Trao Item cho winner
+        // 4. Xử lý item được đấu giá
+        // 5. Lưu transaction
+    }
+
+
+    // =========================================================
+    // CANCEL SESSION - RPC
+    // =========================================================
+
+    [Rpc(
+        RpcSources.All,
+        RpcTargets.StateAuthority
+    )]
+    public void RPC_CancelSession(
+        RpcInfo info = default)
+    {
+        PlayerRef sender = info.Source;
+
+        Debug.Log(
+            $"[TradeSession] Cancel request received | " +
+            $"Sender={sender}"
+        );
+
+        ProcessCancelSession(sender);
+    }
+
+
+    // =========================================================
+    // PROCESS CANCEL
+    // =========================================================
+
+    private void ProcessCancelSession(
+        PlayerRef sender)
+    {
+        if (!Object.HasStateAuthority)
+            return;
+
+        // -----------------------------------------------------
+        // CHECK SESSION
+        // -----------------------------------------------------
+
+        if (State != TradeSessionState.Active)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Cancel rejected. " +
+                $"Session State={State}"
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CHECK PARTICIPANT
+        // -----------------------------------------------------
+
+        if (!IsParticipant(sender))
+        {
+            Debug.LogWarning(
+                $"[TradeSession] Cancel rejected. " +
+                $"Player {sender} is not a participant."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // CANCEL
+        // -----------------------------------------------------
+
+        State = TradeSessionState.Cancelled;
+
+        Debug.Log(
+            $"[TradeSession] Cancelled | " +
+            $"CancelledBy={sender}"
+        );
+    }
+
+
+    // =========================================================
+    // GET WINNING PLAYER
+    // =========================================================
+
+    public PlayerRef GetWinningPlayer()
+    {
+        if (CurrentBidder == Bidder.Player_1)
+            return Player1;
+
+        if (CurrentBidder == Bidder.Player_2)
+            return Player2;
+
+        return PlayerRef.None;
+    }
+
+
+    // =========================================================
+    // GET PLAYER BIDDER
+    // =========================================================
+
+    public Bidder GetPlayerBidder(
+        PlayerRef player)
+    {
+        return GetBidder(player);
+    }
+
+
+    // =========================================================
+    // CHECK BID
+    // =========================================================
+
+    public bool CanBid(int bidAmount)
+    {
+        if (State != TradeSessionState.Active)
+            return false;
+
+        if (bidAmount < 10)
+            return false;
+
+        if (bidAmount > 100)
+            return false;
+
+        return bidAmount > CurrentBid;
+    }
+
+
+    // =========================================================
+    // RESET SESSION
+    // =========================================================
+
+    public void ResetSession()
+    {
+        if (!Object.HasStateAuthority)
+            return;
+
+        State = TradeSessionState.None;
+
+        ItemID = 0;
+        ItemAmount = 0;
+
+        CurrentBid = 0;
+        CurrentBidder = Bidder.None;
+
+        Player1 = PlayerRef.None;
+        Player2 = PlayerRef.None;
+
+        Debug.Log(
+            "[TradeSession] Session reset."
+        );
+    }
+
+
+    // =========================================================
+    // RPC - REQUEST START TEST SESSION
+    // =========================================================
+
+    [Rpc(
+        RpcSources.All,
+        RpcTargets.StateAuthority
+    )]
+    public void RPC_RequestStartTestSession(
+        RpcInfo info = default)
+    {
+        PlayerRef requester = info.Source;
+
+        Debug.Log(
+            $"[TradeSession] Start Session Request | " +
+            $"Requester={requester}"
+        );
+
+        if (!Object.HasStateAuthority)
+            return;
+
+        if (State != TradeSessionState.None)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Cannot start test. " +
+                $"Session State={State}"
+            );
+
+            return;
+        }
+
+        if (Runner == null)
+        {
+            Debug.LogError(
+                "[TradeSession] Runner is null."
+            );
+
+            return;
+        }
+
+        PlayerRef player1 = PlayerRef.None;
+        PlayerRef player2 = PlayerRef.None;
+
+        // -----------------------------------------------------
+        // FIND FIRST TWO PLAYERS
+        // -----------------------------------------------------
+
+        foreach (PlayerRef player in Runner.ActivePlayers)
+        {
+            if (player1 == PlayerRef.None)
+            {
+                player1 = player;
+            }
+            else if (player2 == PlayerRef.None)
+            {
+                player2 = player;
+                break;
+            }
+        }
+
+        // -----------------------------------------------------
+        // CHECK TWO PLAYERS
+        // -----------------------------------------------------
+
+        if (player1 == PlayerRef.None ||
+            player2 == PlayerRef.None)
+        {
+            Debug.LogWarning(
+                "[TradeSession] Need at least 2 players."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // START TEST SESSION
+        // -----------------------------------------------------
+
+        StartSession(
+            player1,
+            player2,
+            itemID: 1,
+            itemAmount: 1,
+            startingBid: 10
+        );
     }
 }
