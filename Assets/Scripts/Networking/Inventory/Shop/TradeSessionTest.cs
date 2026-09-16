@@ -1,400 +1,169 @@
-// using Fusion;
-// using UnityEngine;
-
-// public class TradeSessionTest : MonoBehaviour
-// {
-//     [Header("Trade Session")]
-//     [SerializeField] private TradeSession tradeSession;
-
-//     private NetworkObject networkObject;
-
-//     private string bidInput = "";
-
-//     private void Awake()
-//     {
-//         networkObject = GetComponent<NetworkObject>();
-
-//         if (tradeSession == null)
-//         {
-//             tradeSession = FindFirstObjectByType<TradeSession>();
-//         }
-
-//         Debug.Log(
-//             $"[TradeSessionTest] Awake | " +
-//             $"NetworkObject={networkObject} | " +
-//             $"TradeSession={tradeSession}"
-//         );
-//     }
-
-//     private void Update()
-//     {
-//         if (networkObject == null)
-//             return;
-
-//         // Chỉ Player local mới nhận input
-//         if (!networkObject.HasInputAuthority)
-//             return;
-
-//         HandleTradeInput();
-//     }
-
-//     private void HandleTradeInput()
-//     {
-//         // T = Request Start Trade Session
-//         if (Input.GetKeyDown(KeyCode.T))
-//         {
-//             RequestStartSession();
-//         }
-
-//         // X = Cancel
-//         if (Input.GetKeyDown(KeyCode.X))
-//         {
-//             CancelSession();
-//         }
-
-//         // C = Complete
-//         if (Input.GetKeyDown(KeyCode.C))
-//         {
-//             CompleteSession();
-//         }
-
-//         // Nhập bid
-//         HandleBidInput();
-//     }
-
-//     // =========================================================
-//     // START SESSION
-//     // =========================================================
-
-//     private void RequestStartSession()
-//     {
-//         if (tradeSession == null)
-//         {
-//             Debug.LogError(
-//                 "[TradeSessionTest] TradeSession is NULL!"
-//             );
-
-//             return;
-//         }
-
-//         if (tradeSession.State != TradeSessionState.None)
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] Cannot start session. " +
-//                 $"Current State={tradeSession.State}"
-//             );
-
-//             return;
-//         }
-
-//         tradeSession.RPC_RequestStartTestSession();
-
-//         Debug.Log(
-//             $"[TradeSessionTest] Request Start Trade Session"
-//         );
-//     }
-
-//     // =========================================================
-//     // BID INPUT
-//     // =========================================================
-
-//     private void HandleBidInput()
-//     {
-//         // Số 0-9
-//         for (KeyCode key = KeyCode.Alpha0;
-//              key <= KeyCode.Alpha9;
-//              key++)
-//         {
-//             if (!Input.GetKeyDown(key))
-//                 continue;
-
-//             int number = key - KeyCode.Alpha0;
-
-//             if (bidInput.Length >= 3)
-//                 return;
-
-//             bidInput += number.ToString();
-
-//             Debug.Log(
-//                 $"[TradeSessionTest] Current Bid Input = {bidInput}"
-//             );
-
-//             return;
-//         }
-
-//         // Backspace
-//         if (Input.GetKeyDown(KeyCode.Backspace))
-//         {
-//             if (bidInput.Length > 0)
-//             {
-//                 bidInput =
-//                     bidInput.Substring(
-//                         0,
-//                         bidInput.Length - 1
-//                     );
-//             }
-
-//             Debug.Log(
-//                 $"[TradeSessionTest] Current Bid Input = {bidInput}"
-//             );
-
-//             return;
-//         }
-
-//         // Enter = Submit Bid
-//         if (Input.GetKeyDown(KeyCode.Return) ||
-//             Input.GetKeyDown(KeyCode.KeypadEnter))
-//         {
-//             SubmitBid();
-//         }
-//     }
-
-//     // =========================================================
-//     // SUBMIT BID
-//     // =========================================================
-
-//     private void SubmitBid()
-//     {
-//         if (tradeSession == null)
-//         {
-//             Debug.LogError(
-//                 "[TradeSessionTest] TradeSession is NULL!"
-//             );
-
-//             return;
-//         }
-
-//         if (string.IsNullOrEmpty(bidInput))
-//         {
-//             Debug.LogWarning(
-//                 "[TradeSessionTest] Bid input is empty."
-//             );
-
-//             return;
-//         }
-
-//         if (!int.TryParse(bidInput, out int bidAmount))
-//         {
-//             Debug.LogWarning(
-//                 "[TradeSessionTest] Invalid bid input."
-//             );
-
-//             bidInput = "";
-//             return;
-//         }
-
-//         // Bid phải từ 10 đến 100
-//         if (bidAmount < 10 || bidAmount > 100)
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] Bid must be between 10 and 100. " +
-//                 $"Input={bidAmount}"
-//             );
-
-//             bidInput = "";
-//             return;
-//         }
-
-//         if (!tradeSession.IsActive)
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] TradeSession is not active."
-//             );
-
-//             bidInput = "";
-//             return;
-//         }
-
-//         if (!tradeSession.CanBid(bidAmount))
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] Bid must be higher than " +
-//                 $"CurrentBid={tradeSession.CurrentBid}. " +
-//                 $"Input={bidAmount}"
-//             );
-
-//             bidInput = "";
-//             return;
-//         }
-
-//         // Gửi request lên State Authority
-//         tradeSession.RPC_PlaceBid(bidAmount);
-
-//         Debug.Log(
-//             $"[TradeSessionTest] Bid submitted | " +
-//             $"Bid={bidAmount}"
-//         );
-
-//         bidInput = "";
-//     }
-
-//     // =========================================================
-//     // COMPLETE
-//     // =========================================================
-
-//     private void CompleteSession()
-//     {
-//         if (tradeSession == null)
-//             return;
-
-//         if (!tradeSession.IsActive)
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] Cannot complete. " +
-//                 $"State={tradeSession.State}"
-//             );
-
-//             return;
-//         }
-
-//         tradeSession.RPC_CompleteSession();
-
-//         Debug.Log(
-//             "[TradeSessionTest] Request Complete Trade Session"
-//         );
-//     }
-
-//     // =========================================================
-//     // CANCEL
-//     // =========================================================
-
-//     private void CancelSession()
-//     {
-//         if (tradeSession == null)
-//             return;
-
-//         if (!tradeSession.IsActive)
-//         {
-//             Debug.LogWarning(
-//                 $"[TradeSessionTest] Cannot cancel. " +
-//                 $"State={tradeSession.State}"
-//             );
-
-//             return;
-//         }
-
-//         tradeSession.RPC_CancelSession();
-
-//         Debug.Log(
-//             "[TradeSessionTest] Request Cancel Trade Session"
-//         );
-//     }
-// }
-
-using Fusion;
 using UnityEngine;
 
 public class TradeSessionTest : MonoBehaviour
 {
-    [SerializeField] private TradeSession tradeSession;
-
-    private string bidInput = "";
+    [SerializeField] private TradeSystem tradeSystem;
 
     private void Update()
     {
-        // Test keyboard có hoạt động không
-        if (Input.GetKeyDown(KeyCode.T))
+        #region Input Debugging
+        // Start Auction
+        if (Input.GetKeyDown(KeyCode.S))
         {
-            Debug.Log("[TradeTest] T pressed");
-
-            if (tradeSession == null)
-            {
-                Debug.LogError("[TradeTest] TradeSession is NULL");
-                return;
-            }
-
-            Debug.Log($"[TradeTest] Session State: {tradeSession.State}");
-
-            if (tradeSession.State != TradeSessionState.Active)
-            {
-                Debug.LogWarning("[TradeTest] Trade Session is not Active");
-                return;
-            }
-
-            Debug.Log("[TradeTest] Trade Session is Active");
-            Debug.Log("[TradeTest] Enter bid using number keys");
+            Debug.Log("Press S");
+            StartAuction();
         }
 
-        // Nhập số 0-9
-        for (int i = 0; i <= 9; i++)
+        // Bid
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            if (Input.GetKeyDown(KeyCode.Alpha0 + i))
-            {
-                bidInput += i;
-                Debug.Log($"[TradeTest] Bid Input: {bidInput}");
-            }
+            Debug.Log("Press 1");
+            PlaceBid(20);
         }
 
-        // Xóa số
-        if (Input.GetKeyDown(KeyCode.Backspace))
+        if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            if (bidInput.Length > 0)
-            {
-                bidInput = bidInput.Substring(0, bidInput.Length - 1);
-                Debug.Log($"[TradeTest] Bid Input: {bidInput}");
-            }
+            Debug.Log("Press 2");
+            PlaceBid(30);
         }
 
-        // Enter để bid
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            SubmitBid();
+            Debug.Log("Press 3");
+            PlaceBid(50);
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            Debug.Log("Press 4"); 
+            PlaceBid(75);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            Debug.Log("Press 5");
+            PlaceBid(100);
+        }
+
+        // Complete
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Debug.Log("Press C");
+            CompleteAuction();
+        }
+
+        // Cancel
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            Debug.Log("Press X");
+            CancelAuction();
+        }
+
+        // Reset
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log("Press R", this);
+            ResetAuction();
+        }
+
+        // Show status
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Debug.Log("Press P", this);
+            ShowStatus();
+        }
+        #endregion
     }
 
-    private void SubmitBid()
+    private void StartAuction()
     {
-        Debug.Log($"[TradeTest] Enter pressed | Input = {bidInput}");
-
-        if (string.IsNullOrEmpty(bidInput))
+        if (tradeSystem == null)
         {
-            Debug.LogWarning("[TradeTest] No bid entered");
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        if (!int.TryParse(bidInput, out int bidAmount))
+        Debug.Log("[AuctionDebug] Request Start Auction");
+
+        tradeSystem.RPC_RequestStartTestSession();
+    }
+
+    private void PlaceBid(int amount)
+    {
+        if (tradeSystem == null)
         {
-            Debug.LogWarning("[TradeTest] Invalid bid");
-            bidInput = "";
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        Debug.Log($"[TradeTest] Trying to bid: {bidAmount}");
-
-        if (bidAmount < 10 || bidAmount > 100)
+        if (!tradeSystem.IsActive)
         {
-            Debug.LogWarning("[TradeTest] Bid must be between 10 and 100");
-            bidInput = "";
+            Debug.LogWarning("[AuctionDebug] Auction is not active.");
             return;
         }
 
-        if (tradeSession == null)
+        Debug.Log($"[AuctionDebug] Place Bid | Amount={amount}");
+
+        tradeSystem.RPC_PlaceBid(amount);
+    }
+
+    private void CompleteAuction()
+    {
+        if (tradeSystem == null)
         {
-            Debug.LogError("[TradeTest] TradeSession is NULL");
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        if (tradeSession.State != TradeSessionState.Active)
+        Debug.Log("[AuctionDebug] Request Complete Auction");
+
+        tradeSystem.RPC_CompleteSession();
+    }
+
+    private void CancelAuction()
+    {
+        if (tradeSystem == null)
         {
-            Debug.LogWarning("[TradeTest] Trade Session is not Active");
-            bidInput = "";
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        if (bidAmount <= tradeSession.CurrentBid)
-        {
-            Debug.LogWarning(
-                $"[TradeTest] Bid too low! Current Bid = {tradeSession.CurrentBid}"
-            );
+        Debug.Log("[AuctionDebug] Request Cancel Auction");
 
-            bidInput = "";
+        tradeSystem.RPC_CancelSession();
+    }
+
+    private void ResetAuction()
+    {
+        if (tradeSystem == null)
+        {
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        Debug.Log($"[TradeTest] Sending RPC_PlaceBid({bidAmount})");
+        tradeSystem.ResetSession();
 
-        tradeSession.RPC_PlaceBid(bidAmount);
+        Debug.Log("[AuctionDebug] Auction Reset");
+    }
 
-        bidInput = "";
+    private void ShowStatus()
+    {
+        if (tradeSystem == null)
+        {
+            Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
+            return;
+        }
+
+        Debug.Log(
+            $"[AuctionDebug] " +
+            $"State={tradeSystem.State} | " +
+            $"Player1={tradeSystem.Player1} | " +
+            $"Player2={tradeSystem.Player2} | " +
+            $"ItemID={tradeSystem.ItemID} | " +
+            $"Amount={tradeSystem.ItemAmount} | " +
+            $"CurrentBid={tradeSystem.CurrentBid} | " +
+            // $"CurrentBidder={tradeSystem.CurrentBidder} | " +
+            $"Winner={tradeSystem.GetWinningPlayer()}"
+        );
     }
 }

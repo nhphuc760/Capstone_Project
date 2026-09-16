@@ -6,7 +6,6 @@ public class NetworkMoney : NetworkBehaviour
     [Networked]
     public int Money { get; private set; }
 
-
     public bool AddMoney(int amount)
     {
         if (!Object.HasStateAuthority)
