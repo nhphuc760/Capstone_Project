@@ -4,10 +4,8 @@ using Fusion;
 public enum ItemType
 {
     None,
-    Blood,
-    Mana,
-    Armor,
-    Explosive,
+    Consumable,
+    Valuable,
     
 }
 

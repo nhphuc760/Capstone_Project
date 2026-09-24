@@ -24,21 +24,15 @@ public class NetworkInventory : NetworkBehaviour
     [SerializeField]
     private const int capacity = 30;
 
-
     [Header("Database")]
-    [SerializeField]
-    private ItemDatabase database;
-
+    [SerializeField] private ItemDatabase database;
 
     [Networked, Capacity(capacity)]
     private NetworkArray<InventoryItem> Items => default;
 
-
     public int Capacity => capacity;
 
-
     public ItemDatabase Database => database;
-
 
     public override void Spawned()
     {
@@ -59,7 +53,6 @@ public class NetworkInventory : NetworkBehaviour
     {
         if (!Object.HasStateAuthority)
         {
-
             return false;
         }
 
@@ -71,11 +64,9 @@ public class NetworkInventory : NetworkBehaviour
         if (item == null)
             return false;
 
-
         // -----------------------------------------------------
         // STACKABLE ITEM
         // -----------------------------------------------------
-
         if (item.Stackable)
         {
             for (int i = 0; i < capacity; i++)
@@ -110,11 +101,9 @@ public class NetworkInventory : NetworkBehaviour
             }
         }
 
-
         // -----------------------------------------------------
         // CREATE NEW SLOT
         // -----------------------------------------------------
-
         while (amount > 0)
         {
             int emptySlot = FindEmptySlot();
@@ -136,12 +125,40 @@ public class NetworkInventory : NetworkBehaviour
                 new InventoryItem(itemID, amountToAdd)
             );
 
-
             amount -= amountToAdd;
         }
 
-
         return true;
+    }
+    #endregion
+
+    #region check if the inventory can add a specific item and amount
+    public bool CanAddItem(int itemID, int amount)
+    {
+        if (database == null || amount <= 0)
+            return false;
+
+        ItemSO item = database.GetItem(itemID);
+        if (item == null)
+            return false;
+
+        int availableSpace = 0;
+
+        for (int i = 0; i < capacity; i++)
+        {
+            InventoryItem slot = Items.Get(i);
+
+            if (slot.IsEmpty)
+            {
+                availableSpace += item.Stackable ? item.MaxStack : 1;
+            }
+            else if (item.Stackable && slot.itemID == itemID)
+            {
+                availableSpace += item.MaxStack - slot.amount;
+            }
+        }
+
+        return availableSpace >= amount;
     }
     #endregion
 
@@ -237,12 +254,12 @@ public class NetworkInventory : NetworkBehaviour
     }
     #endregion
 
+    #region Inventory Utility Methods
     // GET SLOT
     public InventoryItem GetSlot(int index)
     {
         if (index < 0 || index >= capacity)
             return default;
-
 
         return Items.Get(index);
     }
@@ -279,4 +296,5 @@ public class NetworkInventory : NetworkBehaviour
     {
         return FindEmptySlot() == -1;
     }
+    #endregion
 }

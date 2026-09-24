@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TradeSessionTest : MonoBehaviour
 {
-    [SerializeField] private TradeSystem tradeSystem;
+    [SerializeField] private TradeSession tradeSystem;
 
     private void Update()
     {
@@ -77,6 +77,7 @@ public class TradeSessionTest : MonoBehaviour
 
     private void StartAuction()
     {
+        #region Debugging
         if (tradeSystem == null)
         {
             Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
@@ -84,18 +85,20 @@ public class TradeSessionTest : MonoBehaviour
         }
 
         Debug.Log("[AuctionDebug] Request Start Auction");
+        #endregion
 
         tradeSystem.RPC_RequestStartTestSession();
     }
 
     private void PlaceBid(int amount)
     {
+        #region Debugging
         if (tradeSystem == null)
         {
             Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
-
+        
         if (!tradeSystem.IsActive)
         {
             Debug.LogWarning("[AuctionDebug] Auction is not active.");
@@ -103,12 +106,14 @@ public class TradeSessionTest : MonoBehaviour
         }
 
         Debug.Log($"[AuctionDebug] Place Bid | Amount={amount}");
+        #endregion
 
         tradeSystem.RPC_PlaceBid(amount);
     }
 
     private void CompleteAuction()
     {
+        #region Debugging
         if (tradeSystem == null)
         {
             Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
@@ -116,12 +121,14 @@ public class TradeSessionTest : MonoBehaviour
         }
 
         Debug.Log("[AuctionDebug] Request Complete Auction");
+        #endregion
 
         tradeSystem.RPC_CompleteSession();
     }
 
     private void CancelAuction()
     {
+        #region Debugging
         if (tradeSystem == null)
         {
             Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
@@ -129,21 +136,24 @@ public class TradeSessionTest : MonoBehaviour
         }
 
         Debug.Log("[AuctionDebug] Request Cancel Auction");
+        #endregion
 
         tradeSystem.RPC_CancelSession();
     }
 
     private void ResetAuction()
     {
+        #region Debugging
         if (tradeSystem == null)
         {
             Debug.LogError("[AuctionDebug] TradeSystem is NULL.");
             return;
         }
 
-        tradeSystem.ResetSession();
-
         Debug.Log("[AuctionDebug] Auction Reset");
+        #endregion
+
+        tradeSystem.ResetSession();        
     }
 
     private void ShowStatus()

@@ -19,7 +19,6 @@ public class NetworkMoney : NetworkBehaviour
         return true;
     }
 
-
     public bool RemoveMoney(int amount)
     {
         if (!Object.HasStateAuthority)
@@ -35,7 +34,6 @@ public class NetworkMoney : NetworkBehaviour
 
         return true;
     }
-
 
     public bool HasMoney(int amount)
     {
