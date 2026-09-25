@@ -3,32 +3,17 @@ using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
-[Serializable]
-public class ShopItemOffer
-{
-    [SerializeField] private ItemSO item;
-
-    [Tooltip("Set the buy price for this item")] 
-    [Min(1), SerializeField] private int buyPrice = 1;
-
-    [Tooltip("Set the sell price for this item")] 
-    [Min(1), SerializeField] private int sellPrice = 1;
-
-    public ItemSO Item => item;
-    public int BuyPrice => buyPrice;
-    public int SellPrice => sellPrice;
-}
-
 public class ShopSession : NetworkBehaviour
 {
-    [Header("Consumable shop catalog")]
-    [SerializeField] private List<ShopItemOffer> offers = new();
+    [Header("Shop Catalog")]
+    [SerializeField] private ShopCatalogSO catalog;
 
     public IEnumerable<ShopItemOffer> ConsumableOffers
     {
         get
         {
-            foreach (ShopItemOffer offer in offers)
+            if (catalog == null) yield break;
+            foreach (ShopItemOffer offer in catalog.ConsumableOffers)
             {
                 if (IsConsumableOffer(offer))
                     yield return offer;
@@ -102,7 +87,8 @@ public class ShopSession : NetworkBehaviour
 
     private ShopItemOffer GetConsumableOffer(int itemID)
     {
-        foreach (ShopItemOffer offer in offers)
+        if (catalog == null) return null;
+        foreach (ShopItemOffer offer in catalog.ConsumableOffers)
         {
             if (IsConsumableOffer(offer) && offer.Item.ItemId == itemID)
                 return offer;

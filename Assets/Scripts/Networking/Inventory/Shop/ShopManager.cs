@@ -1,90 +1,107 @@
 using Fusion;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class ShopManager : NetworkBehaviour
 {
-    [Header("References")]
+    [Header("Catalog Reference")]
+    [SerializeField] private ShopCatalogSO catalog;
+
+    [Header("Network Session References")]
     [SerializeField] private TradeSession tradeSystem;
     [SerializeField] private ShopSession shopSession;
     [SerializeField] private NetworkMoney playerMoney;
     [SerializeField] private NetworkInventory playerInventory;
 
-    [Header("Trade Session References")]
+    [Header("Trade Session UI References")]
     [SerializeField] private Button StartSessionBTN;
     [SerializeField] private Button CancelBTN;
     [SerializeField] private TMP_Text amountTxt;
     [SerializeField] private Button BiddingBTN;
     [SerializeField] private Button MinusBTN;
     [SerializeField] private Button PlusBTN;
+    [SerializeField] private Button CompleteBTN;
 
-    [Header("Trade Session Settings")]
-    [SerializeField] private int itemID = 1;
-    [SerializeField] private int itemAmount = 1;
+    [Header("Trade Session Settings (Valuable Item)")]
+    [Tooltip("ID của món đồ Valuable đem ra đấu giá")]
+    [SerializeField] private int tradeItemID = 1;
+    [Min(1), SerializeField] private int tradeItemAmount = 1;
     [SerializeField] private int bidStep = 10;
 
-    [Header("Buy Sell Session References")]
+    [Header("Buy Sell Session UI References")]
     [SerializeField] private Button BuyBTN;
     [SerializeField] private Button SellBTN;
 
-    [Header("Buy Sell Session Settings")]
-    [SerializeField] private int shopItemID;
+    [Header("Buy Sell Session Settings (Consumable Item)")]
+    [Tooltip("ID của món đồ Consumable trong Shop")]
+    [SerializeField] private int shopItemID = 1;
     [Min(1), SerializeField] private int shopItemAmount = 1;
 
     private int currentBidAmount;
 
     private void Start()
     {
-        StartSessionBTN.onClick.AddListener(StartTradeSession);
-        BiddingBTN.onClick.AddListener(PlaceBid);
-        CancelBTN.onClick.AddListener(CancelSession);
-        MinusBTN.onClick.AddListener(DecreaseBid);
-        PlusBTN.onClick.AddListener(IncreaseBid);
-        BuyBTN.onClick.AddListener(Buyer);
-        SellBTN.onClick.AddListener(Seller);
+        #region Trade Session UI Listeners
+        if (StartSessionBTN != null) StartSessionBTN.onClick.AddListener(StartTradeSession);
+        if (BiddingBTN != null)      BiddingBTN.onClick.AddListener(PlaceBid);
+        if (CancelBTN != null)       CancelBTN.onClick.AddListener(CancelSession);
+        if (MinusBTN != null)        MinusBTN.onClick.AddListener(DecreaseBid);
+        if (PlusBTN != null)         PlusBTN.onClick.AddListener(IncreaseBid);
+        if (CompleteBTN != null)     CompleteBTN.onClick.AddListener(WinningBidder);
+        #endregion
+
+        #region Buy/Sell Session UI Listeners
+        if (BuyBTN != null)          BuyBTN.onClick.AddListener(Buyer);
+        if (SellBTN != null)         SellBTN.onClick.AddListener(Seller);
+        #endregion
 
         UpdateBidUI();
     }
 
-    #region Bid Management
-    #region Start Trade Session
+    #region Bid Management (Valuable Items)
     private void StartTradeSession()
     {
         if (!CanStartSession())
             return;
 
-        tradeSystem.RPC_RequestStartTestSession();
+        // Kiểm tra xem item đưa vào trade có phải là đồ Valuable hợp lệ trong Catalog không
+        if (catalog != null && catalog.GetValuableOffer(tradeItemID) == null)
+        {
+            Debug.LogError($"[ShopManager] Không thể bắt đầu Trade: ItemID {tradeItemID} không phải là Valuable trong Catalog!");
+            return;
+        }
 
+        tradeSystem.RPC_RequestStartTestSession();
         InitializeBid();
     }
-    #endregion
 
-    #region Bid Setup
     private void InitializeBid()
     {
         if (!CanInitializeBid())
             return;
 
-        currentBidAmount = tradeSystem.CurrentBid + bidStep;
+        // Nếu sàn đấu giá đã có giá hiện tại, mức bid mới = CurrentBid + step
+        int baseBid = tradeSystem.CurrentBid;
 
+        // Nếu phiên mới bắt đầu chưa có bid, lấy giá sàn từ Catalog
+        if (baseBid <= 0 && catalog != null)
+        {
+            ShopItemOffer valuableOffer = catalog.GetValuableOffer(tradeItemID);
+            if (valuableOffer != null)
+                baseBid = valuableOffer.SellPrice * tradeItemAmount;
+        }
+
+        currentBidAmount = baseBid + bidStep;
         UpdateBidUI();
     }
-    #endregion
 
-    #region Bid Amount
     private void IncreaseBid()
     {
         if (!CanChangeBid())
             return;
 
         currentBidAmount += bidStep;
-
-        int minimumBid = tradeSystem.CurrentBid + bidStep;
-
-        if (currentBidAmount < minimumBid)
-            currentBidAmount = minimumBid;
-
         UpdateBidUI();
     }
 
@@ -94,7 +111,6 @@ public class ShopManager : NetworkBehaviour
             return;
 
         int minimumBid = tradeSystem.CurrentBid + bidStep;
-
         currentBidAmount -= bidStep;
 
         if (currentBidAmount < minimumBid)
@@ -103,23 +119,12 @@ public class ShopManager : NetworkBehaviour
         UpdateBidUI();
     }
 
-    private void UpdateBidUI()
-    {
-        if (amountTxt == null)
-            return;
-
-        amountTxt.text = currentBidAmount.ToString();
-    }
-    #endregion
-
-    #region Place Bid
     private void PlaceBid()
     {
         if (!CanPlaceBid())
             return;
 
         int minimumBid = tradeSystem.CurrentBid + bidStep;
-
         if (currentBidAmount < minimumBid)
         {
             currentBidAmount = minimumBid;
@@ -128,14 +133,10 @@ public class ShopManager : NetworkBehaviour
         }
 
         tradeSystem.RPC_PlaceBid(currentBidAmount);
-
         currentBidAmount += bidStep;
-
         UpdateBidUI();
     }
-    #endregion
 
-    #region Cancel Session
     private void CancelSession()
     {
         if (!CanCancelSession())
@@ -143,9 +144,7 @@ public class ShopManager : NetworkBehaviour
 
         tradeSystem.RPC_CancelSession();
     }
-    #endregion
 
-    #region Complete Session
     private void WinningBidder()
     {
         if (!CanCompleteSession())
@@ -153,107 +152,62 @@ public class ShopManager : NetworkBehaviour
 
         tradeSystem.RPC_CompleteSession();
     }
-    #endregion
-    #endregion
 
-    #region Buy Sell Management
-    #region Buyer
-    private void Buyer()
+    private void UpdateBidUI()
     {
-        if (shopSession == null)
-            return;
-
-        shopSession.RPC_Buy(shopItemID, shopItemAmount);
+        if (amountTxt != null)
+            amountTxt.text = currentBidAmount.ToString();
     }
     #endregion
 
-    #region Seller
+    #region Buy / Sell Management (Consumable Items)
+    private void Buyer()
+    {
+        if (shopSession == null) return;
+
+        // Xác thực món hàng phải là Consumable trong Catalog
+        if (catalog != null && catalog.GetConsumableOffer(shopItemID) == null)
+        {
+            Debug.LogError($"[ShopManager] Không thể mua: ItemID {shopItemID} không phải là Consumable hợp lệ!");
+            return;
+        }
+
+        shopSession.RPC_Buy(shopItemID, shopItemAmount);
+    }
+
     private void Seller()
     {
-        if (shopSession == null)
+        if (shopSession == null) return;
+
+        // Xác thực món hàng phải là Consumable trong Catalog
+        if (catalog != null && catalog.GetConsumableOffer(shopItemID) == null)
+        {
+            Debug.LogError($"[ShopManager] Không thể bán: ItemID {shopItemID} không phải là Consumable hợp lệ!");
             return;
+        }
 
         shopSession.RPC_Sell(shopItemID, shopItemAmount);
     }
     #endregion
-    #endregion
 
-    #region Validation
-    public bool CanStartSession()
-    {
-        if (tradeSystem == null)
-            return false;
-
-        if (tradeSystem.IsActive)
-            return false;
-
-        return true;
-    }
-
-    public bool CanInitializeBid()
-    {
-        if (tradeSystem == null)
-            return false;
-
-        if (!tradeSystem.IsActive)
-            return false;
-
-        return true;
-    }
-
-    public bool CanChangeBid()
-    {
-        if (tradeSystem == null)
-            return false;
-
-        if (!tradeSystem.IsActive)
-            return false;
-
-        return true;
-    }
+    #region Validation Checks
+    public bool CanStartSession() => tradeSystem != null && !tradeSystem.IsActive;
+    public bool CanInitializeBid() => tradeSystem != null && tradeSystem.IsActive;
+    public bool CanChangeBid() => tradeSystem != null && tradeSystem.IsActive;
+    public bool CanCancelSession() => tradeSystem != null && tradeSystem.IsActive;
+    public bool CanCompleteSession() => tradeSystem != null && tradeSystem.IsActive;
 
     public bool CanPlaceBid()
     {
-        if (tradeSystem == null)
+        if (tradeSystem == null || !tradeSystem.IsActive)
             return false;
 
-        if (!tradeSystem.IsActive)
-            return false;
-
-        if (!MoneyCheck(currentBidAmount))
-            return false;
-
-        return true;
-    }
-
-    public bool CanCancelSession()
-    {
-        if (tradeSystem == null)
-            return false;
-
-        if (!tradeSystem.IsActive)
-            return false;
-
-        return true;
-    }
-
-    public bool CanCompleteSession()
-    {
-        if (tradeSystem == null)
-            return false;
-
-        if (!tradeSystem.IsActive)
-            return false;
-
-        return true;
+        return MoneyCheck(currentBidAmount);
     }
 
     private bool MoneyCheck(int bidAmount)
     {
-        if (playerMoney == null)
-            return false;
-
-        return playerMoney.HasMoney(bidAmount);
+        return playerMoney != null && playerMoney.HasMoney(bidAmount);
     }
     #endregion
 }
