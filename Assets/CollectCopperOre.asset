@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8e535356e1c3914d8db371e40b70fb9, type: 3}
+  m_Name: CollectCopperOre
+  m_EditorClassIdentifier: Assembly-CSharp::Quest
+  questID: 129c965b-bf00-4343-87e8-f49a99285ae0
+  questName: CollectOres
+  description: 'Thu thap quang '
+  objectives:
+  - objectiveID: collect_copperore
+    targetID: copper_ore
+    description: Thu thap 5 quang dong
+    type: 0
+    requiredAmount: 5
+    currentAmount: 0
+  - objectiveID: collect_ironore
+    targetID: iron_ore
+    description: Thu thap 3 quang sat
+    type: 0
+    requiredAmount: 3
+    currentAmount: 0

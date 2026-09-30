@@ -992,6 +992,8 @@ GameObject:
   - component: {fileID: 4933714085852605442}
   - component: {fileID: 3764696480944377191}
   - component: {fileID: 8000677038320043257}
+  - component: {fileID: 4950196181646979177}
+  - component: {fileID: 6835030156185779062}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -1073,6 +1075,7 @@ MonoBehaviour:
   - {fileID: 4933714085852605442}
   - {fileID: 3764696480944377191}
   - {fileID: 8000677038320043257}
+  - {fileID: 4950196181646979177}
   ForceRemoteRenderTimeframe: 0
 --- !u!54 &-7849153057991330858
 Rigidbody:
@@ -1204,6 +1207,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkInventory
   database: {fileID: 11400000, guid: b85efbd77e5676c4ea3a71e60335f96c, type: 2}
+--- !u!114 &4950196181646979177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 616434ddb51cdad439e775e6c8469a20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkQuestManager
+  startingQuests:
+  - {fileID: 11400000, guid: 41b84ad7d9cafd2479f3c69dd5be32f0, type: 2}
+  - {fileID: 11400000, guid: 97116df433bf4a6489532bd46dc87be2, type: 2}
+  debugLogs: 1
+--- !u!114 &6835030156185779062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad4ddf27eace1874ea73a54078ed2c44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuestTestDebug
+  questManager: {fileID: 4950196181646979177}
 --- !u!1 &2184306403840850342
 GameObject:
   m_ObjectHideFlags: 0
