@@ -13,17 +13,23 @@ public class ItemDatabase : ScriptableObject
     private Dictionary<int, ItemSO> itemLookup;
 
 
-    [Title("Make sure dataSO in Resources Folder")]
+    [Title("Make sure dataSO inside Resources Folder")]
     [Button("Auto Find ItemDataSO")]
     public void BakeData()
     {
        items = Resources.LoadAll<ItemSO>("").ToList();
+        Initialize();
     }
 
 
     #region Lookup in ItemSO by itemId
     public void Initialize()
     {
+        if(itemLookup != null)
+        {
+            itemLookup.Clear();
+            itemLookup = null;
+        }
         itemLookup = new Dictionary<int, ItemSO>();
 
         foreach (ItemSO item in items)

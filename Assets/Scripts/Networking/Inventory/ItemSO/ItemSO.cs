@@ -14,6 +14,7 @@ public class ItemSO : ScriptableObject
     [Header("Item Identity")]
     [SerializeField] private int itemId;
     [SerializeField] private string itemName;
+    [SerializeField] private string description;
     [SerializeField] private ItemType itemType;
 
     [Header("Visual")]
@@ -32,7 +33,9 @@ public class ItemSO : ScriptableObject
     public GameObject ObjectPrefab => objectPrefab;
 
     public bool Stackable => stackable;
-    public int MaxStack => maxStack;   
+    public int MaxStack => maxStack;
+
+    public string Description => description;
 
     private void OnValidate() //dùng để kiểm tra và điều chỉnh giá trị maxStack khi stackable thay đổi
     {

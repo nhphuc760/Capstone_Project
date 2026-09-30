@@ -1,0 +1,2233 @@
+============================================================
+UNITY ASSEMBLY DEPENDENCY SCAN REPORT
+Generated: 8/29/2026 8:25:30 AM
+============================================================
+
+SUMMARY
+-------
+ASMDEF files scanned : 141
+Errors               : 71
+Warnings             : 102
+
+PROBLEMS
+--------
+[WARNING] ParrelSync
+Path      : Assets/ParrelSync/projectCloner.asmdef
+    Assets/ParrelSync/Editor/FileUtilities.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'ParrelSync'
+
+[WARNING] Unity.Fusion.CodeGen
+Path      : Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.asmdef
+    Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.User.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Fusion.CodeGen'
+
+[WARNING] Fusion.Unity.Editor
+Path      : Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.asmdef
+    Assets/Photon/Fusion/Editor/FusionEditorSkin.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Fusion.Unity.Editor'
+
+[WARNING] Fusion.Unity
+Path      : Assets/Photon/Fusion/Runtime/Fusion.Unity.asmdef
+    Assets/Photon/Fusion/Runtime/Statistics/FusionStatistics.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Fusion.Unity'
+
+[WARNING] Fusion.Addons.Physics.Editor
+Path      : Assets/Photon/FusionAddons/Physics/Editor/Fusion.Addons.Physics.Editor.asmdef
+    Assets/Photon/FusionAddons/Physics/Editor/ClientPhysicsSimulationDrawer.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Fusion.Addons.Physics.Editor'
+
+[WARNING] Fusion.Addons.Physics
+Path      : Assets/Photon/FusionAddons/Physics/Fusion.Addons.Physics.asmdef
+    Assets/Photon/FusionAddons/Physics/NetworkRigidbody/NetworkRigidbodyBase/NetworkRigidbodyBase.Render.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Fusion.Addons.Physics'
+
+[WARNING] ImageCropper.Runtime
+Path      : Assets/Plugins/ImageCropper/ImageCropper.Runtime.asmdef
+    Assets/Plugins/ImageCropper/Scripts/ImageCropperUtils.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'ImageCropper.Runtime'
+
+[WARNING] UniTask.Editor
+Path      : Assets/Plugins/UniTask/Editor/UniTask.Editor.asmdef
+    Assets/Plugins/UniTask/Editor/UniTaskTrackerWindow.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask.Editor'
+
+[WARNING] UniTask.Addressables
+Path      : Assets/Plugins/UniTask/Runtime/External/Addressables/UniTask.Addressables.asmdef
+    Assets/Plugins/UniTask/Runtime/External/Addressables/AddressablesAsyncExtensions.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask.Addressables'
+
+[WARNING] UniTask.DOTween
+Path      : Assets/Plugins/UniTask/Runtime/External/DOTween/UniTask.DOTween.asmdef
+    Assets/Plugins/UniTask/Runtime/External/DOTween/DOTweenAsyncExtensions.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask.DOTween'
+
+[WARNING] UniTask.TextMeshPro
+Path      : Assets/Plugins/UniTask/Runtime/External/TextMeshPro/UniTask.TextMeshPro.asmdef
+    Assets/Plugins/UniTask/Runtime/External/TextMeshPro/TextMeshProAsyncExtensions.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask.TextMeshPro'
+
+[WARNING] UniTask.Linq
+Path      : Assets/Plugins/UniTask/Runtime/Linq/UniTask.Linq.asmdef
+    Assets/Plugins/UniTask/Runtime/Linq/Zip.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask.Linq'
+
+[WARNING] UniTask
+Path      : Assets/Plugins/UniTask/Runtime/UniTask.asmdef
+    Assets/Plugins/UniTask/Runtime/Internal/PlayerLoopRunner.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UniTask'
+
+[WARNING] Unity.2D.Sprite.Editor
+Path      : Packages/com.unity.2d.sprite/Editor/Unity.2D.Sprite.Editor.asmdef
+    Packages/com.unity.2d.sprite/Editor/SpriteEditorModule/SpriteFrameModule/Overlay/SpriteFrameModeToolStripBase.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.2D.Sprite.Editor'
+
+[WARNING] Unity.AutoGroupGenerator.Editor
+Path      : Packages/com.unity.addressables/Editor/AutoGroupGenerator/Unity.AutoGroupGenerator.Editor.asmdef
+    Packages/com.unity.addressables/Editor/AutoGroupGenerator/SubgraphCommandQueue.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.AutoGroupGenerator.Editor'
+
+[WARNING] Unity.Addressables.Editor
+Path      : Packages/com.unity.addressables/Editor/Unity.Addressables.Editor.asmdef
+    Packages/com.unity.addressables/Editor/GUI/AddressableAssetsSettingsGroupTreeView.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Addressables.Editor'
+
+[WARNING] Unity.ResourceManager
+Path      : Packages/com.unity.addressables/Runtime/ResourceManager/Unity.ResourceManager.asmdef
+    Packages/com.unity.addressables/Runtime/ResourceManager/ResourceProviders/Simulation/VirtualBundledAssetProvider.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.ResourceManager'
+
+[WARNING] Unity.Addressables
+Path      : Packages/com.unity.addressables/Runtime/Unity.Addressables.asmdef
+    Packages/com.unity.addressables/Runtime/ResourceLocators/ContentCatalogData.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Addressables'
+
+[WARNING] Unity.Addressables.DocExampleCode.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+    Packages/com.unity.addressables/Tests/Editor/DocExampleCode/ScriptReference/UsingInstantiate.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Addressables.DocExampleCode.Editor.Tests'
+
+[WARNING] Unity.AI.Navigation.Editor.ConversionSystem
+Path      : Packages/com.unity.ai.navigation/Editor/ConversionSystem/Unity.AI.Navigation.Editor.ConversionSystem.asmdef
+    Packages/com.unity.ai.navigation/Editor/ConversionSystem/ConverterItemInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.AI.Navigation.Editor.ConversionSystem'
+
+[WARNING] Unity.AI.Navigation.Editor
+Path      : Packages/com.unity.ai.navigation/Editor/Unity.AI.Navigation.Editor.asmdef
+    Packages/com.unity.ai.navigation/Editor/NavMeshLinkEditor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.AI.Navigation.Editor'
+
+[WARNING] Unity.AI.Navigation.Updater
+Path      : Packages/com.unity.ai.navigation/Editor/Updater/Unity.AI.Navigation.Updater.asmdef
+    Packages/com.unity.ai.navigation/Editor/Updater/NavMeshSceneConverter.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.AI.Navigation.Updater'
+
+[WARNING] Unity.AI.Navigation
+Path      : Packages/com.unity.ai.navigation/Runtime/Unity.AI.Navigation.asmdef
+    Packages/com.unity.ai.navigation/Runtime/NavMeshLink.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.AI.Navigation'
+
+[WARNING] Unity.Burst.Editor
+Path      : Packages/com.unity.burst/Editor/Unity.Burst.Editor.asmdef
+    Packages/com.unity.burst/Editor/BurstInspectorGUI.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Burst.Editor'
+
+[WARNING] Unity.Burst
+Path      : Packages/com.unity.burst/Runtime/Unity.Burst.asmdef
+    Packages/com.unity.burst/Runtime/BurstRuntime.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Burst'
+
+[WARNING] Unity.Burst.CodeGen
+Path      : Packages/com.unity.burst/Unity.Burst.CodeGen/Unity.Burst.CodeGen.asmdef
+    Packages/com.unity.burst/Unity.Burst.CodeGen/CecilExtensions.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Burst.CodeGen'
+
+[WARNING] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+    Packages/com.unity.cinemachine/Editor/Editors/CinemachinePOVEditor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'com.unity.cinemachine.editor'
+
+[WARNING] Cinemachine
+Path      : Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+    Packages/com.unity.cinemachine/Runtime/Behaviours/CinemachinePipeline.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Cinemachine'
+
+[WARNING] Unity.Collections
+Path      : Packages/com.unity.collections/Unity.Collections/Unity.Collections.asmdef
+    Packages/com.unity.collections/Unity.Collections/StreamCompressionModel.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Collections'
+
+[WARNING] Unity.Collections.CodeGen
+Path      : Packages/com.unity.collections/Unity.Collections.CodeGen/Unity.Collections.CodeGen.asmdef
+    Packages/com.unity.collections/Unity.Collections.CodeGen/JobsILPostProcessor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Collections.CodeGen'
+
+[WARNING] Unity.Collections.Editor
+Path      : Packages/com.unity.collections/Unity.Collections.Editor/Unity.Collections.Editor.asmdef
+    Packages/com.unity.collections/Unity.Collections.Editor/CLILeakDetectionSwitcher.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Collections.Editor'
+
+[WARNING] Gamelogic.Extensions.Editor
+Path      : Packages/za.co.gamelogic.extensions/Editor/Gamelogic.Extensions.Editor.asmdef
+    Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/ListSelectionPopup.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Gamelogic.Extensions.Editor'
+
+[WARNING] Gamelogic.Extensions
+Path      : Packages/za.co.gamelogic.extensions/Runtime/Gamelogic.Extensions.asmdef
+    Packages/za.co.gamelogic.extensions/Runtime/Algorithms/PidController/PidController.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Gamelogic.Extensions'
+
+[WARNING] Unity.InputSystem.DocCodeSamples
+Path      : Packages/com.unity.inputsystem/DocCodeSamples.Tests/DocCodeSamples.asmdef
+    Packages/com.unity.inputsystem/DocCodeSamples.Tests/GamepadExample.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InputSystem.DocCodeSamples'
+
+[WARNING] Unity.InputSystem.ForUI
+Path      : Packages/com.unity.inputsystem/InputSystem/Plugins/InputForUI/InputSystemForUI.asmdef
+    Packages/com.unity.inputsystem/InputSystem/Plugins/InputForUI/InputSystemProvider.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InputSystem.ForUI'
+
+[WARNING] Unity.InputSystem
+Path      : Packages/com.unity.inputsystem/InputSystem/Unity.InputSystem.asmdef
+    Packages/com.unity.inputsystem/InputSystem/Plugins/DualShock/DualShockGamepad.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InputSystem'
+
+[WARNING] Unity.InputSystem.TestFramework
+Path      : Packages/com.unity.inputsystem/Tests/TestFixture/Unity.InputSystem.TestFramework.asmdef
+    Packages/com.unity.inputsystem/Tests/TestFixture/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InputSystem.TestFramework'
+
+[WARNING] Unity.Rider.Editor
+Path      : Packages/com.unity.ide.rider/Rider/Editor/com.unity.ide.rider.asmdef
+    Packages/com.unity.ide.rider/Rider/Editor/PostProcessors/RiderAssetPostprocessor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Rider.Editor'
+
+[WARNING] Unity.InternalAPIEditorBridge.013
+Path      : Packages/com.unity.localization/Editor/InternalBridge/Unity.Localization.Editor.InternalBridge.asmdef
+    Packages/com.unity.localization/Editor/InternalBridge/ScriptAttributeUtilityBridge.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InternalAPIEditorBridge.013'
+
+[WARNING] Unity.Localization.Editor
+Path      : Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+    Packages/com.unity.localization/Editor/UI/Tables/SerializedTableReference.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Localization.Editor'
+
+[WARNING] Unity.InternalAPIEngineBridge.013
+Path      : Packages/com.unity.localization/Runtime/InternalBridge/Unity.Localization.InternalBridge.asmdef
+    Packages/com.unity.localization/Runtime/InternalBridge/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InternalAPIEngineBridge.013'
+
+[WARNING] Unity.Localization
+Path      : Packages/com.unity.localization/Runtime/Unity.Localization.asmdef
+    Packages/com.unity.localization/Runtime/Smart Format/Utilities/PluralRules.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Localization'
+
+[WARNING] Unity.Mathematics
+Path      : Packages/com.unity.mathematics/Unity.Mathematics/Unity.Mathematics.asmdef
+    Packages/com.unity.mathematics/Unity.Mathematics/bool4x3.gen.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Mathematics'
+
+[WARNING] Unity.Mathematics.Editor
+Path      : Packages/com.unity.mathematics/Unity.Mathematics.Editor/Unity.Mathematics.Editor.asmdef
+    Packages/com.unity.mathematics/Unity.Mathematics.Editor/QuaternionDrawer.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Mathematics.Editor'
+
+[WARNING] Unity.Multiplayer.Center.Common
+Path      : Packages/com.unity.multiplayer.center/Common/Unity.Multiplayer.Center.Common.asmdef
+    Packages/com.unity.multiplayer.center/Common/IOnboardingSectionAnalyticsProvider.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Multiplayer.Center.Common'
+
+[WARNING] Unity.Multiplayer.Center.Editor
+Path      : Packages/com.unity.multiplayer.center/Editor/Unity.Multiplayer.Center.Editor.asmdef
+    Packages/com.unity.multiplayer.center/Editor/Recommendations/RecommenderSystemDataObject.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Multiplayer.Center.Editor'
+
+[WARNING] Unity.PerformanceTesting.Editor
+Path      : Packages/com.unity.test-framework.performance/Editor/Unity.PerformanceTesting.Editor.asmdef
+    Packages/com.unity.test-framework.performance/Editor/TestReportGraph/SampleGroupAdditionalData.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PerformanceTesting.Editor'
+
+[WARNING] Unity.PerformanceTesting
+Path      : Packages/com.unity.test-framework.performance/Runtime/Unity.PerformanceTesting.asmdef
+    Packages/com.unity.test-framework.performance/Runtime/Measurements/ScopeMeasurement.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PerformanceTesting'
+
+[WARNING] Unity.ScriptableBuildPipeline.Editor
+Path      : Packages/com.unity.scriptablebuildpipeline/Editor/Unity.ScriptableBuildPipeline.Editor.asmdef
+    Packages/com.unity.scriptablebuildpipeline/Editor/Tasks/PostPackingCallback.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.ScriptableBuildPipeline.Editor'
+
+[WARNING] Unity.ScriptableBuildPipeline
+Path      : Packages/com.unity.scriptablebuildpipeline/Runtime/Unity.ScriptableBuildPipeline.asmdef
+    Packages/com.unity.scriptablebuildpipeline/Runtime/Shared/AssemblyUtility.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.ScriptableBuildPipeline'
+
+[WARNING] Unity.PathTracing.Editor
+Path      : Packages/com.unity.render-pipelines.core/Editor/PathTracing/Unity.PathTracing.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/PathTracing/LightBakerStrangler.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PathTracing.Editor'
+
+[WARNING] Unity.Rendering.LightTransport.Editor
+Path      : Packages/com.unity.render-pipelines.core/Editor/UnifiedRayTracing/Unity.UnifiedRayTracing.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/UnifiedRayTracing/CreateUnifiedRTShaderMenuItem.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Rendering.LightTransport.Editor'
+
+[WARNING] Unity.RenderPipelines.Core.Editor
+Path      : Packages/com.unity.render-pipelines.core/Editor/Unity.RenderPipelines.Core.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/Utilities/TimedScope.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Core.Editor'
+
+[WARNING] Unity.RenderPipelines.Core.Editor.Shared
+Path      : Packages/com.unity.render-pipelines.core/Editor-PrivateShared/Unity.RenderPipelines.Core.Editor.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Editor-PrivateShared/Tools/Converter/Window/RenderPipelineConverterItemVisualElement.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Core.Editor.Shared'
+
+[WARNING] Unity.RenderPipelines.GPUDriven.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/GPUDriven/Unity.RenderPipelines.GPUDriven.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/GPUDriven/Components/DisallowGPUDrivenRendering.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.GPUDriven.Runtime'
+
+[WARNING] Unity.SurfaceCache.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/Unity.SurfaceCache.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.SurfaceCache.Runtime'
+
+[WARNING] Unity.PathTracing.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Unity.PathTracing.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/PathTracing/LightmapIntegrationHelpers.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PathTracing.Runtime'
+
+[WARNING] Unity.UnifiedRayTracing.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Unity.UnifiedRayTracing.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Hardware/HardwareRayTracingAccelStruct.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.UnifiedRayTracing.Runtime'
+
+[WARNING] Unity.RenderPipelines.Core.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/Unity.RenderPipelines.Core.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/Volume/VolumeComponent.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Core.Runtime'
+
+[WARNING] Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared
+Path      : Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalBridge/Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalBridge/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared'
+
+[WARNING] Unity.RenderPipelines.Core.Runtime.Shared
+Path      : Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/Unity.RenderPipelines.Core.Runtime.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalRenderPipelineGlobalSettingsUtils.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Core.Runtime.Shared'
+
+[WARNING] Unity.RenderPipelines.Core.ShaderLibrary
+Path      : Packages/com.unity.render-pipelines.core/ShaderLibrary/Unity.RenderPipelines.Core.ShaderLibrary.asmdef
+    Packages/com.unity.render-pipelines.core/ShaderLibrary/DummyShaderLibrary.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Core.ShaderLibrary'
+
+[WARNING] Unity.Searcher.Editor
+Path      : Packages/com.unity.searcher/Editor/Unity.Searcher.Editor.asmdef
+    Packages/com.unity.searcher/Editor/Searcher/SearcherDatabaseBase.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Searcher.Editor'
+
+[WARNING] Unity.InternalAPIEditorBridge.ShaderGraph.Editor
+Path      : Packages/com.unity.shadergraph/Editor/InternalBridge/Unity.InternalAPIEditorBridge.ShaderGraph.Editor.asmdef
+    Packages/com.unity.shadergraph/Editor/InternalBridge/ObjectSelector.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InternalAPIEditorBridge.ShaderGraph.Editor'
+
+[WARNING] Unity.ShaderGraph.Editor
+Path      : Packages/com.unity.shadergraph/Editor/Unity.ShaderGraph.Editor.asmdef
+    Packages/com.unity.shadergraph/Editor/Generation/Enumerations/BlendOp.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.ShaderGraph.Editor'
+
+[WARNING] Unity.ShaderGraph.Utilities
+Path      : Packages/com.unity.shadergraph/Editor/Utilities/Unity.ShaderGraph.Utilities.asmdef
+    Packages/com.unity.shadergraph/Editor/Utilities/GenerationAPIAttribute.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.ShaderGraph.Utilities'
+
+[WARNING] Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary
+Path      : Packages/com.unity.shadergraph/ShaderGraphLibrary/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.asmdef
+    Packages/com.unity.shadergraph/ShaderGraphLibrary/DummyShaderGraphLibrary.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary'
+
+[WARNING] UnityEditor.TestRunner
+Path      : Packages/com.unity.test-framework/UnityEditor.TestRunner/UnityEditor.TestRunner.asmdef
+    Packages/com.unity.test-framework/UnityEditor.TestRunner/TestRun/Tasks/Platform/PlatformSpecificCleanupTask.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UnityEditor.TestRunner'
+
+[WARNING] UnityEngine.TestRunner
+Path      : Packages/com.unity.test-framework/UnityEngine.TestRunner/UnityEngine.TestRunner.asmdef
+    Packages/com.unity.test-framework/UnityEngine.TestRunner/Utils/AssemblyProvider/PlayerTestAssemblyProvider.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UnityEngine.TestRunner'
+
+[WARNING] Unity.Timeline.Editor
+Path      : Packages/com.unity.timeline/Editor/Unity.Timeline.Editor.asmdef
+    Packages/com.unity.timeline/Editor/Window/Modes/TimelineInactiveMode.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Timeline.Editor'
+
+[WARNING] Unity.Timeline
+Path      : Packages/com.unity.timeline/Runtime/Unity.Timeline.asmdef
+    Packages/com.unity.timeline/Runtime/Scripting/PlayableTrack.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Timeline'
+
+[WARNING] TriInspector.Editor
+Path      : Packages/com.codewriter.triinspector/Editor/TriInspector.Editor.asmdef
+    Packages/com.codewriter.triinspector/Editor/TypeProcessors/TriRectOffsetTypeProcessor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'TriInspector.Editor'
+
+[WARNING] TriInspector.Editor.Extras
+Path      : Packages/com.codewriter.triinspector/Editor.Extras/TriInspector.Editor.Extras.asmdef
+    Packages/com.codewriter.triinspector/Editor.Extras/Drawers/UnitDrawer.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'TriInspector.Editor.Extras'
+
+[WARNING] TriInspector.Editor.Samples
+Path      : Packages/com.codewriter.triinspector/Editor.Samples/TriInspector.Editor.Samples.asmdef
+    Packages/com.codewriter.triinspector/Editor.Samples/Styling/Styling_GUIColorSample.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'TriInspector.Editor.Samples'
+
+[WARNING] TriInspector
+Path      : Packages/com.codewriter.triinspector/Runtime/TriInspector.asmdef
+    Packages/com.codewriter.triinspector/Runtime/PreviewMeshRotationMethod.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'TriInspector'
+
+[WARNING] UnityEditor.UI.Analytics
+Path      : Packages/com.unity.ugui/Editor/Analytics/UnityEditor.UI.Analytics.asmdef
+    Packages/com.unity.ugui/Editor/Analytics/IAnalytic/UGUIBuildEvent.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UnityEditor.UI.Analytics'
+
+[WARNING] Unity.TextMeshPro.Editor
+Path      : Packages/com.unity.ugui/Editor/TMP/Unity.TextMeshPro.Editor.asmdef
+    Packages/com.unity.ugui/Editor/TMP/PropertyDrawers/TMP_MarkToMarkAdjustmentRecordPropertyDrawer.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.TextMeshPro.Editor'
+
+[WARNING] UnityEditor.UI
+Path      : Packages/com.unity.ugui/Editor/UGUI/UnityEditor.UI.asmdef
+    Packages/com.unity.ugui/Editor/UGUI/UI/RawImageEditor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UnityEditor.UI'
+
+[WARNING] Unity.InternalAPIEngineBridge.004
+Path      : Packages/com.unity.ugui/Runtime/InternalBridge/Unity.InternalAPIEngineBridge.004.asmdef
+    Packages/com.unity.ugui/Runtime/InternalBridge/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.InternalAPIEngineBridge.004'
+
+[WARNING] Unity.TextMeshPro
+Path      : Packages/com.unity.ugui/Runtime/TMP/Unity.TextMeshPro.asmdef
+    Packages/com.unity.ugui/Runtime/TMP/TMP_TextInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.TextMeshPro'
+
+[WARNING] UnityEngine.UI
+Path      : Packages/com.unity.ugui/Runtime/UGUI/UnityEngine.UI.asmdef
+    Packages/com.unity.ugui/Runtime/UGUI/UI/Core/GraphicRebuildTracker.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'UnityEngine.UI'
+
+[WARNING] Unity.Profiling.Core
+Path      : Packages/com.unity.profiling.core/Runtime/Unity.Profiling.Core.asmdef
+    Packages/com.unity.profiling.core/Runtime/ProfilerMarker3Params.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.Profiling.Core'
+
+[WARNING] Unity.PlasticSCM.Editor.Entities
+Path      : Packages/com.unity.collab-proxy/Editor/Entities/Unity.PlasticSCM.Editor.Entities.asmdef
+    Packages/com.unity.collab-proxy/Editor/Entities/GetSubScenePathFromInstance.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PlasticSCM.Editor.Entities'
+
+[WARNING] Unity.PlasticSCM.Editor
+Path      : Packages/com.unity.collab-proxy/Editor/Unity.PlasticSCM.Editor.asmdef
+    Packages/com.unity.collab-proxy/Editor/Gluon/UpdateProgress.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.PlasticSCM.Editor'
+
+[WARNING] Unity.CollabProxy.Editor
+Path      : Packages/com.unity.collab-proxy/Editor/UnityInternals/Unity.CollabProxy.Editor.asmdef
+    Packages/com.unity.collab-proxy/Editor/UnityInternals/UVCSToolbarButton_Legacy.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.CollabProxy.Editor'
+
+[WARNING] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+    Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.2D.Editor.Overrides'
+
+[WARNING] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+    Packages/com.unity.render-pipelines.universal/Editor/AssetPostProcessors/ModelPostProcessor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.Editor'
+
+[WARNING] Unity.RenderPipelines.Universal.2D.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal/Runtime/2D/UTess2D/UTess.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.2D.Runtime'
+
+[WARNING] Unity.RenderPipelines.Universal.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal/Runtime/Overrides/ColorAdjustments.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.Runtime'
+
+[WARNING] Unity.RenderPipeline.Universal.ShaderLibrary
+Path      : Packages/com.unity.render-pipelines.universal/ShaderLibrary/Unity.RenderPipelines.Universal.ShaderLibrary.asmdef
+    Packages/com.unity.render-pipelines.universal/ShaderLibrary/Deprecated.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipeline.Universal.ShaderLibrary'
+
+[WARNING] Unity.RenderPipelines.Universal.Shaders
+Path      : Packages/com.unity.render-pipelines.universal/Shaders/Unity.RenderPipelines.Universal.Shaders.asmdef
+    Packages/com.unity.render-pipelines.universal/Shaders/Shaders.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.Shaders'
+
+[WARNING] Unity.RenderPipelines.Universal.Config.Runtime
+Path      : Packages/com.unity.render-pipelines.universal-config/Runtime/Unity.RenderPipelines.Universal.Config.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal-config/Runtime/ShaderConfig.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.RenderPipelines.Universal.Config.Runtime'
+
+[WARNING] Unity.VisualScripting.DocCodeExamples
+Path      : Packages/com.unity.visualscripting/DocCodeExamples/Unity.VisualScripting.DocCodeExamples.asmdef
+    Packages/com.unity.visualscripting/DocCodeExamples/EventBusExamples.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.DocCodeExamples'
+
+[WARNING] Unity.VisualScripting.SettingsProvider.Editor
+Path      : Packages/com.unity.visualscripting/Editor/SettingsProvider/Unity.VisualScripting.SettingsProvider.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/SettingsProvider/ProjectSettingsProviderView.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.SettingsProvider.Editor'
+
+[WARNING] Unity.VisualScripting.Core.Editor
+Path      : Packages/com.unity.visualscripting/Editor/VisualScripting.Core/Unity.VisualScripting.Core.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Core/Plugin/Acknowledgements/Acknowledgement_DotNetZip.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.Core.Editor'
+
+[WARNING] Unity.VisualScripting.Flow.Editor
+Path      : Packages/com.unity.visualscripting/Editor/VisualScripting.Flow/Unity.VisualScripting.Flow.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Flow/Framework/Nesting/GraphInputInspector.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.Flow.Editor'
+
+[WARNING] Unity.VisualScripting.Shared.Editor
+Path      : Packages/com.unity.visualscripting/Editor/VisualScripting.Shared/Unity.VisualScripting.Shared.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Shared/EmptyGraphWindow.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.Shared.Editor'
+
+[WARNING] Unity.VisualScripting.State.Editor
+Path      : Packages/com.unity.visualscripting/Editor/VisualScripting.State/Unity.VisualScripting.State.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.State/States/StateDescriptor.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.State.Editor'
+
+[WARNING] Unity.VisualScripting.Core
+Path      : Packages/com.unity.visualscripting/Runtime/VisualScripting.Core/Unity.VisualScripting.Core.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Core/EditorBinding/TypeIconPriorityAttribute.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.Core'
+
+[WARNING] Unity.VisualScripting.Flow
+Path      : Packages/com.unity.visualscripting/Runtime/VisualScripting.Flow/Unity.VisualScripting.Flow.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Flow/Framework/Collections/Dictionaries/RemoveDictionaryItem.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.Flow'
+
+[WARNING] Unity.VisualScripting.State
+Path      : Packages/com.unity.visualscripting/Runtime/VisualScripting.State/Unity.VisualScripting.State.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.State/Properties/AssemblyInfo.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualScripting.State'
+
+[WARNING] Unity.VisualStudio.Editor
+Path      : Packages/com.unity.ide.visualstudio/Editor/com.unity.ide.visualstudio.asmdef
+    Packages/com.unity.ide.visualstudio/Editor/KnownAssemblies.cs
+Reference : 
+Problem   : Duplicate assembly name detected: 'Unity.VisualStudio.Editor'
+
+[ERROR] Unity.AutoGroupGenerator.Editor
+Path      : Packages/com.unity.addressables/Editor/AutoGroupGenerator/Unity.AutoGroupGenerator.Editor.asmdef
+Reference : GUID:478a2357cc57436488a56e564b08d223
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.AutoGroupGenerator.Editor
+Path      : Packages/com.unity.addressables/Editor/AutoGroupGenerator/Unity.AutoGroupGenerator.Editor.asmdef
+Reference : GUID:e2b422b758a74ac4aae6f84e7868955f
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.Addressables.Editor
+Path      : Packages/com.unity.addressables/Editor/Unity.Addressables.Editor.asmdef
+Reference : Unity.Services.Core
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Editor
+Path      : Packages/com.unity.addressables/Editor/Unity.Addressables.Editor.asmdef
+Reference : Unity.Services.Ccd.Management
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.DocExampleCode.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+Reference : UnityUnity.Addressables.Runtime.Tests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.DocExampleCode.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+Reference : Unity.Addressables.Editor.BuildReportVisualizer
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.DocExampleCode.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+Reference : Unity.Services.Ccd.Management
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.DocExampleCode.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+Reference : Unity.Services.Core
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/Unity.Addressables.Editor.Tests.asmdef
+Reference : Unity.Addressables.Tests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/Unity.Addressables.Editor.Tests.asmdef
+Reference : Unity.Addressables.Editor.BuildReportVisualizer
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/Unity.Addressables.Editor.Tests.asmdef
+Reference : Unity.Services.Ccd.Management
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Editor.Tests
+Path      : Packages/com.unity.addressables/Tests/Editor/Unity.Addressables.Editor.Tests.asmdef
+Reference : Unity.Services.Core
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.ResourceManager.Tests
+Path      : Packages/com.unity.addressables/Tests/Runtime/ResourceManager/Unity.ResourceManager.Tests.asmdef
+Reference : Unity.Addressables.Tests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Addressables.Runtime.Tests
+Path      : Packages/com.unity.addressables/Tests/Runtime/Unity.Addressables.Runtime.Tests.asmdef
+Reference : Unity.Services.Ccd.Management
+Problem   : Referenced assembly could not be found.
+
+[ERROR] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+Reference : Unity.Postprocessing.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+Reference : Unity.Postprocessing.Editor
+Problem   : Referenced assembly could not be found.
+
+[ERROR] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Editor
+Problem   : Referenced assembly could not be found.
+
+[ERROR] com.unity.cinemachine.editor
+Path      : Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+Reference : Unity.ugui
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Cinemachine
+Path      : Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+Reference : Unity.Postprocessing.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Cinemachine
+Path      : Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Cinemachine
+Path      : Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+Reference : Unity.ugui
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Cinemachine
+Path      : Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+Reference : Unity.2D.PixelPerfect
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Cinemachine.Runtime.Tests
+Path      : Packages/com.unity.cinemachine/Tests/Runtime/Cinemachine.Runtime.Tests.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections
+Path      : Packages/com.unity.collections/Unity.Collections/Unity.Collections.asmdef
+Reference : Unity.Properties
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections
+Path      : Packages/com.unity.collections/Unity.Collections/Unity.Collections.asmdef
+Reference : Unity.Collections.LowLevel.ILSupport
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.CodeGen
+Path      : Packages/com.unity.collections/Unity.Collections.CodeGen/Unity.Collections.CodeGen.asmdef
+Reference : Unity.Properties
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.PerformanceTests
+Path      : Packages/com.unity.collections/Unity.Collections.PerformanceTests/Unity.Collections.PerformanceTests.asmdef
+Reference : Unity.Jobs
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.Tests.Playmode
+Path      : Packages/com.unity.collections/Unity.Collections.Tests.Playmode/Unity.Collections.Tests.Playmode.asmdef
+Reference : Unity.Entities
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.Tests.Playmode
+Path      : Packages/com.unity.collections/Unity.Collections.Tests.Playmode/Unity.Collections.Tests.Playmode.asmdef
+Reference : Unity.Entities.Hybrid
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.Tests.Playmode
+Path      : Packages/com.unity.collections/Unity.Collections.Tests.Playmode/Unity.Collections.Tests.Playmode.asmdef
+Reference : Unity.Entities.Tests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Collections.Tests.Playmode
+Path      : Packages/com.unity.collections/Unity.Collections.Tests.Playmode/Unity.Collections.Tests.Playmode.asmdef
+Reference : Unity.Jobs
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.InputSystem
+Path      : Packages/com.unity.inputsystem/InputSystem/Unity.InputSystem.asmdef
+Reference : Unity.ugui
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Localization.Editor
+Path      : Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+Reference : Unity.ugui
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Localization.Editor
+Path      : Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+Reference : com.unity.quicksearch
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Localization.Editor
+Path      : Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+Reference : Unity.Nuget.NewtonsoftJson.EditorTests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Localization.Editor
+Path      : Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+Reference : Unity.DeviceSimulator.Editor
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.Multiplayer.Center.Editor.Tests
+Path      : Packages/com.unity.multiplayer.center/Tests/Editor/Unity.Multiplayer.Center.Editor.Tests.asmdef
+Reference : Unity.Multiplayer.Center.Integrations
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.PerformanceTesting
+Path      : Packages/com.unity.test-framework.performance/Runtime/Unity.PerformanceTesting.asmdef
+Reference : com.unity.test.metadata-manager
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.ScriptableBuildPipeline.Editor
+Path      : Packages/com.unity.scriptablebuildpipeline/Editor/Unity.ScriptableBuildPipeline.Editor.asmdef
+Reference : UnityEditor.CacheServer
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.ScriptableBuildPipeline.Editor.Tests
+Path      : Packages/com.unity.scriptablebuildpipeline/Tests/Editor/Unity.ScriptableBuildPipeline.Editor.Tests.asmdef
+Reference : ScriptableBuildPipelineTests
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.PathTracing.Runtime
+Path      : Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Unity.PathTracing.Runtime.asmdef
+Reference : GUID:e3bf50bf561c9a7418912816ec4cb8e1
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Core.Editor.Tests
+Path      : Packages/com.unity.render-pipelines.core/Tests/Editor/Unity.RenderPipelines.Core.Editor.Tests.asmdef
+Reference : GUID:aa4a944c34c4c5449b84975fb1570dad
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.Searcher.EditorTests
+Path      : Packages/com.unity.searcher/Tests/Editor/Unity.Searcher.EditorTests.asmdef
+Reference : Unity.Searcher.EditorSamples
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.ShaderGraph.Editor
+Path      : Packages/com.unity.shadergraph/Editor/Unity.ShaderGraph.Editor.asmdef
+Reference : GUID:a2b0e253c44e0427f9c718f9e5c1c7e3
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.TextMeshPro.Editor
+Path      : Packages/com.unity.ugui/Editor/TMP/Unity.TextMeshPro.Editor.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Editor
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.TextMeshPro.Editor
+Path      : Packages/com.unity.ugui/Editor/TMP/Unity.TextMeshPro.Editor.asmdef
+Reference : Unity.RenderPipelines.HighDefinition.Runtime
+Problem   : Referenced assembly could not be found.
+
+[ERROR] UnityEngine.UI
+Path      : Packages/com.unity.ugui/Runtime/UGUI/UnityEngine.UI.asmdef
+Reference : UnityEngine.UIElementsModule
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.PlasticSCM.Editor.Entities
+Path      : Packages/com.unity.collab-proxy/Editor/Entities/Unity.PlasticSCM.Editor.Entities.asmdef
+Reference : Unity.Scenes
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:d60799ab2a985554ea1a39cd38695018
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:a35efad8797223d499f8c68b1f545dbc
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:9604b18aafdbc9346bceb5e19ac9c746
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:f9fe0089ec81f4079af78eb2287a6163
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:116a4d4dbf5c04973bbf517077a062a1
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:e40ba710768534012815d3193fa296cb
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Editor.Overrides
+Path      : Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+Reference : GUID:41524c21c95e5fe4dbc5b48bd21995a4
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:d60799ab2a985554ea1a39cd38695018
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:a35efad8797223d499f8c68b1f545dbc
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:9604b18aafdbc9346bceb5e19ac9c746
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:f9fe0089ec81f4079af78eb2287a6163
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:116a4d4dbf5c04973bbf517077a062a1
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:e40ba710768534012815d3193fa296cb
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:41524c21c95e5fe4dbc5b48bd21995a4
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Editor
+Path      : Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+Reference : GUID:24bbfa70f4a5840c3ab7da95e6835815
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+Reference : GUID:41524c21c95e5fe4dbc5b48bd21995a4
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+Reference : GUID:caccfbdb442cdc64fa722b4c5585521f
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.2D.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+Reference : RenderAs2DModule
+Problem   : Referenced assembly could not be found.
+
+[ERROR] Unity.RenderPipelines.Universal.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef
+Reference : GUID:7dbf32976982c98448af054f2512cb79
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Runtime
+Path      : Packages/com.unity.render-pipelines.universal/Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef
+Reference : GUID:d04eb9c554ad44ceab303cecf0c0cf82
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.RenderPipelines.Universal.Runtime.Tests
+Path      : Packages/com.unity.render-pipelines.universal/Tests/Runtime/Unity.RenderPipelines.Universal.Runtime.Tests.asmdef
+Reference : GUID:41524c21c95e5fe4dbc5b48bd21995a4
+Problem   : GUID reference cannot be resolved.
+
+[ERROR] Unity.VisualScripting.DocCodeExamples
+Path      : Packages/com.unity.visualscripting/DocCodeExamples/Unity.VisualScripting.DocCodeExamples.asmdef
+Reference : Unity.VisualScripting.Tests.Editor
+Problem   : Referenced assembly could not be found.
+
+
+DUPLICATE ASSEMBLY NAMES
+------------------------
+ParrelSync
+    Assets/ParrelSync/projectCloner.asmdef
+    Assets/ParrelSync/Editor/FileUtilities.cs
+
+Unity.Fusion.CodeGen
+    Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.asmdef
+    Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.User.cs
+
+Fusion.Unity.Editor
+    Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.asmdef
+    Assets/Photon/Fusion/Editor/FusionEditorSkin.cs
+
+Fusion.Unity
+    Assets/Photon/Fusion/Runtime/Fusion.Unity.asmdef
+    Assets/Photon/Fusion/Runtime/Statistics/FusionStatistics.cs
+
+Fusion.Addons.Physics.Editor
+    Assets/Photon/FusionAddons/Physics/Editor/Fusion.Addons.Physics.Editor.asmdef
+    Assets/Photon/FusionAddons/Physics/Editor/ClientPhysicsSimulationDrawer.cs
+
+Fusion.Addons.Physics
+    Assets/Photon/FusionAddons/Physics/Fusion.Addons.Physics.asmdef
+    Assets/Photon/FusionAddons/Physics/NetworkRigidbody/NetworkRigidbodyBase/NetworkRigidbodyBase.Render.cs
+
+ImageCropper.Runtime
+    Assets/Plugins/ImageCropper/ImageCropper.Runtime.asmdef
+    Assets/Plugins/ImageCropper/Scripts/ImageCropperUtils.cs
+
+UniTask.Editor
+    Assets/Plugins/UniTask/Editor/UniTask.Editor.asmdef
+    Assets/Plugins/UniTask/Editor/UniTaskTrackerWindow.cs
+
+UniTask.Addressables
+    Assets/Plugins/UniTask/Runtime/External/Addressables/UniTask.Addressables.asmdef
+    Assets/Plugins/UniTask/Runtime/External/Addressables/AddressablesAsyncExtensions.cs
+
+UniTask.DOTween
+    Assets/Plugins/UniTask/Runtime/External/DOTween/UniTask.DOTween.asmdef
+    Assets/Plugins/UniTask/Runtime/External/DOTween/DOTweenAsyncExtensions.cs
+
+UniTask.TextMeshPro
+    Assets/Plugins/UniTask/Runtime/External/TextMeshPro/UniTask.TextMeshPro.asmdef
+    Assets/Plugins/UniTask/Runtime/External/TextMeshPro/TextMeshProAsyncExtensions.cs
+
+UniTask.Linq
+    Assets/Plugins/UniTask/Runtime/Linq/UniTask.Linq.asmdef
+    Assets/Plugins/UniTask/Runtime/Linq/Zip.cs
+
+UniTask
+    Assets/Plugins/UniTask/Runtime/UniTask.asmdef
+    Assets/Plugins/UniTask/Runtime/Internal/PlayerLoopRunner.cs
+
+Unity.2D.Sprite.Editor
+    Packages/com.unity.2d.sprite/Editor/Unity.2D.Sprite.Editor.asmdef
+    Packages/com.unity.2d.sprite/Editor/SpriteEditorModule/SpriteFrameModule/Overlay/SpriteFrameModeToolStripBase.cs
+
+Unity.AutoGroupGenerator.Editor
+    Packages/com.unity.addressables/Editor/AutoGroupGenerator/Unity.AutoGroupGenerator.Editor.asmdef
+    Packages/com.unity.addressables/Editor/AutoGroupGenerator/SubgraphCommandQueue.cs
+
+Unity.Addressables.Editor
+    Packages/com.unity.addressables/Editor/Unity.Addressables.Editor.asmdef
+    Packages/com.unity.addressables/Editor/GUI/AddressableAssetsSettingsGroupTreeView.cs
+
+Unity.ResourceManager
+    Packages/com.unity.addressables/Runtime/ResourceManager/Unity.ResourceManager.asmdef
+    Packages/com.unity.addressables/Runtime/ResourceManager/ResourceProviders/Simulation/VirtualBundledAssetProvider.cs
+
+Unity.Addressables
+    Packages/com.unity.addressables/Runtime/Unity.Addressables.asmdef
+    Packages/com.unity.addressables/Runtime/ResourceLocators/ContentCatalogData.cs
+
+Unity.Addressables.DocExampleCode.Editor.Tests
+    Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+    Packages/com.unity.addressables/Tests/Editor/DocExampleCode/ScriptReference/UsingInstantiate.cs
+
+Unity.AI.Navigation.Editor.ConversionSystem
+    Packages/com.unity.ai.navigation/Editor/ConversionSystem/Unity.AI.Navigation.Editor.ConversionSystem.asmdef
+    Packages/com.unity.ai.navigation/Editor/ConversionSystem/ConverterItemInfo.cs
+
+Unity.AI.Navigation.Editor
+    Packages/com.unity.ai.navigation/Editor/Unity.AI.Navigation.Editor.asmdef
+    Packages/com.unity.ai.navigation/Editor/NavMeshLinkEditor.cs
+
+Unity.AI.Navigation.Updater
+    Packages/com.unity.ai.navigation/Editor/Updater/Unity.AI.Navigation.Updater.asmdef
+    Packages/com.unity.ai.navigation/Editor/Updater/NavMeshSceneConverter.cs
+
+Unity.AI.Navigation
+    Packages/com.unity.ai.navigation/Runtime/Unity.AI.Navigation.asmdef
+    Packages/com.unity.ai.navigation/Runtime/NavMeshLink.cs
+
+Unity.Burst.Editor
+    Packages/com.unity.burst/Editor/Unity.Burst.Editor.asmdef
+    Packages/com.unity.burst/Editor/BurstInspectorGUI.cs
+
+Unity.Burst
+    Packages/com.unity.burst/Runtime/Unity.Burst.asmdef
+    Packages/com.unity.burst/Runtime/BurstRuntime.cs
+
+Unity.Burst.CodeGen
+    Packages/com.unity.burst/Unity.Burst.CodeGen/Unity.Burst.CodeGen.asmdef
+    Packages/com.unity.burst/Unity.Burst.CodeGen/CecilExtensions.cs
+
+com.unity.cinemachine.editor
+    Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+    Packages/com.unity.cinemachine/Editor/Editors/CinemachinePOVEditor.cs
+
+Cinemachine
+    Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+    Packages/com.unity.cinemachine/Runtime/Behaviours/CinemachinePipeline.cs
+
+Unity.Collections
+    Packages/com.unity.collections/Unity.Collections/Unity.Collections.asmdef
+    Packages/com.unity.collections/Unity.Collections/StreamCompressionModel.cs
+
+Unity.Collections.CodeGen
+    Packages/com.unity.collections/Unity.Collections.CodeGen/Unity.Collections.CodeGen.asmdef
+    Packages/com.unity.collections/Unity.Collections.CodeGen/JobsILPostProcessor.cs
+
+Unity.Collections.Editor
+    Packages/com.unity.collections/Unity.Collections.Editor/Unity.Collections.Editor.asmdef
+    Packages/com.unity.collections/Unity.Collections.Editor/CLILeakDetectionSwitcher.cs
+
+Gamelogic.Extensions.Editor
+    Packages/za.co.gamelogic.extensions/Editor/Gamelogic.Extensions.Editor.asmdef
+    Packages/za.co.gamelogic.extensions/Editor/PropertyDrawers/ListSelectionPopup.cs
+
+Gamelogic.Extensions
+    Packages/za.co.gamelogic.extensions/Runtime/Gamelogic.Extensions.asmdef
+    Packages/za.co.gamelogic.extensions/Runtime/Algorithms/PidController/PidController.cs
+
+Unity.InputSystem.DocCodeSamples
+    Packages/com.unity.inputsystem/DocCodeSamples.Tests/DocCodeSamples.asmdef
+    Packages/com.unity.inputsystem/DocCodeSamples.Tests/GamepadExample.cs
+
+Unity.InputSystem.ForUI
+    Packages/com.unity.inputsystem/InputSystem/Plugins/InputForUI/InputSystemForUI.asmdef
+    Packages/com.unity.inputsystem/InputSystem/Plugins/InputForUI/InputSystemProvider.cs
+
+Unity.InputSystem
+    Packages/com.unity.inputsystem/InputSystem/Unity.InputSystem.asmdef
+    Packages/com.unity.inputsystem/InputSystem/Plugins/DualShock/DualShockGamepad.cs
+
+Unity.InputSystem.TestFramework
+    Packages/com.unity.inputsystem/Tests/TestFixture/Unity.InputSystem.TestFramework.asmdef
+    Packages/com.unity.inputsystem/Tests/TestFixture/AssemblyInfo.cs
+
+Unity.Rider.Editor
+    Packages/com.unity.ide.rider/Rider/Editor/com.unity.ide.rider.asmdef
+    Packages/com.unity.ide.rider/Rider/Editor/PostProcessors/RiderAssetPostprocessor.cs
+
+Unity.InternalAPIEditorBridge.013
+    Packages/com.unity.localization/Editor/InternalBridge/Unity.Localization.Editor.InternalBridge.asmdef
+    Packages/com.unity.localization/Editor/InternalBridge/ScriptAttributeUtilityBridge.cs
+
+Unity.Localization.Editor
+    Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+    Packages/com.unity.localization/Editor/UI/Tables/SerializedTableReference.cs
+
+Unity.InternalAPIEngineBridge.013
+    Packages/com.unity.localization/Runtime/InternalBridge/Unity.Localization.InternalBridge.asmdef
+    Packages/com.unity.localization/Runtime/InternalBridge/AssemblyInfo.cs
+
+Unity.Localization
+    Packages/com.unity.localization/Runtime/Unity.Localization.asmdef
+    Packages/com.unity.localization/Runtime/Smart Format/Utilities/PluralRules.cs
+
+Unity.Mathematics
+    Packages/com.unity.mathematics/Unity.Mathematics/Unity.Mathematics.asmdef
+    Packages/com.unity.mathematics/Unity.Mathematics/bool4x3.gen.cs
+
+Unity.Mathematics.Editor
+    Packages/com.unity.mathematics/Unity.Mathematics.Editor/Unity.Mathematics.Editor.asmdef
+    Packages/com.unity.mathematics/Unity.Mathematics.Editor/QuaternionDrawer.cs
+
+Unity.Multiplayer.Center.Common
+    Packages/com.unity.multiplayer.center/Common/Unity.Multiplayer.Center.Common.asmdef
+    Packages/com.unity.multiplayer.center/Common/IOnboardingSectionAnalyticsProvider.cs
+
+Unity.Multiplayer.Center.Editor
+    Packages/com.unity.multiplayer.center/Editor/Unity.Multiplayer.Center.Editor.asmdef
+    Packages/com.unity.multiplayer.center/Editor/Recommendations/RecommenderSystemDataObject.cs
+
+Unity.PerformanceTesting.Editor
+    Packages/com.unity.test-framework.performance/Editor/Unity.PerformanceTesting.Editor.asmdef
+    Packages/com.unity.test-framework.performance/Editor/TestReportGraph/SampleGroupAdditionalData.cs
+
+Unity.PerformanceTesting
+    Packages/com.unity.test-framework.performance/Runtime/Unity.PerformanceTesting.asmdef
+    Packages/com.unity.test-framework.performance/Runtime/Measurements/ScopeMeasurement.cs
+
+Unity.ScriptableBuildPipeline.Editor
+    Packages/com.unity.scriptablebuildpipeline/Editor/Unity.ScriptableBuildPipeline.Editor.asmdef
+    Packages/com.unity.scriptablebuildpipeline/Editor/Tasks/PostPackingCallback.cs
+
+Unity.ScriptableBuildPipeline
+    Packages/com.unity.scriptablebuildpipeline/Runtime/Unity.ScriptableBuildPipeline.asmdef
+    Packages/com.unity.scriptablebuildpipeline/Runtime/Shared/AssemblyUtility.cs
+
+Unity.PathTracing.Editor
+    Packages/com.unity.render-pipelines.core/Editor/PathTracing/Unity.PathTracing.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/PathTracing/LightBakerStrangler.cs
+
+Unity.Rendering.LightTransport.Editor
+    Packages/com.unity.render-pipelines.core/Editor/UnifiedRayTracing/Unity.UnifiedRayTracing.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/UnifiedRayTracing/CreateUnifiedRTShaderMenuItem.cs
+
+Unity.RenderPipelines.Core.Editor
+    Packages/com.unity.render-pipelines.core/Editor/Unity.RenderPipelines.Core.Editor.asmdef
+    Packages/com.unity.render-pipelines.core/Editor/Utilities/TimedScope.cs
+
+Unity.RenderPipelines.Core.Editor.Shared
+    Packages/com.unity.render-pipelines.core/Editor-PrivateShared/Unity.RenderPipelines.Core.Editor.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Editor-PrivateShared/Tools/Converter/Window/RenderPipelineConverterItemVisualElement.cs
+
+Unity.RenderPipelines.GPUDriven.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/GPUDriven/Unity.RenderPipelines.GPUDriven.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/GPUDriven/Components/DisallowGPUDrivenRendering.cs
+
+Unity.SurfaceCache.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/Unity.SurfaceCache.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/AssemblyInfo.cs
+
+Unity.PathTracing.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Unity.PathTracing.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/PathTracing/LightmapIntegrationHelpers.cs
+
+Unity.UnifiedRayTracing.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Unity.UnifiedRayTracing.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Hardware/HardwareRayTracingAccelStruct.cs
+
+Unity.RenderPipelines.Core.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/Unity.RenderPipelines.Core.Runtime.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime/Volume/VolumeComponent.cs
+
+Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalBridge/Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalBridge/AssemblyInfo.cs
+
+Unity.RenderPipelines.Core.Runtime.Shared
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/Unity.RenderPipelines.Core.Runtime.Shared.asmdef
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalRenderPipelineGlobalSettingsUtils.cs
+
+Unity.RenderPipelines.Core.ShaderLibrary
+    Packages/com.unity.render-pipelines.core/ShaderLibrary/Unity.RenderPipelines.Core.ShaderLibrary.asmdef
+    Packages/com.unity.render-pipelines.core/ShaderLibrary/DummyShaderLibrary.cs
+
+Unity.Searcher.Editor
+    Packages/com.unity.searcher/Editor/Unity.Searcher.Editor.asmdef
+    Packages/com.unity.searcher/Editor/Searcher/SearcherDatabaseBase.cs
+
+Unity.InternalAPIEditorBridge.ShaderGraph.Editor
+    Packages/com.unity.shadergraph/Editor/InternalBridge/Unity.InternalAPIEditorBridge.ShaderGraph.Editor.asmdef
+    Packages/com.unity.shadergraph/Editor/InternalBridge/ObjectSelector.cs
+
+Unity.ShaderGraph.Editor
+    Packages/com.unity.shadergraph/Editor/Unity.ShaderGraph.Editor.asmdef
+    Packages/com.unity.shadergraph/Editor/Generation/Enumerations/BlendOp.cs
+
+Unity.ShaderGraph.Utilities
+    Packages/com.unity.shadergraph/Editor/Utilities/Unity.ShaderGraph.Utilities.asmdef
+    Packages/com.unity.shadergraph/Editor/Utilities/GenerationAPIAttribute.cs
+
+Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary
+    Packages/com.unity.shadergraph/ShaderGraphLibrary/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.asmdef
+    Packages/com.unity.shadergraph/ShaderGraphLibrary/DummyShaderGraphLibrary.cs
+
+UnityEditor.TestRunner
+    Packages/com.unity.test-framework/UnityEditor.TestRunner/UnityEditor.TestRunner.asmdef
+    Packages/com.unity.test-framework/UnityEditor.TestRunner/TestRun/Tasks/Platform/PlatformSpecificCleanupTask.cs
+
+UnityEngine.TestRunner
+    Packages/com.unity.test-framework/UnityEngine.TestRunner/UnityEngine.TestRunner.asmdef
+    Packages/com.unity.test-framework/UnityEngine.TestRunner/Utils/AssemblyProvider/PlayerTestAssemblyProvider.cs
+
+Unity.Timeline.Editor
+    Packages/com.unity.timeline/Editor/Unity.Timeline.Editor.asmdef
+    Packages/com.unity.timeline/Editor/Window/Modes/TimelineInactiveMode.cs
+
+Unity.Timeline
+    Packages/com.unity.timeline/Runtime/Unity.Timeline.asmdef
+    Packages/com.unity.timeline/Runtime/Scripting/PlayableTrack.cs
+
+TriInspector.Editor
+    Packages/com.codewriter.triinspector/Editor/TriInspector.Editor.asmdef
+    Packages/com.codewriter.triinspector/Editor/TypeProcessors/TriRectOffsetTypeProcessor.cs
+
+TriInspector.Editor.Extras
+    Packages/com.codewriter.triinspector/Editor.Extras/TriInspector.Editor.Extras.asmdef
+    Packages/com.codewriter.triinspector/Editor.Extras/Drawers/UnitDrawer.cs
+
+TriInspector.Editor.Samples
+    Packages/com.codewriter.triinspector/Editor.Samples/TriInspector.Editor.Samples.asmdef
+    Packages/com.codewriter.triinspector/Editor.Samples/Styling/Styling_GUIColorSample.cs
+
+TriInspector
+    Packages/com.codewriter.triinspector/Runtime/TriInspector.asmdef
+    Packages/com.codewriter.triinspector/Runtime/PreviewMeshRotationMethod.cs
+
+UnityEditor.UI.Analytics
+    Packages/com.unity.ugui/Editor/Analytics/UnityEditor.UI.Analytics.asmdef
+    Packages/com.unity.ugui/Editor/Analytics/IAnalytic/UGUIBuildEvent.cs
+
+Unity.TextMeshPro.Editor
+    Packages/com.unity.ugui/Editor/TMP/Unity.TextMeshPro.Editor.asmdef
+    Packages/com.unity.ugui/Editor/TMP/PropertyDrawers/TMP_MarkToMarkAdjustmentRecordPropertyDrawer.cs
+
+UnityEditor.UI
+    Packages/com.unity.ugui/Editor/UGUI/UnityEditor.UI.asmdef
+    Packages/com.unity.ugui/Editor/UGUI/UI/RawImageEditor.cs
+
+Unity.InternalAPIEngineBridge.004
+    Packages/com.unity.ugui/Runtime/InternalBridge/Unity.InternalAPIEngineBridge.004.asmdef
+    Packages/com.unity.ugui/Runtime/InternalBridge/AssemblyInfo.cs
+
+Unity.TextMeshPro
+    Packages/com.unity.ugui/Runtime/TMP/Unity.TextMeshPro.asmdef
+    Packages/com.unity.ugui/Runtime/TMP/TMP_TextInfo.cs
+
+UnityEngine.UI
+    Packages/com.unity.ugui/Runtime/UGUI/UnityEngine.UI.asmdef
+    Packages/com.unity.ugui/Runtime/UGUI/UI/Core/GraphicRebuildTracker.cs
+
+Unity.Profiling.Core
+    Packages/com.unity.profiling.core/Runtime/Unity.Profiling.Core.asmdef
+    Packages/com.unity.profiling.core/Runtime/ProfilerMarker3Params.cs
+
+Unity.PlasticSCM.Editor.Entities
+    Packages/com.unity.collab-proxy/Editor/Entities/Unity.PlasticSCM.Editor.Entities.asmdef
+    Packages/com.unity.collab-proxy/Editor/Entities/GetSubScenePathFromInstance.cs
+
+Unity.PlasticSCM.Editor
+    Packages/com.unity.collab-proxy/Editor/Unity.PlasticSCM.Editor.asmdef
+    Packages/com.unity.collab-proxy/Editor/Gluon/UpdateProgress.cs
+
+Unity.CollabProxy.Editor
+    Packages/com.unity.collab-proxy/Editor/UnityInternals/Unity.CollabProxy.Editor.asmdef
+    Packages/com.unity.collab-proxy/Editor/UnityInternals/UVCSToolbarButton_Legacy.cs
+
+Unity.RenderPipelines.Universal.2D.Editor.Overrides
+    Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+    Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/AssemblyInfo.cs
+
+Unity.RenderPipelines.Universal.Editor
+    Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+    Packages/com.unity.render-pipelines.universal/Editor/AssetPostProcessors/ModelPostProcessor.cs
+
+Unity.RenderPipelines.Universal.2D.Runtime
+    Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal/Runtime/2D/UTess2D/UTess.cs
+
+Unity.RenderPipelines.Universal.Runtime
+    Packages/com.unity.render-pipelines.universal/Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal/Runtime/Overrides/ColorAdjustments.cs
+
+Unity.RenderPipeline.Universal.ShaderLibrary
+    Packages/com.unity.render-pipelines.universal/ShaderLibrary/Unity.RenderPipelines.Universal.ShaderLibrary.asmdef
+    Packages/com.unity.render-pipelines.universal/ShaderLibrary/Deprecated.cs
+
+Unity.RenderPipelines.Universal.Shaders
+    Packages/com.unity.render-pipelines.universal/Shaders/Unity.RenderPipelines.Universal.Shaders.asmdef
+    Packages/com.unity.render-pipelines.universal/Shaders/Shaders.cs
+
+Unity.RenderPipelines.Universal.Config.Runtime
+    Packages/com.unity.render-pipelines.universal-config/Runtime/Unity.RenderPipelines.Universal.Config.Runtime.asmdef
+    Packages/com.unity.render-pipelines.universal-config/Runtime/ShaderConfig.cs
+
+Unity.VisualScripting.DocCodeExamples
+    Packages/com.unity.visualscripting/DocCodeExamples/Unity.VisualScripting.DocCodeExamples.asmdef
+    Packages/com.unity.visualscripting/DocCodeExamples/EventBusExamples.cs
+
+Unity.VisualScripting.SettingsProvider.Editor
+    Packages/com.unity.visualscripting/Editor/SettingsProvider/Unity.VisualScripting.SettingsProvider.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/SettingsProvider/ProjectSettingsProviderView.cs
+
+Unity.VisualScripting.Core.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Core/Unity.VisualScripting.Core.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Core/Plugin/Acknowledgements/Acknowledgement_DotNetZip.cs
+
+Unity.VisualScripting.Flow.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Flow/Unity.VisualScripting.Flow.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Flow/Framework/Nesting/GraphInputInspector.cs
+
+Unity.VisualScripting.Shared.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Shared/Unity.VisualScripting.Shared.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Shared/EmptyGraphWindow.cs
+
+Unity.VisualScripting.State.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.State/Unity.VisualScripting.State.Editor.asmdef
+    Packages/com.unity.visualscripting/Editor/VisualScripting.State/States/StateDescriptor.cs
+
+Unity.VisualScripting.Core
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Core/Unity.VisualScripting.Core.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Core/EditorBinding/TypeIconPriorityAttribute.cs
+
+Unity.VisualScripting.Flow
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Flow/Unity.VisualScripting.Flow.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Flow/Framework/Collections/Dictionaries/RemoveDictionaryItem.cs
+
+Unity.VisualScripting.State
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.State/Unity.VisualScripting.State.asmdef
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.State/Properties/AssemblyInfo.cs
+
+Unity.VisualStudio.Editor
+    Packages/com.unity.ide.visualstudio/Editor/com.unity.ide.visualstudio.asmdef
+    Packages/com.unity.ide.visualstudio/Editor/KnownAssemblies.cs
+
+
+ALL ASMDEF FILES
+----------------
+Cinemachine
+    Packages/com.unity.cinemachine/Runtime/com.unity.cinemachine.asmdef
+    -> Unity.Timeline
+    -> Unity.Postprocessing.Runtime
+    -> Unity.RenderPipelines.Core.Runtime
+    -> Unity.RenderPipelines.HighDefinition.Runtime
+    -> Unity.ugui
+    -> Unity.RenderPipelines.Universal.Runtime
+    -> Unity.2D.PixelPerfect
+    -> Unity.InputSystem
+    -> Unity.RenderPipelines.Universal.2D.Runtime
+
+Cinemachine.Editor.Tests
+    Packages/com.unity.cinemachine/Tests/Editor/Cinemachine.Editor.Tests.asmdef
+    -> Cinemachine
+    -> com.unity.cinemachine.editor
+
+Cinemachine.Runtime.Tests
+    Packages/com.unity.cinemachine/Tests/Runtime/Cinemachine.Runtime.Tests.asmdef
+    -> Cinemachine
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.RenderPipelines.HighDefinition.Runtime
+
+com.unity.cinemachine.editor
+    Packages/com.unity.cinemachine/Editor/com.unity.cinemachine.Editor.asmdef
+    -> Cinemachine
+    -> Unity.Timeline
+    -> Unity.Timeline.Editor
+    -> Unity.Postprocessing.Runtime
+    -> Unity.Postprocessing.Editor
+    -> Unity.RenderPipelines.Core.Runtime
+    -> Unity.RenderPipelines.Core.Editor
+    -> Unity.RenderPipelines.HighDefinition.Runtime
+    -> Unity.RenderPipelines.HighDefinition.Editor
+    -> Unity.ugui
+    -> Unity.RenderPipelines.Universal.Runtime
+    -> Unity.RenderPipelines.Universal.Editor
+    -> Unity.InputSystem
+
+DocCodeExamples
+    Packages/com.unity.timeline/DocCodeExamples/DocCodeExamples.asmdef
+    -> GUID:f06555f75b070af458a003d92f9efb00
+    -> GUID:02f771204943f4a40949438e873e3eff
+
+Fusion.Addons.Physics
+    Assets/Photon/FusionAddons/Physics/Fusion.Addons.Physics.asmdef
+    -> GUID:1baf1ffff1031e948b3b228ab3453251
+
+Fusion.Addons.Physics.Editor
+    Assets/Photon/FusionAddons/Physics/Editor/Fusion.Addons.Physics.Editor.asmdef
+    -> GUID:ee448cb1442054024b3c982e54100a6a
+
+Fusion.Unity
+    Assets/Photon/Fusion/Runtime/Fusion.Unity.asmdef
+    -> GUID:9e24947de15b9834991c9d8411ea37cf
+    -> GUID:84651a3751eca9349aac36a66bba901b
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+
+Fusion.Unity.Editor
+    Assets/Photon/Fusion/Editor/Fusion.Unity.Editor.asmdef
+    -> GUID:1baf1ffff1031e948b3b228ab3453251
+    -> GUID:9e24947de15b9834991c9d8411ea37cf
+    -> GUID:69448af7b92c7f342b298e06a37122aa
+    -> GUID:84651a3751eca9349aac36a66bba901b
+
+Gamelogic.Extensions
+    Packages/za.co.gamelogic.extensions/Runtime/Gamelogic.Extensions.asmdef
+
+Gamelogic.Extensions.Editor
+    Packages/za.co.gamelogic.extensions/Editor/Gamelogic.Extensions.Editor.asmdef
+    -> Gamelogic.Extensions
+
+ImageCropper.Runtime
+    Assets/Plugins/ImageCropper/ImageCropper.Runtime.asmdef
+    -> Unity.InputSystem
+
+ParrelSync
+    Assets/ParrelSync/projectCloner.asmdef
+
+PhotonWebSocket
+    Assets/Photon/PhotonLibs/WebSocket/PhotonWebSocket.asmdef
+
+TestNewCustomAssembly
+    Packages/com.unity.test-framework/Tests/TestNewCustomAssembly/TestNewCustomAssembly.asmdef
+
+TriInspector
+    Packages/com.codewriter.triinspector/Runtime/TriInspector.asmdef
+
+TriInspector.Editor
+    Packages/com.codewriter.triinspector/Editor/TriInspector.Editor.asmdef
+    -> TriInspector
+    -> Unity.InternalAPIEditorBridge.013
+
+TriInspector.Editor.Extras
+    Packages/com.codewriter.triinspector/Editor.Extras/TriInspector.Editor.Extras.asmdef
+    -> TriInspector
+    -> TriInspector.Editor
+    -> Unity.InternalAPIEditorBridge.013
+
+TriInspector.Editor.Integrations.Odin
+    Packages/com.codewriter.triinspector/Editor.Integrations/Odin/TriInspector.Editor.Integrations.Odin.asmdef
+    -> TriInspector
+    -> TriInspector.Editor
+
+TriInspector.Editor.Samples
+    Packages/com.codewriter.triinspector/Editor.Samples/TriInspector.Editor.Samples.asmdef
+    -> TriInspector
+    -> TriInspector.Editor
+
+UniTask
+    Assets/Plugins/UniTask/Runtime/UniTask.asmdef
+
+UniTask.Addressables
+    Assets/Plugins/UniTask/Runtime/External/Addressables/UniTask.Addressables.asmdef
+    -> UniTask
+    -> Unity.ResourceManager
+    -> Unity.Addressables
+
+UniTask.DOTween
+    Assets/Plugins/UniTask/Runtime/External/DOTween/UniTask.DOTween.asmdef
+    -> UniTask
+
+UniTask.Editor
+    Assets/Plugins/UniTask/Editor/UniTask.Editor.asmdef
+    -> UniTask
+
+UniTask.Linq
+    Assets/Plugins/UniTask/Runtime/Linq/UniTask.Linq.asmdef
+    -> UniTask
+
+UniTask.TextMeshPro
+    Assets/Plugins/UniTask/Runtime/External/TextMeshPro/UniTask.TextMeshPro.asmdef
+    -> UniTask
+    -> Unity.TextMeshPro
+
+Unity.2D.Sprite.Editor
+    Packages/com.unity.2d.sprite/Editor/Unity.2D.Sprite.Editor.asmdef
+    -> GUID:343deaaf83e0cee4ca978e7df0b80d21
+    -> GUID:2bafac87e7f4b9b418d9448d219b01ab
+
+Unity.2D.Sprite.Package.EditorTests
+    Packages/com.unity.2d.sprite/Tests/Editor/Unity.2D.Sprite.Package.EditorTests.asmdef
+    -> Unity.2D.Sprite.Editor
+
+Unity.Addressables
+    Packages/com.unity.addressables/Runtime/Unity.Addressables.asmdef
+    -> Unity.ResourceManager
+
+Unity.Addressables.DocExampleCode.Editor.Tests
+    Packages/com.unity.addressables/Tests/Editor/DocExampleCode/Unity.Addressables.DocExampleCode.Editor.Tests.asmdef
+    -> Unity.Addressables.Editor
+    -> Unity.Addressables
+    -> Unity.ResourceManager
+    -> Unity.ScriptableBuildPipeline.Editor
+    -> UnityUnity.Addressables.Runtime.Tests
+    -> Unity.Addressables.Editor.BuildReportVisualizer
+    -> UnityEditor.TestRunner
+    -> UnityEngine.TestRunner
+    -> Unity.Services.Ccd.Management
+    -> Unity.Services.Core
+
+Unity.Addressables.Editor
+    Packages/com.unity.addressables/Editor/Unity.Addressables.Editor.asmdef
+    -> Unity.Addressables
+    -> Unity.ResourceManager
+    -> Unity.ScriptableBuildPipeline.Editor
+    -> Unity.ScriptableBuildPipeline
+    -> Unity.Services.Core
+    -> Unity.Services.Ccd.Management
+
+Unity.Addressables.Editor.Tests
+    Packages/com.unity.addressables/Tests/Editor/Unity.Addressables.Editor.Tests.asmdef
+    -> Unity.Addressables.Editor
+    -> Unity.Addressables
+    -> Unity.ResourceManager
+    -> Unity.ScriptableBuildPipeline.Editor
+    -> Unity.Addressables.Tests
+    -> Unity.Addressables.Editor.BuildReportVisualizer
+    -> UnityEditor.TestRunner
+    -> UnityEngine.TestRunner
+    -> Unity.Services.Ccd.Management
+    -> Unity.Services.Core
+    -> Unity.Addressables.Runtime.Tests
+
+Unity.Addressables.Runtime.Tests
+    Packages/com.unity.addressables/Tests/Runtime/Unity.Addressables.Runtime.Tests.asmdef
+    -> Unity.Addressables
+    -> Unity.ResourceManager
+    -> Unity.Addressables.Editor
+    -> Unity.ScriptableBuildPipeline.Editor
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.Services.Ccd.Management
+
+Unity.AI.Navigation
+    Packages/com.unity.ai.navigation/Runtime/Unity.AI.Navigation.asmdef
+
+Unity.AI.Navigation.Editor
+    Packages/com.unity.ai.navigation/Editor/Unity.AI.Navigation.Editor.asmdef
+    -> GUID:8c4dd21966739024fbd72155091d199e
+    -> GUID:c57630adab7a340ec94f10e4fcac12f1
+
+Unity.AI.Navigation.Editor.ConversionSystem
+    Packages/com.unity.ai.navigation/Editor/ConversionSystem/Unity.AI.Navigation.Editor.ConversionSystem.asmdef
+
+Unity.AI.Navigation.Updater
+    Packages/com.unity.ai.navigation/Editor/Updater/Unity.AI.Navigation.Updater.asmdef
+    -> GUID:8c4dd21966739024fbd72155091d199e
+    -> GUID:86c9d8e67265f41469be06142c397d17
+    -> GUID:c57630adab7a340ec94f10e4fcac12f1
+
+Unity.AutoGroupGenerator.Editor
+    Packages/com.unity.addressables/Editor/AutoGroupGenerator/Unity.AutoGroupGenerator.Editor.asmdef
+    -> GUID:478a2357cc57436488a56e564b08d223
+    -> GUID:69448af7b92c7f342b298e06a37122aa
+    -> GUID:e2b422b758a74ac4aae6f84e7868955f
+    -> GUID:9e24947de15b9834991c9d8411ea37cf
+
+Unity.Burst
+    Packages/com.unity.burst/Runtime/Unity.Burst.asmdef
+
+Unity.Burst.CodeGen
+    Packages/com.unity.burst/Unity.Burst.CodeGen/Unity.Burst.CodeGen.asmdef
+    -> Unity.Burst
+
+Unity.Burst.Editor
+    Packages/com.unity.burst/Editor/Unity.Burst.Editor.asmdef
+    -> Unity.Burst
+
+Unity.CollabProxy.Editor
+    Packages/com.unity.collab-proxy/Editor/UnityInternals/Unity.CollabProxy.Editor.asmdef
+    -> Unity.PlasticSCM.Editor
+
+Unity.Collections
+    Packages/com.unity.collections/Unity.Collections/Unity.Collections.asmdef
+    -> Unity.Burst
+    -> Unity.Mathematics
+    -> Unity.Properties
+    -> Unity.Collections.LowLevel.ILSupport
+
+Unity.Collections.BurstCompatibilityGen
+    Packages/com.unity.collections/Unity.Collections.BurstCompatibilityGen/Unity.Collections.BurstCompatibilityGen.asmdef
+    -> Unity.Burst
+    -> Unity.Collections
+
+Unity.Collections.CodeGen
+    Packages/com.unity.collections/Unity.Collections.CodeGen/Unity.Collections.CodeGen.asmdef
+    -> Unity.Burst
+    -> Unity.Collections
+    -> Unity.Properties
+
+Unity.Collections.DocCodeSamples
+    Packages/com.unity.collections/DocCodeSamples.Tests/DocCodeSamples.Tests.asmdef
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+
+Unity.Collections.Editor
+    Packages/com.unity.collections/Unity.Collections.Editor/Unity.Collections.Editor.asmdef
+    -> Unity.Collections
+
+Unity.Collections.PerformanceTests
+    Packages/com.unity.collections/Unity.Collections.PerformanceTests/Unity.Collections.PerformanceTests.asmdef
+    -> Unity.Collections
+    -> Unity.PerformanceTesting
+    -> Unity.Burst
+    -> Unity.Jobs
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.Mathematics
+
+Unity.Collections.Tests
+    Packages/com.unity.collections/Unity.Collections.Tests/Unity.Collections.Tests.asmdef
+    -> Unity.Collections
+    -> Unity.Burst
+    -> Unity.Mathematics
+    -> Unity.Collections.BurstCompatibilityGen
+
+Unity.Collections.Tests.Playmode
+    Packages/com.unity.collections/Unity.Collections.Tests.Playmode/Unity.Collections.Tests.Playmode.asmdef
+    -> Unity.Entities
+    -> Unity.Entities.Hybrid
+    -> Unity.Entities.Tests
+    -> Unity.Collections
+    -> Unity.Burst
+    -> Unity.Jobs
+    -> Unity.Mathematics
+    -> Unity.Collections.BurstCompatibilityGen
+
+Unity.Fusion.CodeGen
+    Assets/Photon/Fusion/CodeGen/Fusion.CodeGen.asmdef
+
+Unity.InputSystem
+    Packages/com.unity.inputsystem/InputSystem/Unity.InputSystem.asmdef
+    -> Unity.ugui
+
+Unity.InputSystem.DocCodeSamples
+    Packages/com.unity.inputsystem/DocCodeSamples.Tests/DocCodeSamples.asmdef
+    -> GUID:75469ad4d38634e559750d17036d5f7c
+
+Unity.InputSystem.ForUI
+    Packages/com.unity.inputsystem/InputSystem/Plugins/InputForUI/InputSystemForUI.asmdef
+    -> Unity.InputSystem
+
+Unity.InputSystem.IntegrationTests
+    Packages/com.unity.inputsystem/Tests/IntegrationTests/Unity.InputSystem.IntegrationTests.asmdef
+    -> GUID:75469ad4d38634e559750d17036d5f7c
+    -> GUID:dc04f38471c3a459fb4d31124ee9127d
+
+Unity.InputSystem.TestFramework
+    Packages/com.unity.inputsystem/Tests/TestFixture/Unity.InputSystem.TestFramework.asmdef
+    -> Unity.InputSystem
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+
+Unity.InternalAPIEditorBridge.013
+    Packages/com.unity.localization/Editor/InternalBridge/Unity.Localization.Editor.InternalBridge.asmdef
+
+Unity.InternalAPIEditorBridge.ShaderGraph.Editor
+    Packages/com.unity.shadergraph/Editor/InternalBridge/Unity.InternalAPIEditorBridge.ShaderGraph.Editor.asmdef
+
+Unity.InternalAPIEngineBridge.004
+    Packages/com.unity.ugui/Runtime/InternalBridge/Unity.InternalAPIEngineBridge.004.asmdef
+
+Unity.InternalAPIEngineBridge.013
+    Packages/com.unity.localization/Runtime/InternalBridge/Unity.Localization.InternalBridge.asmdef
+
+Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/InternalBridge/Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.asmdef
+
+Unity.Localization
+    Packages/com.unity.localization/Runtime/Unity.Localization.asmdef
+    -> Unity.Addressables
+    -> Unity.ResourceManager
+    -> Unity.InternalAPIEngineBridge.013
+    -> UnityEngine.UI
+    -> Unity.TextMeshPro
+
+Unity.Localization.DocCodeSamples
+    Packages/com.unity.localization/DocCodeSamples.Tests/DocCodeSamples.asmdef
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.Localization
+    -> Unity.Localization.Editor
+    -> Unity.ResourceManager
+    -> Unity.Addressables
+    -> Unity.TextMeshPro
+    -> Unity.Addressables.Editor
+
+Unity.Localization.Editor
+    Packages/com.unity.localization/Editor/Unity.Localization.Editor.asmdef
+    -> Unity.Localization
+    -> Unity.Addressables.Editor
+    -> Unity.Addressables
+    -> Unity.InternalAPIEditorBridge.013
+    -> Unity.ResourceManager
+    -> Unity.TextMeshPro
+    -> Unity.ugui
+    -> com.unity.quicksearch
+    -> Unity.Nuget.NewtonsoftJson.EditorTests
+    -> Unity.DeviceSimulator.Editor
+
+Unity.Mathematics
+    Packages/com.unity.mathematics/Unity.Mathematics/Unity.Mathematics.asmdef
+
+Unity.Mathematics.Editor
+    Packages/com.unity.mathematics/Unity.Mathematics.Editor/Unity.Mathematics.Editor.asmdef
+    -> Unity.Mathematics
+
+Unity.Mathematics.Tests
+    Packages/com.unity.mathematics/Tests/Unity.Mathematics.Tests.asmdef
+    -> Unity.Mathematics
+    -> UnityEngine.TestRunner
+
+Unity.Multiplayer.Center.Common
+    Packages/com.unity.multiplayer.center/Common/Unity.Multiplayer.Center.Common.asmdef
+
+Unity.Multiplayer.Center.Editor
+    Packages/com.unity.multiplayer.center/Editor/Unity.Multiplayer.Center.Editor.asmdef
+    -> Unity.Multiplayer.Center.Common
+
+Unity.Multiplayer.Center.Editor.Tests
+    Packages/com.unity.multiplayer.center/Tests/Editor/Unity.Multiplayer.Center.Editor.Tests.asmdef
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.Multiplayer.Center.Editor
+    -> Unity.Multiplayer.Center.Common
+    -> Unity.Multiplayer.Center.Integrations
+
+Unity.Multiplayer.Center.Tests
+    Packages/com.unity.multiplayer.center/Tests/Runtime/Unity.Multiplayer.Center.Tests.asmdef
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.InputSystem
+
+Unity.Nuget.Mono-Cecil
+    Packages/com.unity.nuget.mono-cecil/Tests/Editor/Unity.Nuget.Mono-Cecil.Editor.Tests.asmdef
+
+Unity.PathTracing.Editor
+    Packages/com.unity.render-pipelines.core/Editor/PathTracing/Unity.PathTracing.Editor.asmdef
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+
+Unity.PathTracing.Editor.Tests
+    Packages/com.unity.render-pipelines.core/Tests/Editor/PathTracing/Unity.PathTracing.Editor.Tests.asmdef
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+
+Unity.PathTracing.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/PathTracing/Unity.PathTracing.Runtime.asmdef
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:e3bf50bf561c9a7418912816ec4cb8e1
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+
+Unity.PathTracing.Runtime.Tests
+    Packages/com.unity.render-pipelines.core/Tests/Runtime/PathTracing/Unity.PathTracing.Runtime.Tests.asmdef
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+
+Unity.PerformanceTesting
+    Packages/com.unity.test-framework.performance/Runtime/Unity.PerformanceTesting.asmdef
+    -> UnityEngine.TestRunner
+    -> com.unity.test.metadata-manager
+
+Unity.PerformanceTesting.Editor
+    Packages/com.unity.test-framework.performance/Editor/Unity.PerformanceTesting.Editor.asmdef
+    -> Unity.PerformanceTesting
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+
+Unity.PlasticSCM.Editor
+    Packages/com.unity.collab-proxy/Editor/Unity.PlasticSCM.Editor.asmdef
+
+Unity.PlasticSCM.Editor.Entities
+    Packages/com.unity.collab-proxy/Editor/Entities/Unity.PlasticSCM.Editor.Entities.asmdef
+    -> Unity.PlasticSCM.Editor
+    -> Unity.Scenes
+
+Unity.Profiling.Core
+    Packages/com.unity.profiling.core/Runtime/Unity.Profiling.Core.asmdef
+
+Unity.Rendering.LightTransport.Editor
+    Packages/com.unity.render-pipelines.core/Editor/UnifiedRayTracing/Unity.UnifiedRayTracing.Editor.asmdef
+
+Unity.RenderPipeline.Universal.ShaderLibrary
+    Packages/com.unity.render-pipelines.universal/ShaderLibrary/Unity.RenderPipelines.Universal.ShaderLibrary.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+
+Unity.RenderPipelines.Core.Editor
+    Packages/com.unity.render-pipelines.core/Editor/Unity.RenderPipelines.Core.Editor.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:9149a3cbb036049f68e4e5b6388b9c85
+
+Unity.RenderPipelines.Core.Editor.Shared
+    Packages/com.unity.render-pipelines.core/Editor-PrivateShared/Unity.RenderPipelines.Core.Editor.Shared.asmdef
+    -> GUID:3eae0364be2026648bf74846acb8a731
+
+Unity.RenderPipelines.Core.Editor.Tests
+    Packages/com.unity.render-pipelines.core/Tests/Editor/Unity.RenderPipelines.Core.Editor.Tests.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:3eae0364be2026648bf74846acb8a731
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:0acc523941302664db1f4e527237feb3
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+    -> GUID:bf043f86dbf1bda4398ec83eebe40b8c
+    -> GUID:aa4a944c34c4c5449b84975fb1570dad
+
+Unity.RenderPipelines.Core.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/Unity.RenderPipelines.Core.Runtime.asmdef
+    -> GUID:75469ad4d38634e559750d17036d5f7c
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+
+Unity.RenderPipelines.Core.Runtime.Shared
+    Packages/com.unity.render-pipelines.core/Runtime-PrivateShared/Unity.RenderPipelines.Core.Runtime.Shared.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:65f885ff41204234be23cc2446e7bb85
+
+Unity.RenderPipelines.Core.Runtime.Tests
+    Packages/com.unity.render-pipelines.core/Tests/Runtime/Unity.RenderPipelines.Core.Runtime.Tests.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:0acc523941302664db1f4e527237feb3
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+
+Unity.RenderPipelines.Core.ShaderLibrary
+    Packages/com.unity.render-pipelines.core/ShaderLibrary/Unity.RenderPipelines.Core.ShaderLibrary.asmdef
+
+Unity.RenderPipelines.GPUDriven.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/GPUDriven/Unity.RenderPipelines.GPUDriven.Runtime.asmdef
+    -> GUID:e0cd26848372d4e5c891c569017e11f1
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+
+Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary
+    Packages/com.unity.shadergraph/ShaderGraphLibrary/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.asmdef
+
+Unity.RenderPipelines.Universal.2D.Editor.Overrides
+    Packages/com.unity.render-pipelines.universal/Editor/2D/Overrides/Unity.RenderPipelines.Universal.2D.Editor.Overrides.asmdef
+    -> GUID:15fc0a57446b3144c949da3e2b9737a9
+    -> GUID:d60799ab2a985554ea1a39cd38695018
+    -> GUID:a35efad8797223d499f8c68b1f545dbc
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:69257879134bba646869b21467b3338d
+    -> GUID:3eae0364be2026648bf74846acb8a731
+    -> GUID:2a69708d171a17043a9d0ad45f205cfe
+    -> GUID:be0903cd8e1546f498710afdc59db5eb
+    -> GUID:b75d3cd3037d383a8d1e2f9a26d73d8a
+    -> GUID:329b4ccd385744985bf3f83cfd77dfe7
+    -> GUID:9604b18aafdbc9346bceb5e19ac9c746
+    -> GUID:f9fe0089ec81f4079af78eb2287a6163
+    -> GUID:116a4d4dbf5c04973bbf517077a062a1
+    -> GUID:e40ba710768534012815d3193fa296cb
+    -> GUID:516a5277b8c3b4f4c8cc86b77b1591ff
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+    -> GUID:41524c21c95e5fe4dbc5b48bd21995a4
+
+Unity.RenderPipelines.Universal.2D.Runtime
+    Packages/com.unity.render-pipelines.universal/Runtime/2D/Unity.RenderPipelines.Universal.2D.Runtime.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:15fc0a57446b3144c949da3e2b9737a9
+    -> GUID:ab67fb10353d84448ac887a7367cbda8
+    -> GUID:41524c21c95e5fe4dbc5b48bd21995a4
+    -> GUID:caccfbdb442cdc64fa722b4c5585521f
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+    -> RenderAs2DModule
+
+Unity.RenderPipelines.Universal.Config.Editor.Tests
+    Packages/com.unity.render-pipelines.universal-config/Tests/Editor/Unity.RenderPipelines.Universal.Config.Editor.Tests.asmdef
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+
+Unity.RenderPipelines.Universal.Config.Runtime
+    Packages/com.unity.render-pipelines.universal-config/Runtime/Unity.RenderPipelines.Universal.Config.Runtime.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+
+Unity.RenderPipelines.Universal.Editor
+    Packages/com.unity.render-pipelines.universal/Editor/Unity.RenderPipelines.Universal.Editor.asmdef
+    -> GUID:15fc0a57446b3144c949da3e2b9737a9
+    -> GUID:d60799ab2a985554ea1a39cd38695018
+    -> GUID:a35efad8797223d499f8c68b1f545dbc
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:69257879134bba646869b21467b3338d
+    -> GUID:3eae0364be2026648bf74846acb8a731
+    -> GUID:2a69708d171a17043a9d0ad45f205cfe
+    -> GUID:be0903cd8e1546f498710afdc59db5eb
+    -> GUID:b75d3cd3037d383a8d1e2f9a26d73d8a
+    -> GUID:329b4ccd385744985bf3f83cfd77dfe7
+    -> GUID:9604b18aafdbc9346bceb5e19ac9c746
+    -> GUID:f9fe0089ec81f4079af78eb2287a6163
+    -> GUID:116a4d4dbf5c04973bbf517077a062a1
+    -> GUID:e40ba710768534012815d3193fa296cb
+    -> GUID:516a5277b8c3b4f4c8cc86b77b1591ff
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+    -> GUID:41524c21c95e5fe4dbc5b48bd21995a4
+    -> GUID:24bbfa70f4a5840c3ab7da95e6835815
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:b5b1bcf1950c2204f8e3959f64726eab
+
+Unity.RenderPipelines.Universal.Editor.Tests
+    Packages/com.unity.render-pipelines.universal/Tests/Editor/Unity.RenderPipelines.Universal.Editor.Tests.asmdef
+    -> GUID:15fc0a57446b3144c949da3e2b9737a9
+    -> GUID:c579267770062bf448e75eb160330b7f
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:0acc523941302664db1f4e527237feb3
+    -> GUID:516a5277b8c3b4f4c8cc86b77b1591ff
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:6e5480588ffa37d4f82fe96c45e8ce9c
+    -> GUID:3eae0364be2026648bf74846acb8a731
+    -> GUID:2a69708d171a17043a9d0ad45f205cfe
+    -> GUID:69257879134bba646869b21467b3338d
+
+Unity.RenderPipelines.Universal.Runtime
+    Packages/com.unity.render-pipelines.universal/Runtime/Unity.RenderPipelines.Universal.Runtime.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:69257879134bba646869b21467b3338d
+    -> GUID:ab67fb10353d84448ac887a7367cbda8
+    -> GUID:7dbf32976982c98448af054f2512cb79
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:2665a8d13d1b3f18800f46e256720795
+    -> GUID:4fd6538c1c56b409fb53fdf0183170ec
+    -> GUID:86bc95e6fdb13ff43aa04316542905ae
+    -> GUID:d04eb9c554ad44ceab303cecf0c0cf82
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:b5b1bcf1950c2204f8e3959f64726eab
+
+Unity.RenderPipelines.Universal.Runtime.Tests
+    Packages/com.unity.render-pipelines.universal/Tests/Runtime/Unity.RenderPipelines.Universal.Runtime.Tests.asmdef
+    -> GUID:15fc0a57446b3144c949da3e2b9737a9
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:0acc523941302664db1f4e527237feb3
+    -> GUID:516a5277b8c3b4f4c8cc86b77b1591ff
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:41524c21c95e5fe4dbc5b48bd21995a4
+
+Unity.RenderPipelines.Universal.Shaders
+    Packages/com.unity.render-pipelines.universal/Shaders/Unity.RenderPipelines.Universal.Shaders.asmdef
+
+Unity.ResourceManager
+    Packages/com.unity.addressables/Runtime/ResourceManager/Unity.ResourceManager.asmdef
+    -> GUID:b46779583a009f04ba9f5f31d0e7e6ac
+
+Unity.ResourceManager.Tests
+    Packages/com.unity.addressables/Tests/Runtime/ResourceManager/Unity.ResourceManager.Tests.asmdef
+    -> Unity.ResourceManager
+    -> Unity.Addressables.Tests
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.Addressables.Runtime.Tests
+
+Unity.Rider.Editor
+    Packages/com.unity.ide.rider/Rider/Editor/com.unity.ide.rider.asmdef
+    -> GUID:0acc523941302664db1f4e527237feb3
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+
+Unity.ScriptableBuildPipeline
+    Packages/com.unity.scriptablebuildpipeline/Runtime/Unity.ScriptableBuildPipeline.asmdef
+
+Unity.ScriptableBuildPipeline.Editor
+    Packages/com.unity.scriptablebuildpipeline/Editor/Unity.ScriptableBuildPipeline.Editor.asmdef
+    -> Unity.ScriptableBuildPipeline
+    -> UnityEditor.CacheServer
+
+Unity.ScriptableBuildPipeline.Editor.Tests
+    Packages/com.unity.scriptablebuildpipeline/Tests/Editor/Unity.ScriptableBuildPipeline.Editor.Tests.asmdef
+    -> Unity.ScriptableBuildPipeline.Editor
+    -> Unity.ScriptableBuildPipeline
+    -> Unity.PerformanceTesting
+    -> Unity.PerformanceTesting.Editor
+    -> ScriptableBuildPipelineTests
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+    -> Unity.ScriptableBuildPipeline.Tests
+    -> Unity.ScriptableBuildPipelineTests.Runtime.Tests
+
+Unity.ScriptableBuildPipeline.Tests
+    Packages/com.unity.scriptablebuildpipeline/Tests/Runtime/Unity.ScriptableBuildPipeline.Tests.asmdef
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:c5ecc461727906345a35491a0440694f
+    -> GUID:0acc523941302664db1f4e527237feb3
+
+Unity.ScriptableBuildPipelineTests.Runtime.Tests
+    Packages/com.unity.scriptablebuildpipeline/Tests/Runtime/TestAssets/Unity.ScriptableBuildPipelineTests.Runtime.Tests.asmdef
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+
+Unity.Searcher.Editor
+    Packages/com.unity.searcher/Editor/Unity.Searcher.Editor.asmdef
+
+Unity.Searcher.EditorTests
+    Packages/com.unity.searcher/Tests/Editor/Unity.Searcher.EditorTests.asmdef
+    -> Unity.Searcher.Editor
+    -> Unity.Searcher.EditorSamples
+
+Unity.ShaderGraph.Editor
+    Packages/com.unity.shadergraph/Editor/Unity.ShaderGraph.Editor.asmdef
+    -> GUID:a2b0e253c44e0427f9c718f9e5c1c7e3
+    -> GUID:ade7125e800904674ba0c115208f7ed5
+    -> GUID:4988cf9794f41d64c884876ab6574b89
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:3eae0364be2026648bf74846acb8a731
+    -> GUID:1a9e721432c3e5048950da7f3cf524e7
+
+Unity.ShaderGraph.Editor.Tests
+    Packages/com.unity.shadergraph/Tests/Editor/Unity.ShaderGraph.Editor.Tests.asmdef
+    -> GUID:be0903cd8e1546f498710afdc59db5eb
+    -> GUID:27619889b8ba8c24980f49ee34dbb44a
+    -> GUID:0acc523941302664db1f4e527237feb3
+
+Unity.ShaderGraph.Utilities
+    Packages/com.unity.shadergraph/Editor/Utilities/Unity.ShaderGraph.Utilities.asmdef
+
+Unity.SurfaceCache.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/Lighting/SurfaceCache/Unity.SurfaceCache.Runtime.asmdef
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:c49c619b6af2be941af9bcbca2641964
+    -> GUID:214c0945bb158c940aada223f3223ee8
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+
+Unity.TextMeshPro
+    Packages/com.unity.ugui/Runtime/TMP/Unity.TextMeshPro.asmdef
+    -> GUID:43b111c4a445f446abd2c02e77750ff5
+
+Unity.TextMeshPro.Editor
+    Packages/com.unity.ugui/Editor/TMP/Unity.TextMeshPro.Editor.asmdef
+    -> Unity.TextMeshPro
+    -> Unity.RenderPipelines.HighDefinition.Editor
+    -> Unity.RenderPipelines.Core.Runtime
+    -> Unity.RenderPipelines.HighDefinition.Runtime
+
+Unity.TextMeshPro.Editor.Tests
+    Packages/com.unity.ugui/Tests/Editor/TMP/Unity.TextMeshPro.Editor.Tests.asmdef
+    -> Unity.TextMeshPro
+    -> Unity.TextMeshPro.Editor
+
+Unity.TextMeshPro.Tests
+    Packages/com.unity.ugui/Tests/Runtime/TMP/Unity.TextMeshPro.Tests.asmdef
+    -> Unity.TextMeshPro
+
+Unity.Timeline
+    Packages/com.unity.timeline/Runtime/Unity.Timeline.asmdef
+
+Unity.Timeline.Editor
+    Packages/com.unity.timeline/Editor/Unity.Timeline.Editor.asmdef
+    -> Unity.Timeline
+
+Unity.UnifiedRayTracing.Editor.Tests
+    Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/Unity.UnifiedRayTracing.Editor.Tests.asmdef
+    -> GUID:d8b63aba1907145bea998dd612889d6b
+    -> GUID:df380645f10b7bc4b97d4f5eb6303d95
+    -> GUID:214c0945bb158c940aada223f3223ee8
+
+Unity.UnifiedRayTracing.Runtime
+    Packages/com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Unity.UnifiedRayTracing.Runtime.asmdef
+    -> Unity.Mathematics
+    -> Unity.Collections
+    -> Unity.Burst
+
+Unity.VisualScripting.Core
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Core/Unity.VisualScripting.Core.asmdef
+    -> Unity.InputSystem
+
+Unity.VisualScripting.Core.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Core/Unity.VisualScripting.Core.Editor.asmdef
+    -> Unity.VisualScripting.Core
+
+Unity.VisualScripting.DocCodeExamples
+    Packages/com.unity.visualscripting/DocCodeExamples/Unity.VisualScripting.DocCodeExamples.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Tests.Editor
+    -> Unity.VisualScripting.Flow
+
+Unity.VisualScripting.Flow
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.Flow/Unity.VisualScripting.Flow.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.InputSystem
+
+Unity.VisualScripting.Flow.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Flow/Unity.VisualScripting.Flow.Editor.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Core.Editor
+    -> Unity.VisualScripting.Flow
+    -> Unity.InputSystem
+
+Unity.VisualScripting.SettingsProvider.Editor
+    Packages/com.unity.visualscripting/Editor/SettingsProvider/Unity.VisualScripting.SettingsProvider.Editor.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Core.Editor
+    -> Unity.VisualScripting.Flow
+    -> Unity.VisualScripting.Flow.Editor
+    -> Unity.VisualScripting.State
+
+Unity.VisualScripting.Shared.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.Shared/Unity.VisualScripting.Shared.Editor.asmdef
+    -> Unity.VisualScripting.Core.Editor
+    -> Unity.VisualScripting.Flow.Editor
+    -> Unity.VisualScripting.State.Editor
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Flow
+    -> Unity.VisualScripting.State
+
+Unity.VisualScripting.State
+    Packages/com.unity.visualscripting/Runtime/VisualScripting.State/Unity.VisualScripting.State.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Flow
+
+Unity.VisualScripting.State.Editor
+    Packages/com.unity.visualscripting/Editor/VisualScripting.State/Unity.VisualScripting.State.Editor.asmdef
+    -> Unity.VisualScripting.Core
+    -> Unity.VisualScripting.Flow
+    -> Unity.VisualScripting.State
+    -> Unity.VisualScripting.Core.Editor
+    -> Unity.VisualScripting.Flow.Editor
+
+Unity.VisualStudio.Editor
+    Packages/com.unity.ide.visualstudio/Editor/com.unity.ide.visualstudio.asmdef
+
+UnityEditor.TestRunner
+    Packages/com.unity.test-framework/UnityEditor.TestRunner/UnityEditor.TestRunner.asmdef
+    -> UnityEngine.TestRunner
+
+UnityEditor.UI
+    Packages/com.unity.ugui/Editor/UGUI/UnityEditor.UI.asmdef
+    -> UnityEngine.UI
+
+UnityEditor.UI.Analytics
+    Packages/com.unity.ugui/Editor/Analytics/UnityEditor.UI.Analytics.asmdef
+    -> UnityEngine.UI
+    -> Unity.TextMeshPro
+
+UnityEditor.UI.Common.Tests
+    Packages/com.unity.ugui/Tests/Editor/Common/UnityEditor.UI.Common.Tests.asmdef
+    -> Unity.TextMeshPro
+    -> Unity.TextMeshPro.Editor
+    -> UnityEditor.UI
+    -> UnityEngine.UI
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+
+UnityEditor.UI.EditorTests
+    Packages/com.unity.ugui/Tests/Editor/UGUI/UnityEditor.UI.EditorTests.asmdef
+    -> UnityEditor.UI
+    -> UnityEngine.UI
+
+UnityEngine.TestRunner
+    Packages/com.unity.test-framework/UnityEngine.TestRunner/UnityEngine.TestRunner.asmdef
+
+UnityEngine.UI
+    Packages/com.unity.ugui/Runtime/UGUI/UnityEngine.UI.asmdef
+    -> UnityEngine.UIElementsModule
+
+UnityEngine.UI.Tests
+    Packages/com.unity.ugui/Tests/Runtime/UGUI/UnityEngine.UI.Tests.asmdef
+    -> UnityEngine.UI
+    -> UnityEngine.TestRunner
+    -> UnityEditor.TestRunner
+

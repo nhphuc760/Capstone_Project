@@ -1,68 +1,103 @@
-using System;
+﻿using System;
 using Fusion;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StaminaComponent : NetworkBehaviour
 {
-    [SerializeField] int maxStamina = 200;
-    [SerializeField] int regenAmount = 5;
-    [SerializeField] float regenInterval = 1f;
-    [SerializeField] float regenDelayAfterUse = 2f;
+    [SerializeField] float regenInterval = 1f; // mất bao nhiêu giây hồi 1 lần
+    [SerializeField] float regenDelayAfterUse = 2f; //Delay sau khi consume
+    [SerializeField] Image StaminaBarUI;
 
-    public int MaxStamina => maxStamina;
-    [Networked]
-    public int CurrentStamina { get; private set; }
+    //Networked
+    [Networked, OnChangedRender(nameof(OnChangeRender))] public int CurrentStamina { get; private set; }
+    [Networked] TickTimer DelayTimer { get; set; }
+    [Networked] TickTimer RegenIntervalTimer { get; set; }
+
+    //Runtime
+    Stats _stats;
+    bool _isInitialized;
+
+    //Events
+    public event Action<int, int> OnStaminaChange;//current, max
+    public event Action OnExhausted;// Cạn kiệt
+
+
+    public int MaxStamina => _stats != null ? _stats.Get(StatsType.Stamina) : 200;
+
+    public int RegentAmount => _stats != null ? _stats.Get(StatsType.StaminaRegen) : 5;
+
     public bool IsExhausted => CurrentStamina <= 0;
+    public float StaminaPercent => MaxStamina > 0 ? (float)CurrentStamina / MaxStamina : 0;
 
-    public event Action<int, int> OnStaminaChanged;
-    public event Action OnExhausted;
 
-    [Networked]
-    TickTimer delayTimer { get; set; }
-    [Networked]
-    TickTimer regenIntervalTimer { get; set; }
-    public override void Spawned()
+    public void Initialize(Stats stats)
     {
-        if(Object.HasStateAuthority)
-            CurrentStamina = maxStamina;
+        _stats = stats;
+        _isInitialized = true;
+        if(HasStateAuthority)
+        {
+            CurrentStamina = MaxStamina;
+        }
     }
 
-    public override void FixedUpdateNetwork()
+    public override void Spawned()
     {
+        if(HasStateAuthority && CurrentStamina <= 0 && MaxStamina > 0)
+        {
+            CurrentStamina = MaxStamina;
+        }
+    }
+
+    public override void FixedUpdateNetwork() // Gọi trên cả host và client với mong muốn predict trên client
+    {
+        if (!_isInitialized) return;
         RegenerateStamina();
     }    
 
-    public bool TryConsume(int amount)
+    public bool TryConsume(int amount) // vì input nhận được trên cả host và client nên hàm này được gọi trên cả 2
     {
+        if (amount <= 0) return false;
         if (CurrentStamina < amount) return false;
-        CurrentStamina -= amount;
-        CurrentStamina = Mathf.Max(0, CurrentStamina);
-        delayTimer = TickTimer.CreateFromSeconds(Runner, regenDelayAfterUse);
-        OnStaminaChanged?.Invoke(CurrentStamina, maxStamina);
-        if (CurrentStamina <= 0) OnExhausted?.Invoke();
+        CurrentStamina = Mathf.Max(0, CurrentStamina - amount);
+        DelayTimer = TickTimer.CreateFromSeconds(Runner, regenDelayAfterUse);
+        if(CurrentStamina <= 0)
+        {
+            OnExhausted?.Invoke(); 
+        }
         return true;
     }
 
     public void Restore(int amount)
     {
-        CurrentStamina = Mathf.Min(maxStamina, CurrentStamina + amount);
-        OnStaminaChanged?.Invoke(CurrentStamina, maxStamina);
+        if (amount <= 0) return;
+        CurrentStamina = Mathf.Min(MaxStamina, CurrentStamina + amount);       
     }
 
+
+    void OnChangeRender()
+    {
+        if (Runner.IsResimulation) return;
+        OnStaminaChange?.Invoke(CurrentStamina, MaxStamina);
+        StaminaBarUI.fillAmount = (float)CurrentStamina / MaxStamina;
+    }
     void RegenerateStamina()
     {
-        if(CurrentStamina >= maxStamina) return;
-        if (delayTimer.IsRunning) return;
-        if (!regenIntervalTimer.IsRunning)
+        Debug.Log("Remaining time: " + DelayTimer.RemainingTime(Runner));
+        if(CurrentStamina >= MaxStamina) return;
+        if (!DelayTimer.ExpiredOrNotRunning(Runner)) return;
+        if (!RegenIntervalTimer.IsRunning)
         {
-            regenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
+            Debug.Log("Create RegenIntervalTimer");
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
             return;
         }
 
-        if (regenIntervalTimer.Expired(Runner))
+        if (RegenIntervalTimer.ExpiredOrNotRunning(Runner))
         {
-            Restore(regenAmount);
-            regenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
+            Debug.Log("Expired RegenIntervalTimer");
+            Restore(RegentAmount);
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
         }
 
     }

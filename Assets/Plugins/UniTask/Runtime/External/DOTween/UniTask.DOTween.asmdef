@@ -1,8 +1,8 @@
 {
     "name": "UniTask.DOTween",
+    "rootNamespace": "",
     "references": [
-        "UniTask",
-        "DOTween.Modules"
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

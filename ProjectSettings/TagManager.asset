@@ -3,8 +3,7 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags:
-  - MainBase
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -16,7 +15,7 @@ TagManager:
   - Obstacle
   - Grabable
   - Resources
-  - MainBase
+  - Ground
   - 
   - 
   - 
