@@ -83,7 +83,7 @@ public class StaminaComponent : NetworkBehaviour
     }
     void RegenerateStamina()
     {
-        Debug.Log("Remaining time: " + DelayTimer.RemainingTime(Runner));
+        //Debug.Log("Remaining time: " + DelayTimer.RemainingTime(Runner));
         if(CurrentStamina >= MaxStamina) return;
         if (!DelayTimer.ExpiredOrNotRunning(Runner)) return;
         if (!RegenIntervalTimer.IsRunning)

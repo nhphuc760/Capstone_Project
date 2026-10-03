@@ -46,7 +46,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
-    
+
 
 
 
@@ -78,6 +78,31 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Stamina ??= GetComponent<StaminaComponent>();
         Health.Initialize(Stats);
         Stamina.Initialize(Stats);
+
+        if (HasInputAuthority)
+        {
+
+            //Subcribe Inventory Event
+            var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
+            Debug.Log(inventoryUI.gameObject.name);
+            Debug.Log("InventoryUI: " + inventoryUI == null);
+            if (inventoryUI != null)
+            {
+                Debug.Log("Register event InventoryChanged");
+                inventoryUI.SetInventory(inventory);
+                inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
+            }
+
+
+            //Subcribe RadialMenu event
+            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+            if (radialmenu != null)
+            {
+                radialmenu.onSelectIndex += OnRadialMenuSelected;
+            }
+        }
+
+
     }
 
 
@@ -128,6 +153,27 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         }
     }
 
+    private void OnDestroy()
+    {
+        if (HasInputAuthority)
+        {
+            if (inventory)
+            {
+                var InventoryUI = GetComponentInChildren<InventoryUI>();
+
+                if (InventoryUI != null)
+                {
+                    inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
+                }
+            }
+            var radialMenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+            if (radialMenu != null)
+            {
+                radialMenu.onSelectIndex -= OnRadialMenuSelected;
+            }
+
+        }
+    }
 
     public bool TryGather(ResourceNode nodeRes, object source = null)
     {
@@ -161,7 +207,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             return false;
         }
 
-        Vector3 dirToNode =( nodeRes.transform.position - transform.position).normalized;
+        Vector3 dirToNode = (nodeRes.transform.position - transform.position).normalized;
         if (!(Vector3.Dot(dirToNode, transform.forward) > 0))
         {
             Debug.Log("Player không úp mặt vào node");
@@ -193,7 +239,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
             foreach (var i in test)
             {
-                Debug.Log("Collider Hit: " + i.transform.name);              
+                Debug.Log("Collider Hit: " + i.transform.name);
                 Debug.Log($"Node != null ? {i != null}");
                 TryGather(i);
             }
@@ -221,7 +267,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
                 break;
         }
 
-    } 
+    }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
@@ -230,13 +276,41 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (sourceID != default)
         {
             source = Runner.FindObject(sourceID);
-        }       
-        
+        }
+
         AddModifier(modID.Value, source);
     }
 
     public void AddModifier(string idMod, NetworkObject source = null)
-    {        
+    {
         Stats.AddModifierById(idMod, source);
-    }  
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestUseTool(ToolType toolUse)
+    {
+        equipTool = toolUse;
+    }
+
+    void OnRadialMenuSelected(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                RPC_RequestUseTool(ToolType.Screwdriver);
+                break;
+            case 1:
+                RPC_RequestUseTool(ToolType.PickAxe);
+                break;
+            case 2:
+                RPC_RequestUseTool(ToolType.None);
+                break;
+            case 3:
+                RPC_RequestUseTool(ToolType.Axe);
+                break;
+        }
+    }
+
+
+
 }

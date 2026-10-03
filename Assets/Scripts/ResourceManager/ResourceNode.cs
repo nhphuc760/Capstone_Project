@@ -15,7 +15,8 @@ public enum ToolType
 {
     None,
     Axe, //Riu - Wood
-    PickAxe // Cuoc - Quang (vang/sat/dong)
+    PickAxe, // Cuoc - Quang (vang/sat/dong),
+    Screwdriver
 }
 
 
