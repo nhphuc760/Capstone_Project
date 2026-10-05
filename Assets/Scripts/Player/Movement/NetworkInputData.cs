@@ -6,7 +6,8 @@ public enum ButtonType
 {
     Jump,
     Interact,
-    EquipTool
+    EquipTool,
+    TestTakeDamage,
 }
 
 

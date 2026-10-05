@@ -8,6 +8,10 @@ public abstract class StructureBase : NetworkBehaviour
 {
     [Networked]
     public int Level {  get; set; }
+
+    [SerializeField] StatsBase structStatBase;
+    public Stats Stats { get; set; }
+
     [Networked] 
     NetworkBool IsUpgradeable {  get; set; }
     public StructureDataSO StructureDataSO;
@@ -17,9 +21,8 @@ public abstract class StructureBase : NetworkBehaviour
 
     public override void Spawned()
     {
-        base.Spawned();
-
         Level = 1;
+        Stats = new Stats(structStatBase, NetworkPlayer.Local.modifierDatabase);        
         IsUpgradeable = false;
         _currentUpgradeData = null;
 
@@ -34,6 +37,11 @@ public abstract class StructureBase : NetworkBehaviour
         IsUpgradeable = _currentUpgradeData != null;
     }
 
+
+    public override void FixedUpdateNetwork()
+    {
+        Stats.Tick(Runner.DeltaTime);
+    }
     public UpgradeResult CanUpgrade()
     {
         if (StructureDataSO == null || StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
@@ -148,15 +156,39 @@ public abstract class StructureBase : NetworkBehaviour
         if (Runner.LocalPlayer != Object.InputAuthority) return;
         var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id);
         Debug.Log("Strategy: " + strategy != null ? strategy.GetType().Name : "null");
+        if (StructureManager.Ins?.GetEscapesWall().Contains(Object) == true)
+        {
+            StructureManager.Ins.RemoveEscapeWall(Object.InputAuthority, Object);
+        }
         strategy.Destroy(Runner, Object);
     }
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    protected void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
+    {
+        NetworkObject source = null;
+        if (sourceID != default)
+        {
+            source = Runner.FindObject(sourceID);
+        }
+
+        AddModifier(modID.Value, source);
+    }
+
+    protected void AddModifier(string idMod, NetworkObject source = null)
+    {
+        Stats.AddModifierById(idMod, source);
+    }
+
+
+
 }
 
 
 public abstract class StructAttackBase: StructureBase
 {
-    public event Action<int> OnDamage;
-
+    public event Action<int> OnDamage;        
 }
 
 

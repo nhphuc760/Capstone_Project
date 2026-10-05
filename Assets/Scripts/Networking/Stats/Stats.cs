@@ -13,7 +13,7 @@ public class Stats
     StatsBase baseStats;
 
     readonly Dictionary<StatsType, List<IModifier>> _modifiers = new();
-    readonly Dictionary<StatsType, int> _cache = new();
+    readonly Dictionary<StatsType, float> _cache = new();
     readonly HashSet<StatsType> _dirty = new HashSet<StatsType>();
     
     // Danh sách riêng để dễ update
@@ -30,12 +30,12 @@ public class Stats
 
 
 
-    public int Get(StatsType type)
+    public float Get(StatsType type)
     {
-        if (!_dirty.Contains(type) && _cache.TryGetValue(type, out int cached)) return cached;
+        if (!_dirty.Contains(type) && _cache.TryGetValue(type, out float cached)) return cached;
 
-        int baseValue = GetBase(type);
-        int value = baseValue;
+        float baseValue = GetBase(type);
+        float value = baseValue;
 
         if (_modifiers.TryGetValue(type, out var list) && list.Count > 0)
         {
@@ -53,12 +53,12 @@ public class Stats
     }
 
 
-    public int GetBase(StatsType type)
+    public float GetBase(StatsType type)
     {
-        return baseStats.stats.TryGetValue(type, out int v) ? v : 0;
+        return baseStats.stats.TryGetValue(type, out float v) ? v : 0f;
     }
 
-    public void SetBase(StatsType type, int value)
+    public void SetBase(StatsType type, float value)
     {
         baseStats.stats[type] = value;
         MarkDirty(type);

@@ -9,7 +9,7 @@ public interface IModifier
     ModifierDataSO ModifierDataSO { get; }
     NetworkObject Source{ get; }
 
-    int Apply(int currentValue, int baseValue);
+    float Apply(float currentValue, float baseValue);
 }
 
 public interface IAffector

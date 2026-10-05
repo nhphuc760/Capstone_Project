@@ -10,22 +10,29 @@ public class HealthComponent : NetworkBehaviour, ITakedamageable
     [SerializeField] float combatRegenDelay = 3f;
     [SerializeField] Image HealthBarUI;
     [Networked, OnChangedRender(nameof(OnChangeRender))]
-    public int CurrentHealth { get; private set; }
+    public float CurrentHealth { get; private set; }
     [Networked]
-    TickTimer RegenDelayTimer { get; set; }
-
+    TickTimer DelayTimer { get; set; }
+    [Networked]
+    TickTimer RegenIntervalTimer { get; set; }
     //Runtime
+    [Networked]
+    public NetworkBool Regenable { get; set; }
+
+
+
     Stats _stats;
     bool _isInitialized;
     //Events
-    public event Action<int, int> OnHealthChanged;
-    public event Action<NetworkObject> OnDamaged; //NetworkObject: attacker
+    public event Action<float, float> OnHealthChanged;// Cur-Max
+    public event Action<NetworkObject> OnTakeDamage; //NetworkObject: attacker
     public event Action<NetworkObject> OnDeath; //NetworkObject: killer
     //Properties
-    public int MaxHealth => _stats != null ? _stats.Get(StatsType.Health) : 200;
-    public int HealthRegenPerSecond => _stats != null ? _stats.Get(StatsType.HealthRegen) : 5;
+    public float MaxHealth => _stats != null ? _stats.Get(StatsType.Health) : 200;
+    public float RegenAmount => _stats != null ? _stats.Get(StatsType.HealthRegen) : 5;
+    public float RegenInterval => _stats != null ? _stats.Get(StatsType.HealthRegenInterval) : 1f;
     public bool IsAlive => CurrentHealth > 0;
-    public float HealthPercent => MaxHealth > 0 ? (float)CurrentHealth / MaxHealth : 0;
+    public float HealthPercent => MaxHealth > 0 ? CurrentHealth / MaxHealth : 0;
 
 
     public void Initialize(Stats stats)
@@ -34,7 +41,7 @@ public class HealthComponent : NetworkBehaviour, ITakedamageable
         _isInitialized = true;
         if (HasStateAuthority)
         {
-            CurrentHealth = MaxHealth;
+            CurrentHealth = MaxHealth;  
         }
     }
 
@@ -44,58 +51,70 @@ public class HealthComponent : NetworkBehaviour, ITakedamageable
         if (HasStateAuthority && CurrentHealth <= 0 && MaxHealth > 0)
         {
             CurrentHealth = MaxHealth;
+
         }
     }
 
 
     public override void FixedUpdateNetwork()
     {
-        if (!_isInitialized || IsAlive) return;
-        if (RegenDelayTimer.ExpiredOrNotRunning(Runner))
-        {
-            ApplyHealthRegen(Runner.DeltaTime);
-        }
+        if (!Regenable) return;
+        if (!_isInitialized || !IsAlive) return;
+        RegenerateHealth();
     }
 
 
 
-
-    void ApplyHealthRegen(float deltaTime)
+    public void Restore(float amount)
     {
-        float regen = HealthRegenPerSecond * deltaTime;
-        if (regen <= 0) return;
-
-        int oldHealth = CurrentHealth;
-        int newHealth = Mathf.Min(MaxHealth, CurrentHealth + Mathf.RoundToInt(regen));
-
-        if(newHealth != oldHealth)
-        {
-            CurrentHealth = newHealth;
-        }
-
+        if (amount <= 0) return;
+        CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
     }
 
-    public void TakeDamage(int amount, NetworkObject attacker = null)
+
+
+    public void TakeDamage(float amount, NetworkObject attacker = null)
     {
-        if(IsAlive || amount  <= 0) return;
-        int oldHealth = CurrentHealth;
+        if(!IsAlive || amount  <= 0) return;
+        float oldHealth = CurrentHealth;
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
-        RegenDelayTimer = TickTimer.CreateFromSeconds(Runner, combatRegenDelay);
+        DelayTimer = TickTimer.CreateFromSeconds(Runner, combatRegenDelay);
 
-        OnDamaged?.Invoke(attacker);
+        OnTakeDamage?.Invoke(attacker);
         if (CurrentHealth <= 0 && oldHealth > 0)
         {
             OnDeath?.Invoke(attacker);
         }
 
-    }    
+    }
 
+
+    void RegenerateHealth()
+    {
+        if (CurrentHealth >= MaxHealth) return;
+        if (!DelayTimer.ExpiredOrNotRunning(Runner)) return;
+        if (!RegenIntervalTimer.IsRunning)
+        {
+            Debug.Log("Create RegenIntervalTimer");
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
+            return;
+        }
+
+        if (RegenIntervalTimer.ExpiredOrNotRunning(Runner))
+        {
+            Debug.Log("Expired RegenIntervalTimer");
+            Restore(RegenAmount);
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
+        }
+
+    }
 
     void OnChangeRender()
     {
         if (Runner.IsResimulation) return;
         OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-        HealthBarUI.fillAmount = HealthPercent;
+        if(HealthBarUI != null) 
+            HealthBarUI.fillAmount = HealthPercent;
     }
 
 }

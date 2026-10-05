@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
+using Util.Core;
 
 public class StructureManager : NetworkBehaviour
 {
@@ -14,6 +15,9 @@ public class StructureManager : NetworkBehaviour
 
     [Networked, Capacity(288)]
     NetworkDictionary<int, PlayerRef> enclosedZone => default;
+
+    [Networked, Capacity(128)]
+    NetworkDictionary<NetworkObject, PlayerRef> escapeWalls => default;
 
 
     List<IBuildStategy> buildStategies = new List<IBuildStategy>();
@@ -90,6 +94,62 @@ public class StructureManager : NetworkBehaviour
         return null;
     }
 
+    public void ClearEscapeWall(PlayerRef playerRef)
+    {
+        if (this.escapeWalls.ContainsValue(playerRef))
+        {
+            var oldEscapeWalls = this.escapeWalls.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key).ToList();
+            foreach (var i in oldEscapeWalls)
+            {
+                this.escapeWalls.Remove(i);
+            }
+        }
+    }
+
+    public void SetEscapesWall(PlayerRef player, NetworkObject[] escapeWalls)
+    {
+        if (!Object.HasStateAuthority)
+            return;
+        if (escapeWalls == null || escapeWalls.Length == 0)
+            return;
+        ClearEscapeWall(player);
+
+        foreach (var i in escapeWalls)
+        {
+            this.escapeWalls.Add(i, player);
+        }
+    }
+
+    public void RemoveEscapeWall(PlayerRef player, NetworkObject wall)
+    {
+        if (!HasStateAuthority) return;
+        escapeWalls.Remove(wall);
+    }
+
+    public void SetEscapesWall(PlayerRef player, Vector3Int[] escapeCells)
+    {
+        if (!HasStateAuthority) return;
+        if (escapeCells == null || escapeCells.Length == 0) return;
+        var listEscapeWalls = escapeCells.Select(x => GetStructure(x).Object);
+        ClearEscapeWall(player);
+        foreach (var i in listEscapeWalls)
+        {
+            this.escapeWalls.Add(i, player);
+        }
+    }
+
+
+
+    public List<NetworkObject> GetEscapesWall(PlayerRef player)
+    {
+        return escapeWalls.Where(kvp => kvp.Value == player).Select(kvp => kvp.Key).ToList();
+    }
+
+    public List<NetworkObject> GetEscapesWall()
+    {
+        return escapeWalls.Select(kvp => kvp.Key).ToList();
+    }
+
 
     public void SetStructure(Vector3Int cell, StructureBase structureObject)
     {
@@ -102,6 +162,18 @@ public class StructureManager : NetworkBehaviour
         int hash = cell.ToKey();
 
         structures.Set(hash, structureObject.Object);
+        var bounds = structureObject.GetComponent<Collider>().bounds;
+        Bounds bound = new Bounds((Vector3)cell + Vector3.one * 0.5f, bounds.size);
+
+        EventBus<BuildStategyEvent>.Raise(new BuildStategyEvent
+        {
+            BuildType = BuildStategyEvent.BuildEventType.Build,
+            PlayerRef = structureObject.Object.InputAuthority,
+            StructureCategory = structureObject.StructureDataSO.structureCategory,
+            StructureType = structureObject.StructureDataSO.structureType,
+            cellPosition = cell,
+            bounds = bound
+        });
     }
 
     public bool AddStructure(Vector3Int cell, StructureBase structureObject)
@@ -119,6 +191,43 @@ public class StructureManager : NetworkBehaviour
         int hash = cell.ToKey();
 
         return structures.Remove(hash);
+    }
+
+    public bool DestroyStructure(NetworkObject structure)
+    {
+        if (structures.ContainsValue(structure))
+        {
+            var kvp = structures.Where(kvp => kvp.Value == structure).First();
+            if (structures.Remove(kvp.Key))
+            {
+                StructureBase structBase = structure.GetComponent<StructureBase>();
+                BuildStategyEvent buildStategyEvent = new BuildStategyEvent
+                {
+                    BuildType = BuildStategyEvent.BuildEventType.Destroy,
+                    PlayerRef = structure.InputAuthority,
+                    StructureCategory = structBase.StructureDataSO.structureCategory,
+                    StructureType = structBase.StructureDataSO.structureType,
+                    cellPosition = kvp.Key.FromKey(),
+                    bounds = structBase.GetComponent<Collider>().bounds                    
+                };
+                Runner.Despawn(structure);
+                EventBus<BuildStategyEvent>.Raise(buildStategyEvent);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public StructureBase GetStructure(Vector3Int cell)
+    {       
+        int hash = cell.ToKey();
+        if (structures.TryGet(hash, out var networkObject))
+        {
+            if (networkObject == null)
+                return null;
+            return networkObject.GetComponent<StructureBase>();
+        }
+        return null;
     }
 
     public Dictionary<Vector3Int, StructureBase> GetStructures()

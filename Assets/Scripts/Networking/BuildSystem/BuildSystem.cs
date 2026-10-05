@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
-
+using Util.Core;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -23,6 +23,7 @@ public class BuildSystem : NetworkBehaviour
     BuildValidationResult buildValidationResult = default;
 
     public event Action<BuildValidationResult> buildFailReason;
+    
     public Vector3Int CellPos
     {
         get => _cellPos; private set
@@ -67,6 +68,7 @@ public class BuildSystem : NetworkBehaviour
             }
             else
             {
+                Debug.Log(buildValidationResult.Message);
                 buildFailReason?.Invoke(buildValidationResult);
             }
         }
@@ -112,8 +114,6 @@ public class BuildSystem : NetworkBehaviour
     void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3Int buildPos, Quaternion buildRot)
     {
 
-        Utils.EditorLogOnly("This fuction called on Host");
-        Utils.EditorLogOnly($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
         IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct);
         //Debug.Log("BuildStategy exist " + buildStrategy != null);
         if (buildStrategy != null)
@@ -122,20 +122,18 @@ public class BuildSystem : NetworkBehaviour
             BuildValidationResult buildValidation = buildStrategy.CanBuild(Runner, Object.InputAuthority, buildPos);
             if (buildValidation.Success)
             {
-                Utils.EditorLogOnly("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");
-                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);
+                Debug.Log("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}", this);
+                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);               
             }
             else
             {
-                Utils.EditorLogOnly(buildValidation.Message);
+                Debug.Log(buildValidation.Message, this);
             }
 
 
         }
-
-
-
     }
+
 
     public void PickStruct(string _idStruct)
     {
@@ -176,3 +174,4 @@ public class BuildSystem : NetworkBehaviour
         return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id).CanBuild(Runner, Object.InputAuthority, _cellPos);
     }
 }
+

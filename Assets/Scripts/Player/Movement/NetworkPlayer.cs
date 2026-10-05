@@ -47,8 +47,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
 
+    public NetworkResourcePlayer totalResourcePlayer;
 
-
+    public ModifierDatabaseSO modifierDatabase;
 
 
 
@@ -57,6 +58,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Health = GetComponent<HealthComponent>();
         Stamina = GetComponent<StaminaComponent>();
         inventory = GetComponent<NetworkInventory>();
+
     }
 
 
@@ -73,7 +75,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats, Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        Stats = new Stats(baseStats,modifierDatabase = Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         Health.Initialize(Stats);
@@ -111,7 +113,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
         {
             RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
-        }
+        }        
 
     }
 
@@ -122,7 +124,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.Speed);
+            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.MoveSpeed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -142,6 +144,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
                 if (equipTool == ToolType.None) return;
 
                 TryMineResource();
+            }
+            if (data.button.WasPressed(previousInput, ButtonType.TestTakeDamage))
+            {
+                Debug.Log("Takedame");
+                Health.TakeDamage(50);
             }
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
@@ -224,6 +231,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         return true;
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+      
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+    }
 
     void TryMineResource()
     {

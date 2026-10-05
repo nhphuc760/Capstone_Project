@@ -12,11 +12,11 @@ public class StateMachine
             currentState.Enter();
         }
     }
-    public void Update()
+    public void Update(float deltaTime)
     {
         if(currentState != null)
         {
-            currentState.Update();
+            currentState.Update(deltaTime);
         }
     }
 }

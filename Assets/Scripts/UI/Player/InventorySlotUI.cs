@@ -2,6 +2,8 @@
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using System.Threading.Tasks;
+using System.Threading;
 
 public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler, IPointerExitHandler
 {
@@ -12,7 +14,6 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
     [SerializeField] Image selectedHighlight;
     private InventoryItem currentItem;
     private ItemSO currentData;
-
 
     private int slotIndex = -1;
 
@@ -93,10 +94,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         {
             hoverHighlight.enabled = true;
         }
+      
         if (inventoryUI != null)
         {
             inventoryUI.ShowTooltip(this);
         }
+        
+
+        
     }
 
     public void OnPointerClick(PointerEventData eventData)

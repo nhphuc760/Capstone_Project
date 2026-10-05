@@ -1,10 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
 public  interface IBuildStategy
 {
-    
     BuildValidationResult CanBuild(NetworkRunner runner,PlayerRef playerRef , Vector3Int cell);
     void Build(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell);
     void Destroy(NetworkRunner runner, NetworkObject obj);
@@ -31,7 +31,23 @@ public struct BuildValidationResult
         return new() {Reason = BuildFailReason.NotEnoughResource, missingResources = missingResource, Message = message };
     }
 
+
     
+}
+
+public struct BuildStategyEvent : IEvent
+{
+    public enum BuildEventType
+    {
+        Build,
+        Destroy
+    }
+    public PlayerRef PlayerRef;
+    public BuildEventType BuildType;
+    public StructureType StructureType;
+    public StructureCategory StructureCategory;
+    public Vector3Int cellPosition;
+    public Bounds bounds;
 }
 
 
@@ -43,5 +59,6 @@ public enum BuildFailReason
     NotEnoughResource,
     InvalidPosition,
     OccupiedByStructure,
-    MissingRequirement
+    MissingRequirement,
+    MultipleEnclosedZones
 }

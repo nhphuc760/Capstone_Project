@@ -1041,8 +1041,12 @@ MonoBehaviour:
       - Key: 1
         Value: 10
       - Key: 6
-        Value: 5
+        Value: 1
       - Key: 7
+        Value: 1
+      - Key: 9
+        Value: 5
+      - Key: 8
         Value: 5
   controller: {fileID: 5816453605207640125}
   cameraView: {fileID: 2482603673533289662}
@@ -1050,6 +1054,7 @@ MonoBehaviour:
   gatherRanged: 2
   mineInterval: 1
   _equipTool: 0
+  modifierDatabase: {fileID: 0}
 --- !u!114 &4041010651174595068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1153,6 +1158,8 @@ MonoBehaviour:
   combatRegenDelay: 3
   HealthBarUI: {fileID: 7165482542547506578}
   _CurrentHealth: 0
+  _Regenable:
+    _value: 1
 --- !u!114 &4933714085852605442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1165,7 +1172,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8902e53ac19f6f468b173e6d6a4cec5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StaminaComponent
-  regenInterval: 1
   regenDelayAfterUse: 2
   StaminaBarUI: {fileID: 8707533396376757107}
   _CurrentStamina: 0
