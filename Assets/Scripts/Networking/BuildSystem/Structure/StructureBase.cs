@@ -10,7 +10,7 @@ public abstract class StructureBase : NetworkBehaviour
     public int Level {  get; set; }
 
     [SerializeField] StatsBase structStatBase;
-    public Stats Stats { get; set; }
+    public Stats _structureStats { get; set; }
 
     [Networked] 
     NetworkBool IsUpgradeable {  get; set; }
@@ -22,7 +22,7 @@ public abstract class StructureBase : NetworkBehaviour
     public override void Spawned()
     {
         Level = 1;
-        Stats = new Stats(structStatBase, NetworkPlayer.Local.modifierDatabase);        
+        _structureStats = new Stats(structStatBase, NetworkPlayer.Local.modifierDatabase);        
         IsUpgradeable = false;
         _currentUpgradeData = null;
 
@@ -40,7 +40,7 @@ public abstract class StructureBase : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        Stats.Tick(Runner.DeltaTime);
+        _structureStats.Tick(Runner.DeltaTime);
     }
     public UpgradeResult CanUpgrade()
     {
@@ -178,7 +178,7 @@ public abstract class StructureBase : NetworkBehaviour
 
     protected void AddModifier(string idMod, NetworkObject source = null)
     {
-        Stats.AddModifierById(idMod, source);
+        _structureStats.AddModifierById(idMod, source);
     }
 
 
@@ -188,7 +188,7 @@ public abstract class StructureBase : NetworkBehaviour
 
 public abstract class StructAttackBase: StructureBase
 {
-    public event Action<int> OnDamage;        
+    public event Action<float> OnDamage;        
 }
 
 

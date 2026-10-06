@@ -1,13 +1,10 @@
-using Fusion;
-using UnityEngine;
-using UnityEngine.Localization.SmartFormat.Utilities;
-using WebSocketSharp;
+﻿using Fusion;
 
 public interface IModifier
 {
 
     ModifierDataSO ModifierDataSO { get; }
-    NetworkObject Source{ get; }
+    NetworkObject Source{ get; } // Cho biết nguồn tạo ra Modifier này. Ví dụ Player tạo debuff cho quái thì source là Player
 
     float Apply(float currentValue, float baseValue);
 }

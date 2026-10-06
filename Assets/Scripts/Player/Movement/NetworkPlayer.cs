@@ -14,7 +14,7 @@ public struct NetworkResourcePlayer : INetworkStruct
     public int GoldOre;
 }
 
-public class NetworkPlayer : NetworkBehaviour, IAffector
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
     public static NetworkPlayer Local { get; private set; }
 
@@ -51,7 +51,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
 
     public ModifierDatabaseSO modifierDatabase;
 
+    [SerializeField] NetworkPrefabRef doorPrefab;
 
+    Door doorPlayer;
+    public Door Door => doorPlayer;
 
     public void Awake()
     {
@@ -75,16 +78,16 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats,modifierDatabase = Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        Stats = new Stats(baseStats,modifierDatabase != null ? modifierDatabase : Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         Health.Initialize(Stats);
         Stamina.Initialize(Stats);
-
         if (HasInputAuthority)
         {
 
             //Subcribe Inventory Event
+
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -104,6 +107,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             }
         }
 
+        if (HasStateAuthority)
+        {
+            doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
+            doorPlayer.RPC_SetActiveNetworked(false);
+        }
 
     }
 
@@ -326,6 +334,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         }
     }
 
-
-
+    public void TakeDamage(float amount, NetworkObject attacker)
+    {
+        Health?.TakeDamage(amount, attacker);
+    }
 }

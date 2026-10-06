@@ -1054,7 +1054,9 @@ MonoBehaviour:
   gatherRanged: 2
   mineInterval: 1
   _equipTool: 0
-  modifierDatabase: {fileID: 0}
+  modifierDatabase: {fileID: 11400000, guid: 57354c6133f294a42b5d1cf66f7131a0, type: 2}
+  doorPrefab:
+    RawGuidValue: d2fcbdbbd1972d7499a34dc8e90159db
 --- !u!114 &4041010651174595068
 MonoBehaviour:
   m_ObjectHideFlags: 0

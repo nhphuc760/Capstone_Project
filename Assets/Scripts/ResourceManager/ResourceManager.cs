@@ -40,6 +40,7 @@ public class ResourceManager : NetworkBehaviour
         {
             Debug.Log("Create map");
             GenerateMap();
+            NavMeshBakeManager.Ins.BakeAll();
         }
     }
 

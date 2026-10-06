@@ -64,8 +64,13 @@ public class Idle : EnemyBaseState
 
     public override EnemyState TryGetNextState()
     {
-        if (context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
+        var targetAttack = TargetAttack();
+        if (targetAttack != null && (targetAttack.position - context.Controller.transform.position).sqrMagnitude <= 1)
         {
+            return EnemyState.Attack;
+        }
+        if (context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
+        {            
             return EnemyState.MoveToDoor;
         }
         else if(context.TargetPlayer != PlayerRef.None)
@@ -74,4 +79,18 @@ public class Idle : EnemyBaseState
         }
             return EnemyState.Idle;
     }
+
+    Transform TargetAttack()
+    {
+        if (context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
+        {
+            return door.transform;
+        }else if (context.TargetPlayer != PlayerRef.None)
+        {
+            return context.Brain.Runner.GetPlayerObject(context.TargetPlayer).transform;
+        }
+        return null;
+         
+    }
+
 }

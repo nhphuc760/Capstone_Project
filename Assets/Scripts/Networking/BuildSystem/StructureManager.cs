@@ -47,7 +47,7 @@ public class StructureManager : NetworkBehaviour
     }
     public void SetEnclosedZone(PlayerRef playerRef, List<Vector3Int> zones)
     {
-        if (!Object.HasStateAuthority) return;        
+        if (!HasStateAuthority) return;        
 
         foreach (var kvp in enclosedZone)
         {
@@ -79,9 +79,7 @@ public class StructureManager : NetworkBehaviour
                 this,
                 100, 100,
                 _layerObstacleBuild,
-                structureDataSO,
-                _structDatabase.GetStructSO("1094")
-
+                structureDataSO
             );
             buildStategies.Add(wallBuildStrategy);
             return wallBuildStrategy;
@@ -96,6 +94,7 @@ public class StructureManager : NetworkBehaviour
 
     public void ClearEscapeWall(PlayerRef playerRef)
     {
+        if (!HasStateAuthority) return;
         if (this.escapeWalls.ContainsValue(playerRef))
         {
             var oldEscapeWalls = this.escapeWalls.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key).ToList();
@@ -108,7 +107,7 @@ public class StructureManager : NetworkBehaviour
 
     public void SetEscapesWall(PlayerRef player, NetworkObject[] escapeWalls)
     {
-        if (!Object.HasStateAuthority)
+        if (!HasStateAuthority)
             return;
         if (escapeWalls == null || escapeWalls.Length == 0)
             return;
@@ -153,7 +152,7 @@ public class StructureManager : NetworkBehaviour
 
     public void SetStructure(Vector3Int cell, StructureBase structureObject)
     {
-        if (!Object.HasStateAuthority)
+        if (!HasStateAuthority)
             return;
 
         if (structureObject == null || structureObject.Object == null)
@@ -178,6 +177,7 @@ public class StructureManager : NetworkBehaviour
 
     public bool AddStructure(Vector3Int cell, StructureBase structureObject)
     {       
+        if(!HasStateAuthority) return false;
         if (structureObject == null || structureObject.Object == null)
             return false;
 
@@ -188,6 +188,7 @@ public class StructureManager : NetworkBehaviour
 
     public bool RemoveStructure(Vector3Int cell)
     {        
+        if (!HasStateAuthority) return false;
         int hash = cell.ToKey();
 
         return structures.Remove(hash);
@@ -195,6 +196,7 @@ public class StructureManager : NetworkBehaviour
 
     public bool DestroyStructure(NetworkObject structure)
     {
+        if(!HasStateAuthority) return false;
         if (structures.ContainsValue(structure))
         {
             var kvp = structures.Where(kvp => kvp.Value == structure).First();

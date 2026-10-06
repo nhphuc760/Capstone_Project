@@ -11,11 +11,6 @@ public class WallBuildStrategy : IBuildStategy
     readonly int _heightMap;
     readonly LayerMask _layerObstacleBuild;
     readonly StructureDataSO wallSO;
-    readonly StructureDataSO doorSO;
-
-    // Door tạm thời bị tắt khi vòng bị phá
-    Door Door;
-
     /// <summary>
     /// Cache kết quả CheckFromNewCell giữa CanBuild → Build (cùng player + cell).
     /// Tránh chạy flood 2 lần trên server.
@@ -34,14 +29,13 @@ public class WallBuildStrategy : IBuildStategy
     EnclosureCache _cache;
 
     public WallBuildStrategy(StructureManager structureManager, int widthMap, int heightMap,
-        LayerMask layerObstacleBuild, StructureDataSO wallSO, StructureDataSO doorSO)
+        LayerMask layerObstacleBuild, StructureDataSO wallSO)
     {
         this.structureManager = structureManager;
         _widthMap = widthMap;
         _heightMap = heightMap;
         _layerObstacleBuild = layerObstacleBuild;
         this.wallSO = wallSO;
-        this.doorSO = doorSO;
     }
 
     // =========================================================================
@@ -107,20 +101,15 @@ public class WallBuildStrategy : IBuildStategy
             StructureManager.Ins?.ClearEscapeWall(playerRef);
             Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallSet);
 
-            StructureBase doorObj;
-            if (Door != null)
-            {
-                Door.RPC_SetActiveNetworked(true);
-                doorObj = Door;
-            }
-            else
-            {
-                doorObj = runner.Spawn(doorSO.prefabs, doorPos + Vector3.one * 0.5f, Quaternion.identity, playerRef)
-                    .GetBehaviour<StructureBase>();
-            }
 
+            var playerObject = runner.GetPlayerObject(playerRef).GetBehaviour<NetworkPlayer>();
+
+            Door doorObj = playerObject.Door;            
+            if (doorObj != null)
+            {
+                doorObj.RPC_SetActiveNetworked(true);
+            }                        
             doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + Vector3.one * 0.5f);
-
             if (doorPos != cell)
             {
                 StructureBase wallAtDoorPos = walls[doorPos];
@@ -135,6 +124,8 @@ public class WallBuildStrategy : IBuildStategy
                 structureManager.SetStructure(cell, doorObj);
             }
             structureManager.SetEnclosedZone(playerRef, enclosedList);
+            Vector3 doorOppositeOutside = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);     
+            doorObj.SetOutSideOppositeDoor(doorOppositeOutside);
             EventBus<BuildStategyEvent>.Raise(new BuildStategyEvent
             {
                 PlayerRef = playerRef,
@@ -262,8 +253,8 @@ public class WallBuildStrategy : IBuildStategy
         }
         Vector3Int cell = structureEntry.Key;        
         if (!obj.TryGetBehaviour<Wall>(out _)) return;        
-        var doorEntry = wallsAndDoor.FirstOrDefault(kvp => kvp.Value.StructureDataSO.structureType == StructureType.Door);
-        var door = doorEntry.Value as Door;
+        var playerObject = runner.GetPlayerObject(obj.InputAuthority).GetBehaviour<NetworkPlayer>();
+        Door door = playerObject.Door;
 
         HashSet<Vector3Int> remaining = wallsAndDoor.Keys.ToHashSet();
         remaining.Remove(cell);
@@ -281,10 +272,9 @@ public class WallBuildStrategy : IBuildStategy
             if (door != null)
             {
                 Debug.Log("Set door active false");
-                remaining.Remove(doorEntry.Key);
+                remaining.Remove(door.transform.position.ToInt());
                 door.RPC_SetActiveNetworked(false);
-                Door = door;
-                structureManager.RemoveStructure(doorEntry.Key);              
+                structureManager.RemoveStructure(door.transform.position.ToInt());              
             }
             Debug.Log("Vòng kín bị phá vỡ → Clear EnclosedList");
         }

@@ -17,8 +17,9 @@ public enum EnemyState
 
 
 namespace UtilityAI.Core
-{   
-    public class AIController : NetworkBehaviour
+{
+    
+    public class AIController : NetworkBehaviour, IAffector
     {
         public Context worldInformation;
         AIBrain brain;
@@ -27,8 +28,8 @@ namespace UtilityAI.Core
         public HealthComponent Health { get; private set; }
         [Networked] EnemyState _currentState { get; set; }
 
-        [Networked] TickTimer AttackIntervalTimer { get; set; }
-        [Networked] TickTimer MinAttackTimer { get; set; }
+        [Networked] public TickTimer AttackIntervalTimer { get; set; }
+        [Networked] public TickTimer MinAttackTimer { get; set; }
         [SerializeField] float attackRange = 1.5f;
         EnemyStateMachine machine = new();
 
@@ -54,11 +55,13 @@ namespace UtilityAI.Core
             _states.Add(EnemyState.Idle, new Idle(worldInformation));
             _states.Add(EnemyState.MoveToDoor, new MoveToDoor(worldInformation));
             _states.Add(EnemyState.MoveToPlayer, new MoveToPlayer(worldInformation));
+            _states.Add(EnemyState.Attack, new Attack(worldInformation));
             TransitionTo(EnemyState.Idle);
             onStructureChanged = new EventBinding<BuildStategyEvent>(OnStructureChanged);
             EventBus<BuildStategyEvent>.Register(onStructureChanged);
+           
         }
-
+        
         void OnStructureChanged(BuildStategyEvent args)
         {           
             if (args.StructureType == StructureType.Door || args.StructureType == StructureType.Wall)
@@ -74,11 +77,8 @@ namespace UtilityAI.Core
         private void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent<StructureBase>(out StructureBase escapeWall) && IsEscapeWall(escapeWall.Object))
-            {
-                if (HasStateAuthority)
-                {
-                    StructureManager.Ins?.DestroyStructure(escapeWall.Object);
-                }
+            {                
+                    StructureManager.Ins?.DestroyStructure(escapeWall.Object);                
             }
         }
 
@@ -94,9 +94,15 @@ namespace UtilityAI.Core
         }
 
              
+        //Called by Attack State
+        public void WhenAttack()
+        {
+            OnAttack?.Invoke();
+        }
 
         public override void FixedUpdateNetwork()
         {
+            enemyStats.Tick(Runner.DeltaTime);
             if (ShouldEscape())
             {
                 TransitionTo(EnemyState.MoveToSafeZone);
@@ -104,13 +110,13 @@ namespace UtilityAI.Core
             machine?.Update(Runner.DeltaTime);
             var next = machine.CurrentState.TryGetNextState();
             TransitionTo(next);
-        }
 
-       
+        }
         
 
         bool ShouldEscape()
         {
+
             if (Health == null || Health.MaxHealth <= 0f || brain == null)
                 return false;
             return (Health.CurrentHealth / Health.MaxHealth) <= brain.GetEscapeThreshold();
@@ -124,5 +130,16 @@ namespace UtilityAI.Core
         }
 
         public EnemyState GetCurrentState() => _currentState;
+
+        public void AddModifier(string idMod, NetworkObject source)
+        {
+
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RPC_RequestSetDestination(Vector3 pos)
+        {
+            worldInformation.Agent.SetDestination(pos);
+        }
     }
 }

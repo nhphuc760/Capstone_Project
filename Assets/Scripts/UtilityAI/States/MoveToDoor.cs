@@ -1,58 +1,58 @@
 using UnityEngine;
+using Util;
 using UtilityAI.Core;
 
 public class MoveToDoor : EnemyBaseState
 {
+
+    Door targetDoor;
     public MoveToDoor(UtilityAI.Core.Context context) : base(context)
     {
 
     }
-    int lastSetDestinationTick;
     public override void Enter()
     {
         Debug.Log("Enter Move To Door");
         if (context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
         {
-            context.Agent.SetDestination(door.transform.position);
-            lastSetDestinationTick = context.Brain.Runner.Tick.Raw;
-            Debug.Log("Last SetDestination: " + lastSetDestinationTick);
+            targetDoor = door as Door;
+            context.Agent.SetDestination(targetDoor.OutideOppositeDoor);
         }
     }
     public override void Update(float deltaTime)
     {
-        
+        if (targetDoor != null && (targetDoor.OutideOppositeDoor - context.Agent.destination).sqrMagnitude > 1)
+        {
+            context.Agent.SetDestination(targetDoor.OutideOppositeDoor);
+        }
     }
 
     public override void Exit()
     {
         context.Agent.ResetPath();
+        targetDoor = null;
     }
 
     public override EnemyState TryGetNextState()
-    {
-        if (lastSetDestinationTick == context.Brain.Runner.Tick.Raw)
-        {
-            return EnemyState.MoveToDoor;
-        }
+    {        
         if(!context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
         {
             Debug.Log("Door Target Null");
             return EnemyState.Idle;
         }
-
         var agent = context.Agent;
-
-        if (!agent.hasPath && agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathInvalid)
+        if (agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
         {
-            Debug.Log("Path Invalid");
+            return EnemyState.Attack;
+        }
+        Debug.Log("MoveTODoor Pending: " + agent.pathPending);
+        if (!agent.pathPending && agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathPartial)
+        {
+            Debug.Log("Path Partial");
             return EnemyState.Idle;
         }
 
-        if (agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
-        {
-            Debug.Log("Change Attack: " + context.Brain.Runner.Tick.Raw);
-            return EnemyState.Attack;
-        }        
+          
             return EnemyState.MoveToDoor;
     }
 

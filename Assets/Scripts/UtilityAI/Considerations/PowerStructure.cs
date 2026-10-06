@@ -22,8 +22,8 @@ public class PowerStructure : Consideration
             foreach (var entry in attackStructure)
             {
                 if (entry.Value == null) continue;
-                float damageStructI = entry.Value.Stats.Get(StatsType.Damage);
-                float attackSpeedStructI = entry.Value.Stats.Get(StatsType.AttackSpeed);
+                float damageStructI = entry.Value._structureStats.Get(StatsType.Damage);
+                float attackSpeedStructI = entry.Value._structureStats.Get(StatsType.AttackSpeed);
                 float dpsStructI = damageStructI * attackSpeedStructI;
                 totalDPS += dpsStructI;
             }

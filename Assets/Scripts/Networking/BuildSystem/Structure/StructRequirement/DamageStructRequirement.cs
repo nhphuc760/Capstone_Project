@@ -7,11 +7,11 @@ public class DamageStructRequirement : StructRequirement
 {
 
 
-    public int RequireDamage;
+    public float RequireDamage;
 
-    protected int damgeSupervise;
+    protected float damgeSupervise;
 
-    protected System.Action<int> handler;
+    protected System.Action<float> handler;
 
 
     public override UpgradeResult CheckRequirement()

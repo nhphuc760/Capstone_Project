@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HealthComponent : NetworkBehaviour, ITakedamageable
+public class HealthComponent : NetworkBehaviour
 {
 
     [SerializeField] float combatRegenDelay = 3f;

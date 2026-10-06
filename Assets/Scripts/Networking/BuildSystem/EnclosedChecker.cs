@@ -585,6 +585,61 @@ public static class EnclosedChecker
         return start;
     }
 
+    /// <summary>
+    /// Lấy ô nằm bên ngoài (không enclosed) đối diện với ô door.
+    /// Giả định: door nằm trên đoạn tường thẳng (degree 2), 2 bên dọc tường là wall,
+    /// 2 hướng vuông góc còn lại: 1 hướng vào enclosed, 1 hướng ra ngoài.
+    /// </summary>
+    /// <param name="doorCell">Vị trí ô door</param>
+    /// <param name="walls">Tập hợp tất cả wall + door (hoặc chỉ wall cũng được)</param>
+    /// <param name="enclosedCells">Danh sách ô nằm trong vùng enclosed (đã có từ CheckFromNewCell)</param>
+    /// <returns>Ô bên ngoài đối diện door. Nếu không tìm được thì trả về doorCell.</returns>
+    public static Vector3Int GetOutsideCellOppositeDoor(Vector3Int doorCell,HashSet<Vector3Int> walls,
+        ICollection<Vector3Int> enclosedCells)
+    {
+        
+        // 1. Tìm 2 neighbor là wall (phải là 2 hướng đối nhau)
+        var wallNeighbors = GetNeighborIsWall(doorCell, walls);
+        if (wallNeighbors.Count != 2)
+            return doorCell; // không phải đoạn thẳng degree 2
+
+        // Kiểm tra thật sự đối nhau
+        Vector3Int dir1 = wallNeighbors[0] - doorCell;
+        Vector3Int dir2 = wallNeighbors[1] - doorCell;
+        if (dir1 + dir2 != Vector3Int.zero)
+            return doorCell;
+
+        // 2. Hai hướng vuông góc với tường
+        Vector3Int perpA, perpB;
+        if (dir1.x != 0) // tường nằm ngang (trái-phải) → vuông góc là trên-dưới
+        {
+            perpA = new Vector3Int(0, 0, 1);
+            perpB = new Vector3Int(0, 0, -1);
+        }
+        else // tường nằm dọc (trên-dưới) → vuông góc là trái-phải
+        {
+            perpA = new Vector3Int(1, 0, 0);
+            perpB = new Vector3Int(-1, 0, 0);
+        }
+
+        Vector3Int candidateA = doorCell + perpA;
+        Vector3Int candidateB = doorCell + perpB;
+
+        // 3. Ô nào nằm trong enclosed thì ô còn lại là outside
+        bool aEnclosed = enclosedCells != null && enclosedCells.Contains(candidateA);
+        bool bEnclosed = enclosedCells != null && enclosedCells.Contains(candidateB);
+
+        if (aEnclosed && !bEnclosed) return candidateB;
+        if (bEnclosed && !aEnclosed) return candidateA;
+
+        // Fallback: nếu cả hai đều không enclosed (hoặc cả hai đều enclosed – bất thường)
+        // thì ưu tiên ô không phải wall
+        if (!walls.Contains(candidateA)) return candidateA;
+        if (!walls.Contains(candidateB)) return candidateB;
+
+        return doorCell;
+    }
+
     static List<Vector3Int> GetNeighborIsWall(Vector3Int cell, HashSet<Vector3Int> walls)
     {
         var result = new List<Vector3Int>(4);
