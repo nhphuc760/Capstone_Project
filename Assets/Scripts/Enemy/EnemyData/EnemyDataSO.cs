@@ -5,7 +5,7 @@ public class EnemyDataSO : ScriptableObject
 {
     [Header("Basic data")]
     public string enemyName;
-    public string maxHeatlh;
+    public float maxHealth;
     public float moveSpeed;
 
     [Header("Attack data")]
