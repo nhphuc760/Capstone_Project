@@ -5,12 +5,11 @@ using UnityEngine.UI;
 
 public class StaminaComponent : NetworkBehaviour
 {
-    [SerializeField] float regenInterval = 1f; // mất bao nhiêu giây hồi 1 lần
     [SerializeField] float regenDelayAfterUse = 2f; //Delay sau khi consume
     [SerializeField] Image StaminaBarUI;
 
     //Networked
-    [Networked, OnChangedRender(nameof(OnChangeRender))] public int CurrentStamina { get; private set; }
+    [Networked, OnChangedRender(nameof(OnChangeRender))] public float CurrentStamina { get; private set; }
     [Networked] TickTimer DelayTimer { get; set; }
     [Networked] TickTimer RegenIntervalTimer { get; set; }
 
@@ -19,14 +18,14 @@ public class StaminaComponent : NetworkBehaviour
     bool _isInitialized;
 
     //Events
-    public event Action<int, int> OnStaminaChange;//current, max
+    public event Action<float, float> OnStaminaChange;//current, max
     public event Action OnExhausted;// Cạn kiệt
 
 
-    public int MaxStamina => _stats != null ? _stats.Get(StatsType.Stamina) : 200;
+    public float MaxStamina => _stats != null ? _stats.Get(StatsType.Stamina) : 200f;
 
-    public int RegentAmount => _stats != null ? _stats.Get(StatsType.StaminaRegen) : 5;
-
+    public float RegenAmount => _stats != null ? _stats.Get(StatsType.StaminaRegen) : 5;
+    public float RegenInterval => _stats != null ? _stats.Get(StatsType.StaminaRegenInterval) : 1f;
     public bool IsExhausted => CurrentStamina <= 0;
     public float StaminaPercent => MaxStamina > 0 ? (float)CurrentStamina / MaxStamina : 0;
 
@@ -68,7 +67,7 @@ public class StaminaComponent : NetworkBehaviour
         return true;
     }
 
-    public void Restore(int amount)
+    public void Restore(float amount)
     {
         if (amount <= 0) return;
         CurrentStamina = Mathf.Min(MaxStamina, CurrentStamina + amount);       
@@ -83,21 +82,20 @@ public class StaminaComponent : NetworkBehaviour
     }
     void RegenerateStamina()
     {
-        Debug.Log("Remaining time: " + DelayTimer.RemainingTime(Runner));
         if(CurrentStamina >= MaxStamina) return;
         if (!DelayTimer.ExpiredOrNotRunning(Runner)) return;
         if (!RegenIntervalTimer.IsRunning)
         {
             Debug.Log("Create RegenIntervalTimer");
-            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
             return;
         }
 
         if (RegenIntervalTimer.ExpiredOrNotRunning(Runner))
         {
             Debug.Log("Expired RegenIntervalTimer");
-            Restore(RegentAmount);
-            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, regenInterval);
+            Restore(RegenAmount);
+            RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
         }
 
     }

@@ -16,7 +16,7 @@ public class StatModifier : IModifier
         Source = source;
     }
 
-    public virtual int Apply(int currentValue, int baseValue)
+    public virtual float Apply(float currentValue, float baseValue)
     {
       
         return ModifierDataSO.Type switch

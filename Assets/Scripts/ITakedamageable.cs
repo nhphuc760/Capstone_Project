@@ -3,5 +3,5 @@ using UnityEngine;
 
 public interface ITakedamageable
 {
-    void TakeDamage(int amount, NetworkObject attacker);
+    void TakeDamage(float amount, NetworkObject attacker);
 }

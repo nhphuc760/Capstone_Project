@@ -81,6 +81,7 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
             button.Set(ButtonType.Jump, curBoard.spaceKey.isPressed);
             button.Set(ButtonType.Interact, curBoard.eKey.isPressed);
             button.Set(ButtonType.EquipTool, curBoard.digit1Key.isPressed);
+            button.Set(ButtonType.TestTakeDamage, curBoard.digit2Key.isPressed);
         }
         accumulatedInput.button = new NetworkButtons(accumulatedInput.button.Bits | button.Bits);
     }

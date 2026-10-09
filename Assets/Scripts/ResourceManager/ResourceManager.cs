@@ -25,6 +25,7 @@ public class ResourceManager : NetworkBehaviour
     [Header("Container")]
     public Transform objectsParent;
 
+    public bool DrawDebug = true;
 
     private struct PoissonPoint
     {
@@ -39,6 +40,7 @@ public class ResourceManager : NetworkBehaviour
         {
             Debug.Log("Create map");
             GenerateMap();
+            NavMeshBakeManager.Ins.BakeAll();
         }
     }
 
@@ -63,17 +65,7 @@ public class ResourceManager : NetworkBehaviour
 
             Vector3 spawnPosition = new Vector3(p.position.x, 0f, p.position.y);
             Quaternion spawnRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            Runner.Spawn(prefab, spawnPosition, spawnRotation);
-            // Tìm thông tin scale tương ứng từ Config
-            //SpawnableItem itemData = p.config.spawnableItems.Find(i => i.prefab == prefab);
-            //if (itemData.scaleMin != Vector3.zero && itemData.scaleMax != Vector3.zero)
-            //{
-            //    obj.transform.localScale = new Vector3(
-            //        Random.Range(itemData.scaleMin.x, itemData.scaleMax.x),
-            //        Random.Range(itemData.scaleMin.y, itemData.scaleMax.y),
-            //        Random.Range(itemData.scaleMin.z, itemData.scaleMax.z)
-            //    );
-            //}
+            Runner.Spawn(prefab, spawnPosition, spawnRotation);           
         }
     }
 
@@ -197,6 +189,7 @@ public class ResourceManager : NetworkBehaviour
     // Hàm này tự động chạy trong Editor khi bạn click chọn GameObject FlatMapGenerator
     private void OnDrawGizmosSelected()
     {
+        if (!DrawDebug) return;
         // Chỉ vẽ Gizmos nếu đã gán đủ 3 Config
         if (greenZoneConfig == null || yellowZoneConfig == null || redZoneConfig == null)
             return;

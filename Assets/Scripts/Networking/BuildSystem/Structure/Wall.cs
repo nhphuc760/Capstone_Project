@@ -12,4 +12,10 @@ public class Wall : StructureBase
     {
      
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("Wall collision with: " + collision.collider.name);
+    }
+
 }

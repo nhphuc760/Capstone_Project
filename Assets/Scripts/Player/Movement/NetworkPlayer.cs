@@ -14,7 +14,7 @@ public struct NetworkResourcePlayer : INetworkStruct
     public int GoldOre;
 }
 
-public class NetworkPlayer : NetworkBehaviour, IAffector
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
     public static NetworkPlayer Local { get; private set; }
 
@@ -47,16 +47,21 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
 
+    public NetworkResourcePlayer totalResourcePlayer;
 
+    public ModifierDatabaseSO modifierDatabase;
 
+    [SerializeField] NetworkPrefabRef doorPrefab;
 
-
+    Door doorPlayer;
+    public Door Door => doorPlayer;
 
     public void Awake()
     {
         Health = GetComponent<HealthComponent>();
         Stamina = GetComponent<StaminaComponent>();
         inventory = GetComponent<NetworkInventory>();
+
     }
 
 
@@ -73,16 +78,16 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats, Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        Stats = new Stats(baseStats,modifierDatabase != null ? modifierDatabase : Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         Health.Initialize(Stats);
         Stamina.Initialize(Stats);
-
         if (HasInputAuthority)
         {
 
             //Subcribe Inventory Event
+
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -102,6 +107,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             }
         }
 
+        if (HasStateAuthority)
+        {
+            doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
+            doorPlayer.RPC_SetActiveNetworked(false);
+        }
 
     }
 
@@ -111,7 +121,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
         {
             RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
-        }
+        }        
 
     }
 
@@ -122,7 +132,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.Speed);
+            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.MoveSpeed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -142,6 +152,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
                 if (equipTool == ToolType.None) return;
 
                 TryMineResource();
+            }
+            if (data.button.WasPressed(previousInput, ButtonType.TestTakeDamage))
+            {
+                Debug.Log("Takedame");
+                Health.TakeDamage(50);
             }
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
@@ -224,6 +239,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         return true;
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+      
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+    }
 
     void TryMineResource()
     {
@@ -311,6 +334,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         }
     }
 
-
-
+    public void TakeDamage(float amount, NetworkObject attacker)
+    {
+        Health?.TakeDamage(amount, attacker);
+    }
 }
