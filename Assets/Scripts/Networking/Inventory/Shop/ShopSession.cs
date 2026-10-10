@@ -51,7 +51,7 @@ public class ShopSession : NetworkBehaviour
         if (!money.HasMoney(totalPrice) || !inventory.CanAddItem(itemID, amount))
             return;
 
-        if (!inventory.AddItem(itemID, amount))
+        if (!inventory.CanAddItem(itemID, amount))
             return;
 
         // Prevent a free item if the balance changed unexpectedly.
@@ -82,7 +82,7 @@ public class ShopSession : NetworkBehaviour
 
         // Restore the item if adding money unexpectedly fails.
         if (!money.AddMoney(totalPrice))
-            inventory.AddItem(itemID, amount);
+            inventory.CanAddItem(itemID, amount);
     }
 
     private ShopItemOffer GetConsumableOffer(int itemID)

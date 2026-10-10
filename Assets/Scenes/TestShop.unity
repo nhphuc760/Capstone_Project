@@ -331,7 +331,6 @@ MonoBehaviour:
   _ItemID: 0
   _ItemAmount: 0
   _CurrentBid: 0
-  _CurrentBidder: 0
 --- !u!1 &650949544
 GameObject:
   m_ObjectHideFlags: 0

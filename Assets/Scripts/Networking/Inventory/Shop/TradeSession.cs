@@ -232,7 +232,7 @@ public class TradeSession : NetworkBehaviour
         if (!winnerMoney.HasMoney(CurrentBid) || !winnerInventory.CanAddItem(ItemID, ItemAmount))
             return;
 
-        if (!winnerInventory.AddItem(ItemID, ItemAmount))
+        if (!winnerInventory.CanAddItem(ItemID, ItemAmount))
             return;
 
         // Roll back the item if the money update unexpectedly fails.

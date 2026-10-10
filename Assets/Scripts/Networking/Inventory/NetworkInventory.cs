@@ -1,5 +1,6 @@
 using UnityEngine;
 using Fusion;
+using System;
 
 public struct InventoryItem : INetworkStruct
 {
@@ -22,17 +23,33 @@ public class NetworkInventory : NetworkBehaviour
 {
     [Header("Inventory")]
     [SerializeField]
-    private const int capacity = 30;
+    private const int capacity = 20;
+
 
     [Header("Database")]
-    [SerializeField] private ItemDatabase database;
+    [SerializeField]
+    private ItemDatabase database;
+
 
     [Networked, Capacity(capacity)]
+    [OnChangedRender(nameof(OnChangeRender))]
     private NetworkArray<InventoryItem> Items => default;
+
 
     public int Capacity => capacity;
 
+
     public ItemDatabase Database => database;
+
+    public event Action OnInventoryChanged;
+
+
+
+    void OnChangeRender()
+    {
+        Debug.Log("Inventory Change Render");
+        OnInventoryChanged?.Invoke();
+    }
 
     public override void Spawned()
     {
@@ -42,17 +59,32 @@ public class NetworkInventory : NetworkBehaviour
         {
             database = Resources.Load<ItemDatabase>("ItemData");
             if(database == null)
-            Debug.LogError(
-                $"{name}: ItemDatabase is not assigned."
-            );
+            {
+                Debug.LogError(
+                    $"{name}: ItemDatabase is not assigned."
+                );
+            }
         }
     }
 
+
+    private void Update()
+    {
+        //Test
+        if (Input.GetKeyDown(KeyCode.T) && HasInputAuthority)
+        {
+            RPC_AddItem(1, 10);
+        }
+        
+
+    }
+
     #region Host add item
-    public bool AddItem(int itemID, int amount)
+    public bool CanAddItem(int itemID, int amount)
     {
         if (!Object.HasStateAuthority)
         {
+
             return false;
         }
 
@@ -64,9 +96,11 @@ public class NetworkInventory : NetworkBehaviour
         if (item == null)
             return false;
 
+
         // -----------------------------------------------------
         // STACKABLE ITEM
         // -----------------------------------------------------
+
         if (item.Stackable)
         {
             for (int i = 0; i < capacity; i++)
@@ -101,9 +135,11 @@ public class NetworkInventory : NetworkBehaviour
             }
         }
 
+
         // -----------------------------------------------------
         // CREATE NEW SLOT
         // -----------------------------------------------------
+
         while (amount > 0)
         {
             int emptySlot = FindEmptySlot();
@@ -124,41 +160,11 @@ public class NetworkInventory : NetworkBehaviour
                 emptySlot,
                 new InventoryItem(itemID, amountToAdd)
             );
-
             amount -= amountToAdd;
         }
 
+
         return true;
-    }
-    #endregion
-
-    #region check if the inventory can add a specific item and amount
-    public bool CanAddItem(int itemID, int amount)
-    {
-        if (database == null || amount <= 0)
-            return false;
-
-        ItemSO item = database.GetItem(itemID);
-        if (item == null)
-            return false;
-
-        int availableSpace = 0;
-
-        for (int i = 0; i < capacity; i++)
-        {
-            InventoryItem slot = Items.Get(i);
-
-            if (slot.IsEmpty)
-            {
-                availableSpace += item.Stackable ? item.MaxStack : 1;
-            }
-            else if (item.Stackable && slot.itemID == itemID)
-            {
-                availableSpace += item.MaxStack - slot.amount;
-            }
-        }
-
-        return availableSpace >= amount;
     }
     #endregion
 
@@ -166,7 +172,7 @@ public class NetworkInventory : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_AddItem(int itemID, int amount)
     {
-        AddItem(itemID, amount);
+        CanAddItem(itemID, amount);
     }
     #endregion
 
@@ -208,8 +214,6 @@ public class NetworkInventory : NetworkBehaviour
 
 
             Items.Set(i, slot);
-
-
             if (amount <= 0)
                 return true;
         }
@@ -254,12 +258,12 @@ public class NetworkInventory : NetworkBehaviour
     }
     #endregion
 
-    #region Inventory Utility Methods
     // GET SLOT
     public InventoryItem GetSlot(int index)
     {
         if (index < 0 || index >= capacity)
             return default;
+
 
         return Items.Get(index);
     }
@@ -274,6 +278,11 @@ public class NetworkInventory : NetworkBehaviour
 
 
         return database.GetItem(slot.itemID);
+    }
+
+    public ItemSO GetItemDataByID(int _id)
+    {
+        return database.GetItem(_id);
     }
 
     // FIND EMPTY SLOT
@@ -296,5 +305,4 @@ public class NetworkInventory : NetworkBehaviour
     {
         return FindEmptySlot() == -1;
     }
-    #endregion
 }

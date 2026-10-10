@@ -160,7 +160,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             if (inventory)
             {
                 var InventoryUI = GetComponentInChildren<InventoryUI>();
-
+    
                 if (InventoryUI != null)
                 {
                     inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
