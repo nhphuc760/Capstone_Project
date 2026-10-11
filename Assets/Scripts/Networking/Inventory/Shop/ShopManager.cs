@@ -1,5 +1,6 @@
 using Fusion;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ public class ShopManager : NetworkBehaviour
     [SerializeField] private NetworkInventory playerInventory;
 
     [Header("Trade Session UI References")]
+    [SerializeField] private GameObject tradeSessionUI;
     [SerializeField] private Button StartSessionBTN;
     [SerializeField] private Button CancelBTN;
     [SerializeField] private TMP_Text amountTxt;
@@ -30,6 +32,7 @@ public class ShopManager : NetworkBehaviour
     [SerializeField] private int bidStep = 10;
 
     [Header("Buy Sell Session UI References")]
+    [SerializeField] private GameObject buySellSessionUI;
     [SerializeField] private Button BuyBTN;
     [SerializeField] private Button SellBTN;
 
@@ -48,7 +51,6 @@ public class ShopManager : NetworkBehaviour
         if (CancelBTN != null)       CancelBTN.onClick.AddListener(CancelSession);
         if (MinusBTN != null)        MinusBTN.onClick.AddListener(DecreaseBid);
         if (PlusBTN != null)         PlusBTN.onClick.AddListener(IncreaseBid);
-        if (CompleteBTN != null)     CompleteBTN.onClick.AddListener(WinningBidder);
         #endregion
 
         #region Buy/Sell Session UI Listeners
@@ -56,7 +58,15 @@ public class ShopManager : NetworkBehaviour
         if (SellBTN != null)         SellBTN.onClick.AddListener(Seller);
         #endregion
 
+        tradeSessionUI.SetActive(false);
+        buySellSessionUI.SetActive(false);
         UpdateBidUI();
+    }
+
+    private void Update()
+    {
+        OpenTradeSettings();
+        OpenBuySellSettings();
     }
 
     #region Bid Management (Valuable Items)
@@ -72,7 +82,7 @@ public class ShopManager : NetworkBehaviour
             return;
         }
 
-        tradeSystem.RPC_RequestStartTestSession();
+        tradeSystem.StartSession();
         InitializeBid();
     }
 
@@ -132,7 +142,7 @@ public class ShopManager : NetworkBehaviour
             return;
         }
 
-        tradeSystem.RPC_PlaceBid(currentBidAmount);
+        tradeSystem.PlaceBid(currentBidAmount);
         currentBidAmount += bidStep;
         UpdateBidUI();
     }
@@ -142,16 +152,9 @@ public class ShopManager : NetworkBehaviour
         if (!CanCancelSession())
             return;
 
-        tradeSystem.RPC_CancelSession();
+        tradeSystem.QuitSession();
     }
 
-    private void WinningBidder()
-    {
-        if (!CanCompleteSession())
-            return;
-
-        tradeSystem.RPC_CompleteSession();
-    }
 
     private void UpdateBidUI()
     {
@@ -207,7 +210,46 @@ public class ShopManager : NetworkBehaviour
 
     private bool MoneyCheck(int bidAmount)
     {
-        return playerMoney != null && playerMoney.HasMoney(bidAmount);
+        if (playerMoney == null)
+        {
+            Debug.LogWarning("[ShopManager] MoneyCheck failed | NetworkMoney reference is null");
+        return false;
+        }
+
+    if (!playerMoney.HasMoney(bidAmount))
+    {
+        Debug.Log("[ShopManager] MoneyCheck failed | Not enough money");
+        return false;
+    }
+
+    return true;
+
+    }
+    #endregion
+
+    #region Settings
+    private void OpenTradeSettings()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            tradeSessionUI.SetActive(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            tradeSessionUI.SetActive(false);
+        }
+    }
+
+    private void OpenBuySellSettings()
+    {
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            buySellSessionUI.SetActive(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            buySellSessionUI.SetActive(false);
+        }
     }
     #endregion
 }

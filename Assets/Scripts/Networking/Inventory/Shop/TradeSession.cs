@@ -1,10 +1,10 @@
 using Fusion;
 using UnityEngine;
-using System.Linq;
 
 public enum TradeSessionState
 {
     None,
+    WaitingForPlayers,
     Active,
     Completed,
     Cancelled
@@ -12,319 +12,316 @@ public enum TradeSessionState
 
 public class TradeSession : NetworkBehaviour
 {
-    [Networked] public TradeSessionState State { get; private set; }
-    [Networked] public int ItemID { get; private set; }
-    [Networked] public int ItemAmount { get; private set; }
-    [Networked] public int CurrentBid { get; private set; }
+    private const float BidTimeout = 7f;
 
-    [Networked] public PlayerRef HighestBidder { get; private set; }
+    [Header("Session Settings")]
+    [SerializeField] private int startingBid = 0;
+
+    [Networked] public TradeSessionState State { get; private set; }
     [Networked] public PlayerRef Player1 { get; private set; }
     [Networked] public PlayerRef Player2 { get; private set; }
+    [Networked] public PlayerRef CurrentBidder { get; private set; }
+    [Networked] public PlayerRef Winner { get; private set; }
+    [Networked] public int CurrentBid { get; private set; }
+    [Networked] public TickTimer BidTimer { get; private set; }
 
     public bool IsActive => State == TradeSessionState.Active;
-    public bool IsCompleted => State == TradeSessionState.Completed;
-    public bool IsCancelled => State == TradeSessionState.Cancelled;
+    public bool HasTwoPlayers => Player1 != PlayerRef.None && Player2 != PlayerRef.None;
+    public bool HasWinner => Winner != PlayerRef.None;
 
     public override void Spawned()
     {
-        base.Spawned();
+        if (Object.HasStateAuthority)
+        {
+            State = TradeSessionState.None;
+            Player1 = PlayerRef.None;
+            Player2 = PlayerRef.None;
+            CurrentBidder = PlayerRef.None;
+            Winner = PlayerRef.None;
+            CurrentBid = startingBid;
+            BidTimer = TickTimer.None;
+        }
 
-        if (!Object.HasStateAuthority)
+        Debug.Log($"[TradeSession] Spawned | State={State}");
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (!Object.HasStateAuthority || State != TradeSessionState.Active)
             return;
 
-        State = TradeSessionState.None;
-        ItemID = 0;
-        ItemAmount = 0;
-        CurrentBid = 0;
-        HighestBidder = PlayerRef.None;
-        Player1 = PlayerRef.None;
-        Player2 = PlayerRef.None;
+        if (!BidTimer.Expired(Runner))
+            return;
 
+        if (CurrentBidder != PlayerRef.None)
+        {
+            CompleteSession(CurrentBidder, "Bid timeout");
+        }
+        else
+        {
+            CancelSessionInternal("Timer expired without a valid bid");
+        }
     }
 
     #region Start Session
-    public void StartSession(PlayerRef player1, PlayerRef player2, int itemID, int itemAmount)
+    // Call this when the player presses Start Session / Join Session.
+    public void StartSession()
     {
-        if (!Object.HasStateAuthority)
-            return;
-
-        #region Debug checks
-        if (player1 == PlayerRef.None || player2 == PlayerRef.None)
+        if (Object == null || !Object.IsValid)
         {
+            Debug.LogWarning("[TradeSession] Start failed | Invalid NetworkObject");
             return;
         }
 
-        if (player1 == player2)
-        {
-            return;
-        }
-
-        if (itemID <= 0)
-        {
-            return;
-        }
-
-        if (itemAmount <= 0)
-        {
-            return;
-        }
-        #endregion Debug checks
-
-        Player1 = player1;
-        Player2 = player2;
-        ItemID = itemID;
-        ItemAmount = itemAmount;
-        //CurrentBid = startingBid;
-        HighestBidder = PlayerRef.None;
-        State = TradeSessionState.Active;
-
-        Debug.Log($"[TradeSession] Session Started | Player1={Player1} | Player2={Player2} | ItemID={ItemID} | Amount={ItemAmount} | StartingBid={CurrentBid}");
+        RPC_RequestJoinSession();
     }
-    #endregion Start Session
 
-    #region Place Bid
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_PlaceBid(int bidAmount, RpcInfo info = default)
+    private void RPC_RequestJoinSession(RpcInfo info = default)
     {
-        PlayerRef bidder = info.Source;
+        PlayerRef requester = info.Source;
 
-        if (bidder == PlayerRef.None)
+        Debug.Log(
+            $"[TradeSession] Join Request | Requester={requester} | " +
+            $"Player1={Player1} | Player2={Player2} | State={State}"
+        );
+
+        if (requester == PlayerRef.None)
         {
-            bidder = Runner.LocalPlayer;
+            Debug.LogWarning("[TradeSession] Join rejected | Invalid PlayerRef");
+            return;
         }
 
-        ProcessBid(bidder, bidAmount);
+        if (State == TradeSessionState.Active ||
+            State == TradeSessionState.Completed ||
+            State == TradeSessionState.Cancelled)
+        {
+            Debug.LogWarning($"[TradeSession] Join rejected | State={State}");
+            return;
+        }
+
+        if (requester == Player1 || requester == Player2)
+        {
+            Debug.Log($"[TradeSession] Player already joined | Player={requester}");
+            return;
+        }
+
+        if (Player1 == PlayerRef.None)
+        {
+            Player1 = requester;
+            State = TradeSessionState.WaitingForPlayers;
+
+            Debug.Log($"[TradeSession] Player 1 joined | Player1={Player1}");
+            return;
+        }
+
+        if (Player2 == PlayerRef.None)
+        {
+            Player2 = requester;
+
+            if (Player1 == Player2)
+            {
+                Player2 = PlayerRef.None;
+                Debug.LogWarning("[TradeSession] Join rejected | Duplicate players");
+                return;
+            }
+
+            StartSessionInternal();
+            return;
+        }
+
+        Debug.LogWarning($"[TradeSession] Join rejected | Session full | Player={requester}");
     }
 
-    private void ProcessBid(PlayerRef bidder, int bidAmount)
+    private void StartSessionInternal()
     {
-        if (!Object.HasStateAuthority)
+        if (!Object.HasStateAuthority || !HasTwoPlayers)
             return;
 
-        #region Debug checks
+        State = TradeSessionState.Active;
+        CurrentBid = startingBid;
+        CurrentBidder = PlayerRef.None;
+        Winner = PlayerRef.None;
+        BidTimer = TickTimer.None;
+
+        Debug.Log($"[TradeSession] Started | Player1={Player1} | Player2={Player2}");
+    }
+    #endregion
+
+    #region Bid Management
+    // Call this from the bid button.
+    public void PlaceBid(int bidAmount)
+    {
+        if (Object == null || !Object.IsValid)
+            return;
+
+        RPC_RequestPlaceBid(bidAmount);
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestPlaceBid(int bidAmount, RpcInfo info = default)
+    {
+        PlayerRef requester = info.Source;
+
         if (State != TradeSessionState.Active)
         {
+            Debug.LogWarning("[TradeSession] Bid rejected | Session is not active");
             return;
         }
 
-        if (!IsParticipant(bidder))
+        if (!IsParticipant(requester))
         {
-            return;
-        }
-        #endregion
-
-        NetworkMoney bidderMoney = GetMoneyForPlayer(bidder);
-
-        #region Money checks
-        if (bidderMoney == null)
-        {
+            Debug.LogWarning($"[TradeSession] Bid rejected | Not a participant | Player={requester}");
             return;
         }
 
-        if (!bidderMoney.HasMoney(bidAmount))
+        if (requester == CurrentBidder)
         {
-            return;
-        }
-
-        if (bidAmount < 10)
-        {
+            Debug.LogWarning($"[TradeSession] Bid rejected | Waiting for opponent | Player={requester}");
             return;
         }
 
         if (bidAmount <= CurrentBid)
         {
+            Debug.LogWarning($"[TradeSession] Bid rejected | Amount={bidAmount} | CurrentBid={CurrentBid}");
             return;
         }
-        #endregion Money checks
 
         CurrentBid = bidAmount;
-        HighestBidder = bidder;
+        CurrentBidder = requester;
+        BidTimer = TickTimer.CreateFromSeconds(Runner, BidTimeout);
 
-        Debug.Log($"[TradeSession] Bid Accepted | HighestBidder={HighestBidder} | Player1={Player1} | Player2={Player2} | HighestBid={CurrentBid}");
+        Debug.Log($"[TradeSession] Bid placed | Player={requester} | Bid={CurrentBid} | Timer={BidTimeout}s");
     }
+    #endregion
 
-    public bool CanBid(int bidAmount)
+    #region Bid Removal
+    // A player can withdraw their own current bid.
+    public void RemoveBid()
     {
-        if (State != TradeSessionState.Active)
-            return false;
+        if (Object == null || !Object.IsValid)
+            return;
 
-        if (bidAmount < 10)
-            return false;
-
-        return bidAmount > CurrentBid;
-    }
-    #endregion Place Bid
-
-    #region player checks
-    private bool IsParticipant(PlayerRef player)
-    {
-        return player == Player1 || player == Player2;
+        RPC_RequestRemoveBid();
     }
 
-    private NetworkMoney GetMoneyForPlayer(PlayerRef player)
-    {
-        foreach (NetworkMoney money in FindObjectsByType<NetworkMoney>(FindObjectsSortMode.None))
-        {
-            if (money.Object != null && money.Object.InputAuthority == player)
-                return money;
-        }
-
-        return null;
-    }
-
-    private NetworkInventory GetInventoryForPlayer(PlayerRef player)
-    {
-        foreach (NetworkInventory inventory in FindObjectsByType<NetworkInventory>(FindObjectsSortMode.None))
-        {
-            if (inventory.Object != null && inventory.Object.InputAuthority == player)
-                return inventory;
-        }
-
-        return null;
-    }
-    #endregion player checks
-
-    #region Session Complete
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_CompleteSession(RpcInfo info = default)
+    private void RPC_RequestRemoveBid(RpcInfo info = default)
     {
-        PlayerRef sender = info.Source;
+        PlayerRef requester = info.Source;
 
-        ProcessCompleteSession(sender);
-    }
-
-    private void ProcessCompleteSession(PlayerRef sender)
-    {
-        if (!Object.HasStateAuthority)
-            return;
-
-        #region Debug checks
         if (State != TradeSessionState.Active)
         {
+            Debug.LogWarning("[TradeSession] Remove bid rejected | Session is not active");
             return;
         }
 
-        if (!IsParticipant(sender))
+        if (!IsParticipant(requester))
         {
+            Debug.LogWarning($"[TradeSession] Remove bid rejected | Not a participant | Player={requester}");
             return;
         }
 
-        if (HighestBidder == PlayerRef.None)
+        if (requester != CurrentBidder)
         {
+            Debug.LogWarning($"[TradeSession] Remove bid rejected | No active bid owned by Player={requester}");
             return;
         }
-        #endregion
 
-        PlayerRef winner = GetWinningPlayer();
+        CurrentBid = startingBid;
+        CurrentBidder = PlayerRef.None;
 
-        if (winner == PlayerRef.None)
+        Debug.Log($"[TradeSession] Bid removed | Player={requester} | CurrentBid={CurrentBid}");
+    }
+    #endregion
+
+    #region Quit Session
+    // Call this before the player voluntarily leaves the auction.
+    public void QuitSession()
+    {
+        if (Object == null || !Object.IsValid)
+            return;
+
+        RPC_RequestQuitSession();
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestQuitSession(RpcInfo info = default)
+    {
+        PlayerRef quitter = info.Source;
+
+        if (State != TradeSessionState.Active &&
+            State != TradeSessionState.WaitingForPlayers)
         {
+            Debug.LogWarning("[TradeSession] Quit ignored | Session already ended");
             return;
         }
 
-        NetworkMoney winnerMoney = GetMoneyForPlayer(winner);
-        NetworkInventory winnerInventory = GetInventoryForPlayer(winner);
-
-        if (winnerMoney == null || winnerInventory == null)
-            return;
-
-        // Validate both sides before modifying state.
-        if (!winnerMoney.HasMoney(CurrentBid) || !winnerInventory.CanAddItem(ItemID, ItemAmount))
-            return;
-
-        if (!winnerInventory.CanAddItem(ItemID, ItemAmount))
-            return;
-
-        // Roll back the item if the money update unexpectedly fails.
-        if (!winnerMoney.RemoveMoney(CurrentBid))
+        if (!IsParticipant(quitter))
         {
-            winnerInventory.RemoveItem(ItemID, ItemAmount);
+            Debug.LogWarning($"[TradeSession] Quit rejected | Not a participant | Player={quitter}");
             return;
         }
 
+        PlayerRef opponent = GetOpponent(quitter);
+
+        if (opponent != PlayerRef.None)
+        {
+            CompleteSession(opponent, $"Opponent quit: {quitter}");
+        }
+        else
+        {
+            CancelSessionInternal($"Player quit before opponent joined: {quitter}");
+        }
+    }
+    #endregion
+
+    #region Session Completion
+    private void CompleteSession(PlayerRef winner, string reason)
+    {
+        if (!Object.HasStateAuthority || State != TradeSessionState.Active)
+            return;
+
+        Winner = winner;
         State = TradeSessionState.Completed;
+        BidTimer = TickTimer.None;
 
-        Debug.Log(
-            $"[TradeSession] Completed | " +
-            $"Winner={winner} | " +
-            $"FinalBid={CurrentBid}"
-        );
+        Debug.Log($"[TradeSession] Completed | Winner={Winner} | FinalBid={CurrentBid} | Reason={reason}");
     }
 
-    public PlayerRef GetWinningPlayer()
-    {
-        return HighestBidder;
-    }
-    #endregion Session Complete
-
-    #region Cancel Session
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_CancelSession(RpcInfo info = default)
-    {
-        PlayerRef sender = info.Source;
-
-        ProcessCancelSession(sender);
-    }
-
-    private void ProcessCancelSession(PlayerRef sender)
+    private void CancelSessionInternal(string reason)
     {
         if (!Object.HasStateAuthority)
             return;
-
-        if (State != TradeSessionState.Active)
-        {
-            return;
-        }
-
-        if (!IsParticipant(sender))
-        {
-            return;
-        }
 
         State = TradeSessionState.Cancelled;
+        Winner = PlayerRef.None;
+        BidTimer = TickTimer.None;
 
-        Debug.Log(
-            $"[TradeSession] Cancelled | " +
-            $"CancelledBy={sender}"
-        );
+        Debug.Log($"[TradeSession] Cancelled | Reason={reason}");
     }
-    #endregion Cancel Session
+    #endregion
 
-    #region Reset Session
-    public void ResetSession()
+    #region Player Checks
+    private bool IsParticipant(PlayerRef player)
     {
-        if (!Object.HasStateAuthority)
-            return;
-
-        State = TradeSessionState.None;
-        ItemID = 0;
-        ItemAmount = 0;
-        CurrentBid = 0;
-        HighestBidder = PlayerRef.None;
-        Player1 = PlayerRef.None;
-        Player2 = PlayerRef.None;
-
+        return player != PlayerRef.None && (player == Player1 || player == Player2);
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RequestStartTestSession(RpcInfo info = default)
+    private PlayerRef GetOpponent(PlayerRef player)
     {
-        if (!Object.HasStateAuthority)
-        {
-            return;
-        }
+        if (player == Player1) return Player2;
 
-        PlayerRef[] players = Runner.ActivePlayers.ToArray();
+        if (player == Player2) return Player1;
 
-        if (players.Length < 2)
-        {
-            return;
-        }
+        return PlayerRef.None;
+    }
 
-        PlayerRef player1 = players[0];
-        PlayerRef player2 = players[1];
+    public float GetRemainingTime()
+    {
+        if (!IsActive || !BidTimer.IsRunning) return 0f;
 
-        StartSession(player1, player2, itemID: 1, itemAmount: 1);
+        return BidTimer.RemainingTime(Runner) ?? 0f;
     }
     #endregion
 }
