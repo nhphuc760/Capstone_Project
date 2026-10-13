@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
-using UnityEngine.AI;
 
 public enum EnemyState
 {
@@ -19,7 +17,7 @@ public enum EnemyState
 namespace UtilityAI.Core
 {
     
-    public class AIController : NetworkBehaviour, IAffector
+    public class AIController : NetworkBehaviour, IAffector, ITakedamageable
     {
         public Context worldInformation;
         AIBrain brain;
@@ -30,6 +28,10 @@ namespace UtilityAI.Core
 
         [Networked] public TickTimer AttackIntervalTimer { get; set; }
         [Networked] public TickTimer MinAttackTimer { get; set; }
+
+        [Networked] public TickTimer MaxRecoverTimer {  get; set; } 
+
+
         [SerializeField] float attackRange = 1.5f;
         EnemyStateMachine machine = new();
 
@@ -37,31 +39,36 @@ namespace UtilityAI.Core
 
         EventBinding<BuildStategyEvent> onStructureChanged;
         public event System.Action OnAttack;
-        private void Awake()
-        {
-            enemyStats = new Stats(baseStats, Resources.Load<ModifierDatabaseSO>("ScriptableObjects/ModifierData"));
-        }
+       
 
         public override void Spawned()
         {
             Debug.Log("EnemySpawned");
             brain = GetComponent<AIBrain>();
+            enemyStats ??= GetComponent<Stats>();
             worldInformation = new Context(brain);
             worldInformation.SetData(ContextKey.WidthMap, 150f);
             worldInformation.SetData(ContextKey.HeightMap, 150f);
             Health = GetComponent<HealthComponent>();
             Health?.Initialize(enemyStats);
-
-            _states.Add(EnemyState.Idle, new Idle(worldInformation));
-            _states.Add(EnemyState.MoveToDoor, new MoveToDoor(worldInformation));
-            _states.Add(EnemyState.MoveToPlayer, new MoveToPlayer(worldInformation));
-            _states.Add(EnemyState.Attack, new Attack(worldInformation));
-            TransitionTo(EnemyState.Idle);
+            InitialState();
             onStructureChanged = new EventBinding<BuildStategyEvent>(OnStructureChanged);
             EventBus<BuildStategyEvent>.Register(onStructureChanged);
            
         }
         
+
+        void InitialState()
+        {
+
+            _states.Add(EnemyState.Idle, new Idle(worldInformation));
+            _states.Add(EnemyState.MoveToDoor, new MoveToDoor(worldInformation));
+            _states.Add(EnemyState.MoveToPlayer, new MoveToPlayer(worldInformation));
+            _states.Add(EnemyState.Attack, new Attack(worldInformation));
+            _states.Add(EnemyState.MoveToSafeZone, new MoveToSafeZone(worldInformation));
+            _states.Add(EnemyState.WaitingRecoverZone, new WaitingRecoverZone(worldInformation));
+            TransitionTo(EnemyState.Idle);
+        }
         void OnStructureChanged(BuildStategyEvent args)
         {           
             if (args.StructureType == StructureType.Door || args.StructureType == StructureType.Wall)
@@ -100,6 +107,14 @@ namespace UtilityAI.Core
             OnAttack?.Invoke();
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                TakeDamage(10, null);
+            }
+        }
+
         public override void FixedUpdateNetwork()
         {
             enemyStats.Tick(Runner.DeltaTime);
@@ -110,7 +125,7 @@ namespace UtilityAI.Core
             machine?.Update(Runner.DeltaTime);
             var next = machine.CurrentState.TryGetNextState();
             TransitionTo(next);
-
+            
         }
         
 
@@ -119,6 +134,13 @@ namespace UtilityAI.Core
 
             if (Health == null || Health.MaxHealth <= 0f || brain == null)
                 return false;
+
+            if (_currentState == EnemyState.MoveToSafeZone || _currentState == EnemyState.WaitingRecoverZone)
+            {
+                return false;
+            }
+
+
             return (Health.CurrentHealth / Health.MaxHealth) <= brain.GetEscapeThreshold();
         }                           
 
@@ -131,15 +153,32 @@ namespace UtilityAI.Core
 
         public EnemyState GetCurrentState() => _currentState;
 
-        public void AddModifier(string idMod, NetworkObject source)
+        public void AddModifier(Modifier mod)
         {
-
+            if (HasStateAuthority)
+            {
+                enemyStats.AddModifier(mod);
+            }
         }
+
+
+
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         public void RPC_RequestSetDestination(Vector3 pos)
         {
-            worldInformation.Agent.SetDestination(pos);
+            worldInformation.Agent?.SetDestination(pos);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RPC_RequestResetPath()
+        {
+            worldInformation.Agent?.ResetPath();
+        }
+
+        public void TakeDamage(float amount, NetworkObject attacker)
+        {
+            Health.TakeDamage(amount, attacker);
         }
     }
 }

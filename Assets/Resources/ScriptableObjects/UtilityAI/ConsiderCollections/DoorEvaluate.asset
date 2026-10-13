@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UtilityAI.Considerations.ConsiderationCollection
   considerations:
   - {fileID: 11400000, guid: 325d00ccceb344649a21f537e4d7274e, type: 2}
+  - {fileID: 11400000, guid: 31683e5200063754284c9377301269de, type: 2}

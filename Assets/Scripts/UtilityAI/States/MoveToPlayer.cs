@@ -20,7 +20,7 @@ public class MoveToPlayer : EnemyBaseState
             if (playerObject != null)
             {
                 playerTarget = playerObject.transform;
-                context.Agent.SetDestination(playerObject.transform.position);
+                context.Controller.RPC_RequestSetDestination(playerObject.transform.position);
             }
         }
     }
@@ -29,7 +29,7 @@ public class MoveToPlayer : EnemyBaseState
         if (playerTarget != null && (playerTarget.position - context.Agent.destination).sqrMagnitude > 2)
         {
             Debug.Log("Update Path to Player");
-            context.Agent.SetDestination(playerTarget.position);
+            context.Controller.RPC_RequestSetDestination(playerTarget.position);
         }
     }   
 

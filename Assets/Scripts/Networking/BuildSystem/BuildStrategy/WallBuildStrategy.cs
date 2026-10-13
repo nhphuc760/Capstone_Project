@@ -109,11 +109,11 @@ public class WallBuildStrategy : IBuildStategy
             {
                 doorObj.RPC_SetActiveNetworked(true);
             }                        
-            doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + Vector3.one * 0.5f);
+            doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
             if (doorPos != cell)
             {
                 StructureBase wallAtDoorPos = walls[doorPos];
-                wallAtDoorPos.Object.GetComponent<NetworkTransform>().Teleport(cell + Vector3.one * 0.5f);
+                wallAtDoorPos.Object.GetComponent<NetworkTransform>().Teleport(cell + new Vector3(0.5f, 0f, .5f));
 
                 structureManager.SetStructure(doorPos, doorObj);
                 structureManager.SetStructure(cell, wallAtDoorPos);
@@ -145,7 +145,6 @@ public class WallBuildStrategy : IBuildStategy
             List<Vector3Int> escapeWalls = EnclosedChecker.GetEscapeWalls(cell, wallSet, _widthMap, _heightMap);
             if (escapeWalls.Count > 0)
             {
-                Debug.Log($"[AlmostEnclosed] Escape walls: {string.Join(", ", escapeWalls)}");
                 StructureManager.Ins?.SetEscapesWall(playerRef, escapeWalls.ToArray());
             }
             else

@@ -6,8 +6,6 @@ using UnityEngine.UI;
 public class StaminaComponent : NetworkBehaviour
 {
     [SerializeField] float regenDelayAfterUse = 2f; //Delay sau khi consume
-    [SerializeField] Image StaminaBarUI;
-
     //Networked
     [Networked, OnChangedRender(nameof(OnChangeRender))] public float CurrentStamina { get; private set; }
     [Networked] TickTimer DelayTimer { get; set; }
@@ -78,7 +76,6 @@ public class StaminaComponent : NetworkBehaviour
     {
         if (Runner.IsResimulation) return;
         OnStaminaChange?.Invoke(CurrentStamina, MaxStamina);
-        StaminaBarUI.fillAmount = (float)CurrentStamina / MaxStamina;
     }
     void RegenerateStamina()
     {

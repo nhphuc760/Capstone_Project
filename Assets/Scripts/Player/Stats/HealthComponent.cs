@@ -1,14 +1,11 @@
 using System;
 using Fusion;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HealthComponent : NetworkBehaviour
 {
 
     [SerializeField] float combatRegenDelay = 3f;
-    [SerializeField] Image HealthBarUI;
     [Networked, OnChangedRender(nameof(OnChangeRender))]
     public float CurrentHealth { get; private set; }
     [Networked]
@@ -34,6 +31,12 @@ public class HealthComponent : NetworkBehaviour
     public bool IsAlive => CurrentHealth > 0;
     public float HealthPercent => MaxHealth > 0 ? CurrentHealth / MaxHealth : 0;
 
+
+    public void RegenableConfig(bool regenable, float combatRegenDelay)
+    {
+        Regenable = regenable;
+        this.combatRegenDelay = combatRegenDelay;
+    }
 
     public void Initialize(Stats stats)
     {
@@ -78,7 +81,8 @@ public class HealthComponent : NetworkBehaviour
         if(!IsAlive || amount  <= 0) return;
         float oldHealth = CurrentHealth;
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
-        DelayTimer = TickTimer.CreateFromSeconds(Runner, combatRegenDelay);
+        if(combatRegenDelay > 0)
+            DelayTimer = TickTimer.CreateFromSeconds(Runner, combatRegenDelay);
 
         OnTakeDamage?.Invoke(attacker);
         if (CurrentHealth <= 0 && oldHealth > 0)
@@ -113,8 +117,7 @@ public class HealthComponent : NetworkBehaviour
     {
         if (Runner.IsResimulation) return;
         OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-        if(HealthBarUI != null) 
-            HealthBarUI.fillAmount = HealthPercent;
+       
     }
 
 }

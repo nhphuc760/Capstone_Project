@@ -1,6 +1,6 @@
 ﻿using System;
 using AYellowpaper.SerializedCollections;
-public enum StatsType
+public enum StatsType: byte
 {
     MoveSpeed,
     Damage,

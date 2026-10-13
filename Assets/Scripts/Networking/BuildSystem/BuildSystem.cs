@@ -101,7 +101,7 @@ public class BuildSystem : NetworkBehaviour
             int y = Mathf.FloorToInt(hitInfor.point.y);
             int z = Mathf.FloorToInt(hitInfor.point.z);
             CellPos = new Vector3Int(x, y, z);
-            previewPos = _cellPos + Vector3.one * 0.5f;
+            previewPos = _cellPos + new Vector3(.5f, 0f, .5f);
         }
         if (Input.GetKeyDown(KeyCode.R))
         {

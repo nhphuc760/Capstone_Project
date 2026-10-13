@@ -14,6 +14,7 @@ namespace UtilityAI.Core
         WidthMap,
         HeightMap,
         DoorTarget,
+        SafeZone,
         AttackIntervalTimer,
         MinAttackTimer,
         CandidatePlaceTarget,

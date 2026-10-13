@@ -2,166 +2,155 @@
 using System.Collections.Generic;
 using System.Linq;
 using Fusion;
-using UnityEditor;
 using UnityEngine;
 
 
-[Serializable]
-public class Stats
+public class Stats : NetworkBehaviour
 {
-    readonly ModifierDatabaseSO modifierDatabaseSO;
-    StatsBase baseStats;
-
-    readonly Dictionary<StatsType, List<IModifier>> _modifiers = new();
-    readonly Dictionary<StatsType, float> _cache = new();
-    readonly HashSet<StatsType> _dirty = new HashSet<StatsType>();
-    
-    // Danh sách riêng để dễ update
-    private readonly List<TimeModifier> _timedModifiers = new();
-
-    
+    public StatsBase baseStats;
 
 
-    public Stats(StatsBase baseStats, ModifierDatabaseSO modifierDatabaseSO)
-    {
-        this.baseStats = baseStats;
-        this.modifierDatabaseSO = modifierDatabaseSO;
-    }
+    [OnChangedRender(nameof(TestChanged))]
+    [Networked, Capacity(32)]
+    NetworkDictionary<int, Modifier> _modifiers => default;
+    [Networked]
+    NetworkBool markDirty {  get; set; }
+
+
+    Dictionary<StatsType, List<Modifier>> cacheModifiers = new Dictionary<StatsType, List<Modifier>>();
 
 
 
     public float Get(StatsType type)
     {
-        if (!_dirty.Contains(type) && _cache.TryGetValue(type, out float cached)) return cached;
-
-        float baseValue = GetBase(type);
+        float baseValue = GetValueBase(type);
         float value = baseValue;
 
-        if (_modifiers.TryGetValue(type, out var list) && list.Count > 0)
+        if (cacheModifiers.TryGetValue(type, out var list) && list.Count > 0)
         {
-            foreach (var mod in list.OrderBy(m => m.ModifierDataSO.Priority))
+            foreach (var mod in list)
             {
                 value = mod.Apply(baseValue, value);
             }
 
         }
-
-        _cache[type] = value;
-        _dirty.Remove(type);
         return value;
 
     }
 
 
-    public float GetBase(StatsType type)
+    void TestChanged()
+    {
+        Debug.Log("_modifier Added");
+        //Debug.Log($"{_modifiers.First().Value.StatType.ToString()}");
+    }
+
+    public float GetValueBase(StatsType type)
     {
         return baseStats.stats.TryGetValue(type, out float v) ? v : 0f;
     }
 
-    public void SetBase(StatsType type, float value)
+    public void SetValueBase(StatsType type, float value)
     {
         baseStats.stats[type] = value;
-        MarkDirty(type);
-    }
+    }    
 
-
-    public void AddModifierById(string id, NetworkObject source = null)
+    public void RemoveModifierByID(int id)
     {
-        if (modifierDatabaseSO == null)
+        if (!HasStateAuthority) return;
+        if (_modifiers.Remove(id))
         {
-            Debug.Log("Database null");
-        }
-        var modSO = modifierDatabaseSO.GetModifierDataSOByID(id);
-        var iMod = modSO.CreateInstance(source);
-        Debug.Log(modSO.ModID.Value);
-        Debug.Log(iMod.GetType().Name);
-        AddModifier(iMod);
+            markDirty = true;
+        }      
     }
 
-    public void RemoveModifierByID(string id)
+    public void AddModifier(Modifier modifier)
     {
-        var modSO = modifierDatabaseSO.GetModifierDataSOByID(id);
-        if(_modifiers.TryGetValue(modSO.TargetStat, out var list))
-        {
-            var iMOd = list.FirstOrDefault(x => x.ModifierDataSO.ModID == id);
-            if (iMOd != null && iMOd != default)
-            {
-                RemoveModifier(iMOd);
-            }
-        }
-    }
 
-    public void AddModifier(IModifier modifier)
-    {
-        if (modifier == null)
+        if (!HasStateAuthority) return;
+
+        if (modifier.ModID < 1)
         {
             Debug.LogError("Modifier null");
         }
-        if (_modifiers == null)
-        {
-            Debug.LogError("_Modifiers nulls");
-        }
-        if (modifier.ModifierDataSO == null) 
-        {
-            Debug.LogError("Modifier data null");
-        }
-        if (!_modifiers.ContainsKey(modifier.ModifierDataSO.TargetStat) || !_modifiers.TryGetValue(modifier.ModifierDataSO.TargetStat, out var list))
-        {
-            Debug.Log("New List modifier");
-            list = new List<IModifier>();
-            _modifiers[modifier.ModifierDataSO.TargetStat] = list;
-        }
+        
 
-        list.Add(modifier);
-        MarkDirty(modifier.ModifierDataSO.TargetStat);
-
-        // Nếu là TimedModifier thì theo dõi riêng
-        if (modifier is TimeModifier timed)
-            _timedModifiers.Add(timed);
-    }
-
-    public void RemoveModifier(IModifier modifier)
-    {
-        if (_modifiers.TryGetValue(modifier.ModifierDataSO.TargetStat, out var list))
-        {
-            if (list.Remove(modifier))
-                MarkDirty(modifier.ModifierDataSO.TargetStat);
-        }
-
-        if (modifier is TimeModifier timed)
-            _timedModifiers.Remove(timed);
-
-    }
+        if (_modifiers.Add(modifier.ModID, modifier))
+        {           
+            markDirty = true;
+        }       
+       
+    }    
 
     public void ClearAllModifiers()
     {
+        if (!HasStateAuthority)
+        {
+            return;
+        }
         _modifiers.Clear();
-        _dirty.Clear();
-        _cache.Clear();
+        markDirty = true;
     }
 
-    void MarkDirty(StatsType type)
-    {
-        _dirty.Add(type);
-        _cache.Remove(type);
-    }
+   
 
     /// <summary>
     /// Phải gọi mỗi frame (hoặc trong Update của Character)
     /// </summary>
     public void Tick(float deltaTime)
     {
-        if (_timedModifiers.Count == 0) return;
-        Debug.Log("Time modifier: " + _timedModifiers.First().ModifierDataSO.ModID.Value);
-        // Duyệt ngược để xóa an toàn
-        for (int i = _timedModifiers.Count - 1; i >= 0; i--)
+        if (markDirty)
         {
-            var timed = _timedModifiers[i];
-            if (timed.Tick(deltaTime))
+            UpdateCached(); 
+        }
+        var keysToRemove = new List<int>();
+        foreach (var i in _modifiers)
+        {
+            if (i.Value.ModID > 0 && i.Value.IsTimed)
             {
-                // Hết hạn → xóa khỏi hệ thống
-                RemoveModifier(timed);
+                if (i.Value.Duration.Expired(Runner))
+                {
+                    keysToRemove.Add(i.Key);
+
+                }
             }
         }
+
+        foreach (var i in keysToRemove)
+        {
+            RemoveModifierByID(i);
+        }
     }
+
+
+
+    void UpdateCached()
+    {
+        cacheModifiers.Clear();
+
+        foreach (var i in _modifiers)
+        {
+            Modifier iMod = i.Value;
+
+            if (!cacheModifiers.TryGetValue(iMod.StatType, out var list))
+            {
+                list = new List<Modifier>();
+                cacheModifiers[iMod.StatType] = list;
+            }
+            list.Add(iMod);
+        }
+
+        // Sort theo Priority
+        foreach (var kvp in cacheModifiers)
+        {
+            if (kvp.Value != null && kvp.Value.Count > 1)
+            {
+                kvp.Value.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+                // hoặc: cacheModifiers[kvp.Key] = kvp.Value.OrderBy(x => x.Priority).ToList();
+            }
+        }
+
+        markDirty = false;   // ← rất quan trọng, phải reset
+    }
+
 }

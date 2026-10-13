@@ -468,7 +468,6 @@ public static class EnclosedChecker
             .ToList();
 
         DrawEscapeWalls(escape);
-        Debug.Log($"[GetEscapeWalls/DiagonalHole] Hole={bestHole} Score={bestScore} Walls={string.Join(",", escape)}");
         return escape;
     }
 

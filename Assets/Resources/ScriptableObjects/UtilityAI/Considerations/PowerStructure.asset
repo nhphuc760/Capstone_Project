@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fefe0736da16bf145b07ca4667059d75, type: 3}
+  m_Name: PowerStructure
+  m_EditorClassIdentifier: Assembly-CSharp::PowerStructure
+  Name: PowerStructure
+  responseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.10742275
+      outSlope: -0.10742275
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.22071885
+    - serializedVersion: 3
+      time: 0.30125576
+      value: 0.89789367
+      inSlope: -0.8119731
+      outSlope: -0.8119731
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -1.6696589
+      outSlope: -1.6696589
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.06530625
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

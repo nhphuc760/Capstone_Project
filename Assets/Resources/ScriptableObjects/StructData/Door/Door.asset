@@ -23,7 +23,7 @@ MonoBehaviour:
   structureCategory: 2
   buildRequirement:
   - rid: 2532482226284134474
-  prefabs: {fileID: 5172976552091184941, guid: d2fcbdbbd1972d7499a34dc8e90159db, type: 3}
+  prefabs: {fileID: 5218877016937158525, guid: d2fcbdbbd1972d7499a34dc8e90159db, type: 3}
   levels:
   - Level: 1
     Stats:

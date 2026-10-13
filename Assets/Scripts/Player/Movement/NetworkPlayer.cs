@@ -17,13 +17,12 @@ public struct NetworkResourcePlayer : INetworkStruct
 public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
     public static NetworkPlayer Local { get; private set; }
-
-    [SerializeField] StatsBase baseStats;
-
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
 
-    public Stats Stats { get; private set; }
+    [SerializeField] GameObject CanvasWorldSpace;
+    [SerializeField] GameObject CanvasOverlay;
+    public Stats _stats { get; private set; }
 
 
     [SerializeField] SimpleKCC controller;
@@ -41,28 +40,28 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
-    [Networked]
+    [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
+    public event Action<NetworkResourcePlayer> OnResouceChange;
+
+
+
+
+
+
+    private void OnResourceChanged()
+    {
+        OnResouceChange?.Invoke(resourcePlayer);
+    }
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
-
-    public NetworkResourcePlayer totalResourcePlayer;
-
-    public ModifierDatabaseSO modifierDatabase;
 
     [SerializeField] NetworkPrefabRef doorPrefab;
 
     Door doorPlayer;
     public Door Door => doorPlayer;
-
-    public void Awake()
-    {
-        Health = GetComponent<HealthComponent>();
-        Stamina = GetComponent<StaminaComponent>();
-        inventory = GetComponent<NetworkInventory>();
-
-    }
+    
 
 
     public override void Spawned()
@@ -74,20 +73,22 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         if (!Object.HasInputAuthority)
         {
             cameraView.gameObject.SetActive(false);
+            CanvasOverlay.SetActive(false);
         }
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats,modifierDatabase != null ? modifierDatabase : Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        inventory ??= GetComponent<NetworkInventory>();
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
-        Health.Initialize(Stats);
-        Stamina.Initialize(Stats);
+        _stats ??= GetComponent<Stats>();
+        Health.Initialize(_stats);
+        Stamina.Initialize(_stats);
         if (HasInputAuthority)
         {
 
             //Subcribe Inventory Event
-
+            CanvasWorldSpace.gameObject.SetActive(false);
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -118,21 +119,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
-        {
-            RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
-        }        
-
+      
     }
 
     public override void FixedUpdateNetwork()
     {
 
-        Stats.Tick(Runner.DeltaTime);
+        _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.MoveSpeed);
+            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -153,10 +150,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
                 TryMineResource();
             }
-            if (data.button.WasPressed(previousInput, ButtonType.TestTakeDamage))
+            if (data.button.WasPressed(previousInput, ButtonType.TestAddModify))
             {
-                Debug.Log("Takedame");
-                Health.TakeDamage(50);
+                Modifier modSpeed = new Modifier
+                {
+                    ModApplyType = ModApplyType.Flat,
+                    StatType = StatsType.MoveSpeed,
+                    Value = 10,
+                    Source = Object.Id,
+                    Duration = TickTimer.CreateFromSeconds(Runner, 5f),
+                    IsTimed = true,
+                };
+                AddModifier(modSpeed);
             }
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
@@ -291,23 +296,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
 
     }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
-    {
-        NetworkObject source = null;
-        if (sourceID != default)
-        {
-            source = Runner.FindObject(sourceID);
-        }
-
-        AddModifier(modID.Value, source);
-    }
-
-    public void AddModifier(string idMod, NetworkObject source = null)
-    {
-        Stats.AddModifierById(idMod, source);
-    }
+  
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_RequestUseTool(ToolType toolUse)
@@ -337,5 +326,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     public void TakeDamage(float amount, NetworkObject attacker)
     {
         Health?.TakeDamage(amount, attacker);
+    }
+
+    public void AddModifier(Modifier mod)
+    {
+        if (HasStateAuthority)
+        {
+            mod.ModID = ModifierIDGenerator.Next(Runner);
+            _stats.AddModifier(mod);
+        }
     }
 }

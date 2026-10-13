@@ -16,20 +16,20 @@ public class MoveToDoor : EnemyBaseState
         if (context.TryGetValue<StructureBase>(ContextKey.DoorTarget, out var door))
         {
             targetDoor = door as Door;
-            context.Agent.SetDestination(targetDoor.OutideOppositeDoor);
+            context.Controller.RPC_RequestSetDestination(targetDoor.OutideOppositeDoor);
         }
     }
     public override void Update(float deltaTime)
     {
         if (targetDoor != null && (targetDoor.OutideOppositeDoor - context.Agent.destination).sqrMagnitude > 1)
         {
-            context.Agent.SetDestination(targetDoor.OutideOppositeDoor);
+            context.Controller.RPC_RequestSetDestination(targetDoor.OutideOppositeDoor);
         }
     }
 
     public override void Exit()
     {
-        context.Agent.ResetPath();
+        context.Controller.RPC_RequestResetPath();
         targetDoor = null;
     }
 

@@ -1,8 +1,8 @@
 using Fusion;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UtilityAI.Core;
 
+[CreateAssetMenu(fileName = "PowerStructure", menuName = "ScriptableObjects/PowerStructure")]
 public class PowerStructure : Consideration
 {
     public override float ScoreConsideration(Context context)
@@ -13,7 +13,7 @@ public class PowerStructure : Consideration
             if (targetPlayer == PlayerRef.None || targetPlayer == null || targetPlayer == default)
             {
                 Debug.LogWarning("Target player is None");
-                return 0f;
+                return 0f; 
             }
 
             //target khong phai redzone

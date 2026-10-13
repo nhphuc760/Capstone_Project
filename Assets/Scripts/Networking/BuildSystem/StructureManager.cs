@@ -186,6 +186,18 @@ public class StructureManager : NetworkBehaviour
         return structures.Add(hash, structureObject.Object);
     }
 
+    public bool ContainsStructureKey(Vector3Int key)
+    {
+        int hash = key.ToKey();
+        return structures.ContainsKey(hash);
+    }
+
+    public bool ContainsStructureValue(StructureBase structure)
+    {
+        return structures.ContainsValue(structure.Object);
+    }
+
+
     public bool RemoveStructure(Vector3Int cell)
     {        
         if (!HasStateAuthority) return false;

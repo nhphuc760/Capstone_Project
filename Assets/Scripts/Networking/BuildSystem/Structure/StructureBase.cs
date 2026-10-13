@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Linq;
 using Fusion;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class StructureBase : NetworkBehaviour
+public abstract class StructureBase : NetworkBehaviour, IAffector
 {
     [Networked]
     public int Level {  get; set; }
 
-    [SerializeField] StatsBase structStatBase;
     public Stats _structureStats { get; set; }
 
     [Networked] 
@@ -22,7 +19,7 @@ public abstract class StructureBase : NetworkBehaviour
     public override void Spawned()
     {
         Level = 1;
-        _structureStats = new Stats(structStatBase, NetworkPlayer.Local.modifierDatabase);        
+        _structureStats ??= GetComponent<Stats>();
         IsUpgradeable = false;
         _currentUpgradeData = null;
 
@@ -164,21 +161,12 @@ public abstract class StructureBase : NetworkBehaviour
     }
 
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    protected void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
-    {
-        NetworkObject source = null;
-        if (sourceID != default)
-        {
-            source = Runner.FindObject(sourceID);
-        }
+    
 
-        AddModifier(modID.Value, source);
-    }
-
-    protected void AddModifier(string idMod, NetworkObject source = null)
+    public void AddModifier(Modifier mod)
     {
-        _structureStats.AddModifierById(idMod, source);
+        if(HasStateAuthority)
+            _structureStats.AddModifier(mod );
     }
 
 

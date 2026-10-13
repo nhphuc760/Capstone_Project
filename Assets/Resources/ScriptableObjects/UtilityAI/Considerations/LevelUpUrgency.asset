@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28db56fe26343f44d8a0547283c837f2, type: 3}
+  m_Name: LevelUpUrgency
+  m_EditorClassIdentifier: Assembly-CSharp::UtilityAI.Considerations.LevelUpUrgency
+  Name: LevelUrgency
+  responseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -1.221147
+      outSlope: -1.221147
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7025965
+      value: 0.14202644
+      inSlope: -0.8434016
+      outSlope: -0.8434016
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9973755
+      value: 0.004760742
+      inSlope: -0.18641356
+      outSlope: -0.18641356
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.21107118
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

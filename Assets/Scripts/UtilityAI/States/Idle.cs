@@ -59,7 +59,7 @@ public class Idle : EnemyBaseState
 
     public override void Exit()
     {
-      
+        
     }
 
     public override EnemyState TryGetNextState()

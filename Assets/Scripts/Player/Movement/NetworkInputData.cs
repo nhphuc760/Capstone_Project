@@ -7,7 +7,7 @@ public enum ButtonType
     Jump,
     Interact,
     EquipTool,
-    TestTakeDamage,
+    TestAddModify,
 }
 
 
