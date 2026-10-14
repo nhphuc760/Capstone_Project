@@ -75,6 +75,7 @@ public class WallBuildStrategy : IBuildStategy
     // BUILD
     // =========================================================================
 
+
     public void Build(NetworkRunner runner, PlayerRef playerRef, Vector3Int cell)
     {
         if (!runner.IsServer) return;
@@ -138,7 +139,7 @@ public class WallBuildStrategy : IBuildStategy
         }
         else
         {
-            StructureBase wallSpawn = runner.Spawn(wallSO.prefabs, cell + Vector3.one * 0.5f, Quaternion.identity, playerRef)
+            StructureBase wallSpawn = runner.Spawn(wallSO.prefabs, new Vector3(cell.x + 0.5f, 0f, cell.z + 0.5f), Quaternion.identity, playerRef)
                 .GetBehaviour<StructureBase>();
             structureManager.SetStructure(cell, wallSpawn);
 

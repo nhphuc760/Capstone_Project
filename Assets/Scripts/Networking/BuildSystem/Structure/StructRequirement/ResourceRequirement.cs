@@ -12,17 +12,19 @@ public class ResourceRequirement : StructRequirement
 
 
 
-    public override UpgradeResult CheckRequirement()
+    public override CheckResult CheckRequirement()
     {
+
+
         PlayerRef player = structAuthority.Object.InputAuthority;
         if (structAuthority.Object.Runner.TryGetPlayerObject(player, out NetworkObject playerObj))
         {
             NetworkResourcePlayer resourcePlayer = playerObj.GetBehaviour<NetworkPlayer>().resourcePlayer;
             if (CompareResource(resourcePlayer))
             {
-                return new UpgradeResult { Reason = UpgradeFailReason.None, Message = "" };
+                return new CheckResult { Reason = UpgradeFailReason.None, Message = "" };
             }
-            return new UpgradeResult { Reason = UpgradeFailReason.NotEnoughResource, Message = "Không đủ tài nguyên" };
+            return new CheckResult { Reason = UpgradeFailReason.NotEnoughResource, Message = "Không đủ tài nguyên" };
         }
         else
         {

@@ -58,7 +58,9 @@ public enum BuildFailReason
     OtherDoorInSafeZone,
     NotEnoughResource,
     InvalidPosition,
+    InvalidExecute,
     OccupiedByStructure,
     MissingRequirement,
-    MultipleEnclosedZones
+    MultipleEnclosedZones,
+    TurretNotInEnclosedZone
 }

@@ -56,7 +56,10 @@ public class BuildSystem : NetworkBehaviour
             PickStruct("1093");
             
         }
-
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            PickStruct("1799");
+        }
 
 
         if (Input.GetMouseButtonDown(0) && _curStructureSO != null)
@@ -169,9 +172,22 @@ public class BuildSystem : NetworkBehaviour
         RenderPreview();
     }
 
+    Collider[] results = new Collider[2];
+
     BuildValidationResult CheckValidCell()
     {
-        return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id).CanBuild(Runner, Object.InputAuthority, _cellPos);
+
+        Vector3 center = _cellPos + Vector3.one * 0.5f;
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f) + new Vector3(-0.01f, 0, -0.01f);
+        int count = Physics.OverlapBoxNonAlloc(center, halfExtents, results, Quaternion.identity, _layerObstacleBuild);
+        DrawLog.DrawCube(center, halfExtents, Color.blue, Time.deltaTime);
+        if (count == 0)
+        {
+            return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id).CanBuild(Runner, Object.InputAuthority, _cellPos);
+        }else
+        {
+            return BuildValidationResult.Fail(BuildFailReason.InvalidPosition, "Đã có structure khác ở đây");
+        }
     }
 }
 

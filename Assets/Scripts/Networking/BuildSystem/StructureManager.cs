@@ -86,7 +86,14 @@ public class StructureManager : NetworkBehaviour
         }
         else if (type == StructureType.Turret)
         {
-            return null;
+            IBuildStategy @var = buildStategies.Find(s => s is BuildTurretStategy);
+            if(@var != null)
+            {
+                return @var;
+            }
+            IBuildStategy buildTurret = new BuildTurretStategy(this, structureDataSO);
+            buildStategies.Add(buildTurret);
+            return buildTurret;
         }
 
         return null;

@@ -9,12 +9,12 @@ public class StructureUpgradeData : StructRequirement
     [SerializeReference]
     public StructRequirement[] requirements;
 
-    public override UpgradeResult CheckRequirement()
+    public override CheckResult CheckRequirement()
     {
         // An toàn khi requirements null hoặc rỗng
         if (requirements == null || requirements.Length == 0)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.None,
                 Message = ""
@@ -26,12 +26,12 @@ public class StructureUpgradeData : StructRequirement
             // Bỏ qua phần tử null
             if (req == null) continue;
 
-            UpgradeResult result = req.CheckRequirement();
+            CheckResult result = req.CheckRequirement();
             if (!result.Success)
                 return result;
         }
 
-        return new UpgradeResult
+        return new CheckResult
         {
             Reason = UpgradeFailReason.None,
             Message = ""

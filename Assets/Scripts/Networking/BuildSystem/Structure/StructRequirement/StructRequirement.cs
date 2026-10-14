@@ -14,7 +14,7 @@ public abstract class StructRequirement
 
     public abstract StructRequirement CreateInstance(StructureBase structBase);
 
-    public abstract UpgradeResult CheckRequirement();
+    public abstract CheckResult CheckRequirement();
 
     public abstract void Destroy();
     public abstract string Information();
@@ -31,7 +31,7 @@ public enum UpgradeFailReason
     MaxLevel
 }
 
-public struct UpgradeResult
+public struct CheckResult
 {
     public bool Success => Reason == UpgradeFailReason.None;
     public UpgradeFailReason Reason;

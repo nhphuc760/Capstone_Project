@@ -1,5 +1,4 @@
 ﻿using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -14,13 +13,13 @@ public class DamageStructRequirement : StructRequirement
     protected System.Action<float> handler;
 
 
-    public override UpgradeResult CheckRequirement()
+    public override CheckResult CheckRequirement()
     {
         if (damgeSupervise >= RequireDamage)
         {
-            return new UpgradeResult { Reason = UpgradeFailReason.None, Message = "" };
+            return new CheckResult { Reason = UpgradeFailReason.None, Message = "" };
         }
-        return new UpgradeResult {Reason = UpgradeFailReason.NotEnoughDamage, Message = "Chưa gây đủ sát thương" };
+        return new CheckResult {Reason = UpgradeFailReason.NotEnoughDamage, Message = "Chưa gây đủ sát thương" };
     }
 
     public override StructRequirement CreateInstance(StructureBase structBase) 

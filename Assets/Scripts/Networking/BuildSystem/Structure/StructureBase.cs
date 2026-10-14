@@ -39,11 +39,11 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
     {
         _structureStats.Tick(Runner.DeltaTime);
     }
-    public UpgradeResult CanUpgrade()
+    public CheckResult CanUpgrade()
     {
         if (StructureDataSO == null || StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Công trình này không thể nâng cấp"
@@ -54,7 +54,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
 
         if (Level >= StructureDataSO.levels.Length)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.MaxLevel,
                 Message = "Công trình đã đạt cấp tối đa"
@@ -62,7 +62,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         }
         if (Level < 1)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Level không hợp lệ"
@@ -72,7 +72,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         var nextLevelData = StructureDataSO.levels[Level]; // index = Level (vì Level bắt đầu từ 1)
         if (nextLevelData == null || nextLevelData.upgradeRequirement == null)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Không có dữ liệu nâng cấp cho cấp tiếp theo"
@@ -82,7 +82,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         // 5. Chưa khởi tạo được _currentUpgradeData
         if (_currentUpgradeData == null)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Không thể nâng cấp"
@@ -99,7 +99,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         if (!Object.HasStateAuthority)
             return;
 
-        UpgradeResult result = CanUpgrade();
+        CheckResult result = CanUpgrade();
         if (!result.Success)
         {
             Debug.LogWarning($"[StructureBase] Không thể nâng cấp: {result.Message} ({result.Reason})");
