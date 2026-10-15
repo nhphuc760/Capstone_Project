@@ -28,6 +28,7 @@ public class HealthDoorUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        healthComponent.OnHealthChanged -= HealthComponent_OnTakeDamage;
+        if(healthComponent)
+         healthComponent.OnHealthChanged -= HealthComponent_OnTakeDamage;
     }
 }

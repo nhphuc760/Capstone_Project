@@ -20,7 +20,7 @@ public class StructureManager : NetworkBehaviour
     NetworkDictionary<NetworkObject, PlayerRef> escapeWalls => default;
 
 
-    List<IBuildStategy> buildStategies = new List<IBuildStategy>();
+    Dictionary<PlayerRef, List<IBuildStategy>> buildStategies = new Dictionary<PlayerRef, List<IBuildStategy>>();
 
     [SerializeField] StructDatabase _structDatabase;
     [SerializeField] private LayerMask _groundMask;
@@ -32,7 +32,7 @@ public class StructureManager : NetworkBehaviour
 
     public List<Vector3Int> GetEnclosedZone(PlayerRef playerRef)
     {
-       return enclosedZone.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key.FromKey()).ToList();
+        return enclosedZone.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key.FromKey()).ToList();
     }
 
 
@@ -47,7 +47,7 @@ public class StructureManager : NetworkBehaviour
     }
     public void SetEnclosedZone(PlayerRef playerRef, List<Vector3Int> zones)
     {
-        if (!HasStateAuthority) return;        
+        if (!HasStateAuthority) return;
 
         foreach (var kvp in enclosedZone)
         {
@@ -63,36 +63,41 @@ public class StructureManager : NetworkBehaviour
         }
     }
 
-    public IBuildStategy GetStrategyBuild(NetworkString<_8> _structDataID)
-    {        
+    public IBuildStategy GetStrategyBuild(NetworkString<_8> _structDataID, PlayerRef playerRef)
+    {
         StructureDataSO structureDataSO = _structDatabase.GetStructSO(_structDataID.Value);
         StructureType type = structureDataSO.structureType;
+
+        if (!buildStategies.ContainsKey(playerRef))
+        {
+            buildStategies.Add(playerRef, new List<IBuildStategy>());
+        }
+
         if (type == StructureType.Wall || type == StructureType.Door)
         {
-
-            IBuildStategy @var = buildStategies.Find(s => s is WallBuildStrategy);
-            if (@var != null)
+            IBuildStategy stategy = buildStategies[playerRef].Find(s => s is WallBuildStrategy);
+            if (stategy != null)
             {
-                return @var;
-            }            
+                return stategy;
+            }
             IBuildStategy wallBuildStrategy = new WallBuildStrategy(
-                this,
-                100, 100,
-                _layerObstacleBuild,
-                structureDataSO
+           this,
+           100, 100,
+           structureDataSO
             );
-            buildStategies.Add(wallBuildStrategy);
+            buildStategies[playerRef].Add(wallBuildStrategy);
             return wallBuildStrategy;
+
         }
         else if (type == StructureType.Turret)
         {
-            IBuildStategy @var = buildStategies.Find(s => s is BuildTurretStategy);
-            if(@var != null)
+            IBuildStategy @var = buildStategies[playerRef].Find(s => s is BuildTurretStategy);
+            if (@var != null)
             {
                 return @var;
             }
             IBuildStategy buildTurret = new BuildTurretStategy(this, structureDataSO);
-            buildStategies.Add(buildTurret);
+            buildStategies[playerRef].Add(buildTurret);
             return buildTurret;
         }
 
@@ -183,8 +188,8 @@ public class StructureManager : NetworkBehaviour
     }
 
     public bool AddStructure(Vector3Int cell, StructureBase structureObject)
-    {       
-        if(!HasStateAuthority) return false;
+    {
+        if (!HasStateAuthority) return false;
         if (structureObject == null || structureObject.Object == null)
             return false;
 
@@ -206,7 +211,7 @@ public class StructureManager : NetworkBehaviour
 
 
     public bool RemoveStructure(Vector3Int cell)
-    {        
+    {
         if (!HasStateAuthority) return false;
         int hash = cell.ToKey();
 
@@ -215,7 +220,7 @@ public class StructureManager : NetworkBehaviour
 
     public bool DestroyStructure(NetworkObject structure)
     {
-        if(!HasStateAuthority) return false;
+        if (!HasStateAuthority) return false;
         if (structures.ContainsValue(structure))
         {
             var kvp = structures.Where(kvp => kvp.Value == structure).First();
@@ -229,7 +234,7 @@ public class StructureManager : NetworkBehaviour
                     StructureCategory = structBase.StructureDataSO.structureCategory,
                     StructureType = structBase.StructureDataSO.structureType,
                     cellPosition = kvp.Key.FromKey(),
-                    bounds = structBase.GetComponent<Collider>().bounds                    
+                    bounds = structBase.GetComponent<Collider>().bounds
                 };
                 Runner.Despawn(structure);
                 EventBus<BuildStategyEvent>.Raise(buildStategyEvent);
@@ -240,7 +245,7 @@ public class StructureManager : NetworkBehaviour
     }
 
     public StructureBase GetStructure(Vector3Int cell)
-    {       
+    {
         int hash = cell.ToKey();
         if (structures.TryGet(hash, out var networkObject))
         {
@@ -252,7 +257,7 @@ public class StructureManager : NetworkBehaviour
     }
 
     public Dictionary<Vector3Int, StructureBase> GetStructures()
-    {       
+    {
         Dictionary<Vector3Int, StructureBase> result = new(structures.Count);
 
         foreach (var pair in structures)
@@ -274,10 +279,10 @@ public class StructureManager : NetworkBehaviour
 
         return result;
     }
-    
+
     public override void Spawned()
     {
-        Ins = this;       
+        Ins = this;
     }
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
@@ -292,7 +297,7 @@ public class StructureManager : NetworkBehaviour
     public StructureManager WithType(
         StructureType structureType)
     {
-       _getContext.structureType = structureType;
+        _getContext.structureType = structureType;
         return this;
     }
 
@@ -300,7 +305,7 @@ public class StructureManager : NetworkBehaviour
 
     public StructureManager WithPlayerRef(PlayerRef player)
     {
-       _getContext.playerRef = player;
+        _getContext.playerRef = player;
         return this;
     }
 
@@ -310,7 +315,7 @@ public class StructureManager : NetworkBehaviour
         var structures = GetStructures();
         if (_getContext.IsEmpty)
             return structures;
-        if(_getContext.playerRef != default)
+        if (_getContext.playerRef != default)
         {
             var tmp = structures.Where(kvp => kvp.Value.Object.InputAuthority == _getContext.playerRef)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -318,12 +323,12 @@ public class StructureManager : NetworkBehaviour
         }
         if (_getContext.structureCategory != StructureCategory.None)
         {
-           var tmp = structures.Where(kvp => kvp.Value.StructureDataSO.structureCategory == _getContext.structureCategory)
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            var tmp = structures.Where(kvp => kvp.Value.StructureDataSO.structureCategory == _getContext.structureCategory)
+                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             structures = tmp;
         }
 
-        if(_getContext.structureType != StructureType.None)
+        if (_getContext.structureType != StructureType.None)
         {
             var tmp = structures.Where(kvp => kvp.Value.StructureDataSO.structureType == _getContext.structureType)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -338,20 +343,20 @@ public class StructureManager : NetworkBehaviour
     {
         public PlayerRef playerRef;
         public StructureCategory structureCategory;
-        public StructureType structureType;      
+        public StructureType structureType;
 
         public bool IsEmpty => this == default;
-        public static bool operator == (GetContext a, GetContext b)
+        public static bool operator ==(GetContext a, GetContext b)
         {
             return a.playerRef == b.playerRef &&
                    a.structureCategory == b.structureCategory &&
                    a.structureType == b.structureType;
         }
 
-        public static bool operator != (GetContext a, GetContext b)
+        public static bool operator !=(GetContext a, GetContext b)
         {
             return !(a == b);
-        }        
+        }
 
         public override bool Equals(object obj)
         {
@@ -361,7 +366,7 @@ public class StructureManager : NetworkBehaviour
         public override int GetHashCode()
         {
             return HashCode.Combine(playerRef, structureCategory, structureType);
-        }      
+        }
     }
-  
+
 }

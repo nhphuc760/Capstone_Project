@@ -297,6 +297,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     }
   
+    public void ComsumpResource(NetworkResourcePlayer resource)
+    {
+        if (!HasStateAuthority) return;
+        this.resourcePlayer.Wood -= resource.Wood;
+        this.resourcePlayer.IronOre -= resource.IronOre;
+        this.resourcePlayer.CopperOre -= resource.CopperOre;    
+        this.resourcePlayer.GoldOre -= resource.GoldOre;
+    }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_RequestUseTool(ToolType toolUse)

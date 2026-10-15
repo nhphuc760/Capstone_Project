@@ -15,7 +15,14 @@ public class BuildTurretStategy : IBuildStategy
 
 
     public void Build(NetworkRunner runner, PlayerRef playerRef, Vector3Int cell)
-    {        
+    {
+        foreach (var i in turretDataSO.buildRequirement)
+        {
+            if(i is EntityValueBuildRequirement entityValueBuild)
+            {
+                entityValueBuild.OnBuildExecute(runner, playerRef);
+            }
+        }
         runner.Spawn(turretDataSO.prefabs, new Vector3(cell.x + 0.5f, 0f, cell.z + 0.5f));
     }
 

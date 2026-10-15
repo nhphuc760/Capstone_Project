@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
   m_Name: Turret
   m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e4c3cd89e92c9564b9ec3241e642a3de, type: 3}
   _id:
     _length: 4
     _data:
@@ -22,7 +22,7 @@ MonoBehaviour:
   structureType: 3
   structureCategory: 1
   buildRequirement:
-  - rid: 2680167676663038031
+  - rid: 2680167688023310412
   prefabs: {fileID: 5505136185357839792, guid: 8b63cc273d7c122488d5d328e443b933, type: 3}
   levels:
   - Level: 1
@@ -160,10 +160,11 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2680167676663038031
+    - rid: 2680167688023310412
       type: {class: Build_ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
-        Wood: 0
-        IronOre: 0
-        CopperOre: 0
-        GoldOre: 0
+        values:
+        - dataSO: {fileID: 0}
+          Type: 0
+          Icon: {fileID: 21300000, guid: 8d70cdbc4bed6744ca9cb2185ba24f90, type: 3}
+          Value: 10

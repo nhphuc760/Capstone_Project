@@ -1,13 +1,9 @@
 ﻿using System;
 using Fusion;
 [Serializable]
-public class Build_ResourceRequirement : BuildRequirement
-{
+public class Build_ResourceRequirement : EntityValueBuildRequirement
+{    
 
-    public int Wood;
-    public int IronOre;
-    public int CopperOre;
-    public int GoldOre;
 
     public override BuildRequirementResult CheckRequirement(NetworkRunner runner, PlayerRef player)
     {
@@ -39,9 +35,62 @@ public class Build_ResourceRequirement : BuildRequirement
         throw new System.NotImplementedException();
     }
 
+    public override void OnBuildExecute(NetworkRunner runner, PlayerRef playerRef)
+    {
+        NetworkPlayer networkPlayer = runner.GetPlayerObject(playerRef).GetBehaviour<NetworkPlayer>();
+        int Wood = 0;
+        int IronOre = 0;
+        int CopperOre = 0;
+        int GoldOre = 0;
+        foreach (var i in values)
+        {
+
+            switch (i.Type)
+            {
+                case EntityValueType.Wood:
+                    Wood = i.Value; break;
+                case EntityValueType.IronOre:
+                    IronOre = i.Value; break;
+                case EntityValueType.CopperOre:
+                    CopperOre = i.Value; break;
+                case EntityValueType.Gold:
+                    GoldOre = i.Value; break;
+                default: break;
+            }
+        }
+        networkPlayer.ComsumpResource(new NetworkResourcePlayer 
+        {
+            Wood = Wood,
+            IronOre = IronOre,
+            CopperOre = CopperOre,
+            GoldOre = GoldOre,
+        });
+
+    }
 
     bool CompareResource(NetworkResourcePlayer resourcePlayer)
     {
+        int Wood = 0;
+        int IronOre = 0;
+        int CopperOre = 0;
+        int GoldOre = 0;      
+        foreach (var i in values)
+        {
+            
+            switch (i.Type) 
+            {
+                case EntityValueType.Wood:
+                    Wood = i.Value; break;  
+                case EntityValueType.IronOre:
+                    IronOre = i.Value; break;
+                case EntityValueType.CopperOre:
+                    CopperOre = i.Value; break;
+                case EntityValueType.Gold:
+                    GoldOre = i.Value; break;
+                default: break;                
+            }
+
+        }
         if (resourcePlayer.Wood < Wood) return false;
         if (resourcePlayer.IronOre < IronOre) return false;
         if (resourcePlayer.CopperOre < CopperOre) return false;

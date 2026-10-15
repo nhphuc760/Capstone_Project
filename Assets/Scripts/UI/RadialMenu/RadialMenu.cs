@@ -96,13 +96,13 @@ public class RadialMenu : MonoBehaviour, IPlayerUI
 
     void ChooseElement(int index)
     {
-        RadialMenuItem item = items[index].GetComponent<RadialMenuItem>();
+        RadialMenuElement item = items[index].GetComponent<RadialMenuElement>();
         item.OnEnter();
     }
 
     void UnChooseElement(int index)
     {
-        RadialMenuItem item = items[index].GetComponent<RadialMenuItem>();
+        RadialMenuElement item = items[index].GetComponent<RadialMenuElement>();
         item.OnExit();
     }
 
@@ -113,7 +113,7 @@ public class RadialMenu : MonoBehaviour, IPlayerUI
         {
             var element = items[i];
             element.DOKill();
-            RadialMenuItem item = element.GetComponent<RadialMenuItem>();
+            RadialMenuElement item = element.GetComponent<RadialMenuElement>();
             item.isTweening = true;
             // Reset trước khi tween
             element.anchoredPosition = Vector2.zero;

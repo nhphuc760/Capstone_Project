@@ -1,78 +1,24 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
 
-public class RadialMenuItem : MonoBehaviour
+public class RadialMenuItem : RadialMenuElement
 {
-    [SerializeField] Image background;
-    [SerializeField] Image icon;
-    RadialMenu menu;
-    RectTransform thisRect;
-
-    Vector3 baseScale;
-    Vector3 targetScale;
-    [SerializeField] float hoverSmooth = 10f;
-
-
-    public UnityEvent onClick; 
-    public RectTransform IconRect => icon ? icon.rectTransform : null;
-    public Image BackGroundImage => background;
-
-    public bool isTweening = true;
+    [SerializeField] TextMeshProUGUI amount;
+    //[SerializeField] ScriptableObject dataSO;
+    public StructureDataSO wallSO;
 
 
 
-    private void Awake()
+    protected override void Awake()
     {
-        menu = GetComponentInParent<RadialMenu>();
-        thisRect = GetComponent<RectTransform>();
-        baseScale = thisRect.localScale;
-        targetScale = baseScale;
+        base.Awake();
+        icon.sprite = wallSO.icon;
     }
 
-
-    private void Update()
+    public void UpdateAmount(int amount)
     {
-        if (!isTweening)
-            thisRect.localScale = Vector3.Lerp(thisRect.localScale, targetScale, Time.unscaledDeltaTime * hoverSmooth);
-    }
-
-
-    private void OnEnable()
-    {
-        EnsureReferences();
-    }
-
-    public void EnsureReferences()
-    {
-        if (!background)
-            background = GetComponent<Image>();     
-    }
-    
-
-    public void Invoke()
-    {
-        onClick?.Invoke();
-    }
-
-
-    public void OnEnter()
-    {
-        targetScale = baseScale * menu.hoverScale;
-        if (background)
-        {
-            background.color = menu.hoverColor;
-        }
-    }
-
-    public void OnExit()
-    {
-        targetScale = baseScale;
-        if (background)
-        {
-            background.color = menu.defaultColor;
-
-        }
+        if(this.amount)
+            this.amount.text = amount.ToString();
     }
 
 }

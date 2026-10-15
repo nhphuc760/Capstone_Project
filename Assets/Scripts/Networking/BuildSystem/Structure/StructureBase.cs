@@ -151,7 +151,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
     private void OnMouseDown()
     {
         if (Runner.LocalPlayer != Object.InputAuthority) return;
-        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id);
+        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);
         Debug.Log("Strategy: " + strategy != null ? strategy.GetType().Name : "null");
         if (StructureManager.Ins?.GetEscapesWall().Contains(Object) == true)
         {

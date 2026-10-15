@@ -166,7 +166,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RadialMenuItem
   background: {fileID: 3929669597627352795}
   icon: {fileID: 7704142647443541983}
-  iconSprite: {fileID: 0}
   hoverSmooth: 10
   onClick:
     m_PersistentCalls:

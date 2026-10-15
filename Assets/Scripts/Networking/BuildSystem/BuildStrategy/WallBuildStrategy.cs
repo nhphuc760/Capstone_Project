@@ -9,8 +9,8 @@ public class WallBuildStrategy : IBuildStategy
     readonly StructureManager structureManager;
     readonly int _widthMap;
     readonly int _heightMap;
-    readonly LayerMask _layerObstacleBuild;
     readonly StructureDataSO wallSO;
+    BuildSystem buildSystem;
     /// <summary>
     /// Cache kết quả CheckFromNewCell giữa CanBuild → Build (cùng player + cell).
     /// Tránh chạy flood 2 lần trên server.
@@ -28,13 +28,11 @@ public class WallBuildStrategy : IBuildStategy
 
     EnclosureCache _cache;
 
-    public WallBuildStrategy(StructureManager structureManager, int widthMap, int heightMap,
-        LayerMask layerObstacleBuild, StructureDataSO wallSO)
+    public WallBuildStrategy(StructureManager structureManager, int widthMap, int heightMap, StructureDataSO wallSO)
     {
         this.structureManager = structureManager;
         _widthMap = widthMap;
         _heightMap = heightMap;
-        _layerObstacleBuild = layerObstacleBuild;
         this.wallSO = wallSO;
     }
 
@@ -153,15 +151,21 @@ public class WallBuildStrategy : IBuildStategy
                 StructureManager.Ins?.ClearEscapeWall(playerRef);
             }            
         }
-       
+        MakeSureBuildSystemValid(runner, playerRef);
+        buildSystem.wallAmount -= 1;                    
+    }
+
+    void MakeSureBuildSystemValid(NetworkRunner runner, PlayerRef playerRef)
+    {
+        if (buildSystem == null)
+        {
+            buildSystem = runner.GetPlayerObject(playerRef).GetBehaviour<BuildSystem>();
+        }
     }
 
     // =========================================================================
     // CAN BUILD
     // =========================================================================
-
-    Collider[] results = new Collider[2];
-
     public BuildValidationResult CanBuild(NetworkRunner runner, PlayerRef playerRef, Vector3Int cell)
     {
         var doors = structureManager.WithType(StructureType.Door).Get();
@@ -216,20 +220,14 @@ public class WallBuildStrategy : IBuildStategy
             }
         }
 
-        Vector3 center = cell + Vector3.one * 0.5f;
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f) + new Vector3(-0.01f, 0, -0.01f);
-        int count = Physics.OverlapBoxNonAlloc(center, halfExtents, results, Quaternion.identity, _layerObstacleBuild);
-        DrawLog.DrawCube(center, halfExtents, Color.blue, Time.deltaTime);
-
-        if (count == 0)
-            return BuildValidationResult.OK();
-
-        InvalidateCache();
-        return new BuildValidationResult
+        MakeSureBuildSystemValid(runner, playerRef);
+        if(buildSystem.wallAmount < 1)
         {
-            Reason = BuildFailReason.OccupiedByStructure,
-            Message = "Không thể xây, có vật cản"
-        };
+            return BuildValidationResult.Fail(reason: BuildFailReason.NotEnoughResource, message: "Đã hết Wall");
+        }
+       
+        return BuildValidationResult.OK();
+
     }
 
     // =========================================================================
@@ -283,7 +281,9 @@ public class WallBuildStrategy : IBuildStategy
             structureManager.SetEnclosedZone(obj.InputAuthority, newEnclosedList);
         }
         PlayerRef playerRefObj = obj.InputAuthority;
-        structureManager.DestroyStructure(obj);       
+        MakeSureBuildSystemValid(runner, playerRefObj);
+        buildSystem.wallAmount += 1;
+        structureManager.DestroyStructure(obj);
     }
 
     Dictionary<Vector3Int, StructureBase> GetWallAndDoor()
