@@ -1,20 +1,24 @@
 ﻿using System;
 using Fusion;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public abstract class StructureBase : NetworkBehaviour, IAffector
 {
     [Networked]
-    public int Level {  get; set; }
+    public int Level { get; set; }
 
     public Stats _structureStats { get; set; }
 
-    [Networked] 
-    NetworkBool IsUpgradeable {  get; set; }
+    [Networked]
+    public NetworkBool IsUpgradeable { get; private set; }
     public StructureDataSO StructureDataSO;
-    StructureUpgradeData _currentUpgradeData;
+    public StructureUpgradeData _currentUpgradeData { get; private set; }
+
+    [SerializeField] StructureUI structureUI;
+
     //public StructureManager Manager { get; set; }
-    public abstract void Operation();  
+    public abstract void Operation();
 
     public override void Spawned()
     {
@@ -29,7 +33,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         var firstLevelData = StructureDataSO.levels[0];
         if (firstLevelData == null || firstLevelData.upgradeRequirement == null)
             return;
-
+        _structureStats.SetStatsBase(firstLevelData.Stats);
         _currentUpgradeData = firstLevelData.upgradeRequirement.CreateInstance(this) as StructureUpgradeData;
         IsUpgradeable = _currentUpgradeData != null;
     }
@@ -145,21 +149,18 @@ public abstract class StructureBase : NetworkBehaviour, IAffector
         //if (HasStateAuthority) Runner.Despawn(this.Object);
     }
 
+    public abstract string GetInfor();
 
     public abstract void UpgradeLogic();
 
     private void OnMouseDown()
     {
-        if (Runner.LocalPlayer != Object.InputAuthority) return;
-        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);
-        Debug.Log("Strategy: " + strategy != null ? strategy.GetType().Name : "null");
-        if (StructureManager.Ins?.GetEscapesWall().Contains(Object) == true)
-        {
-            StructureManager.Ins.RemoveEscapeWall(Object.InputAuthority, Object);
-        }
+        if (Runner.LocalPlayer != Object.InputAuthority) return;        
+        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);        
         strategy.Destroy(Runner, Object);
     }
 
+    
 
     
 

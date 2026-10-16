@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 
 public struct NetworkResourcePlayer : INetworkStruct
@@ -22,6 +23,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     [SerializeField] GameObject CanvasWorldSpace;
     [SerializeField] GameObject CanvasOverlay;
+    [SerializeField] TooltipUI TooltipUI;
+    [SerializeField] StructureUI StructureUI;
     public Stats _stats { get; private set; }
 
 
@@ -61,8 +64,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     Door doorPlayer;
     public Door Door => doorPlayer;
-    
-
 
     public override void Spawned()
     {
@@ -88,6 +89,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         {
 
             //Subcribe Inventory Event
+            cameraView.tag = "MainCamera";
             CanvasWorldSpace.gameObject.SetActive(false);
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
@@ -118,9 +120,47 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
 
     private void Update()
-    {
-      
-    }
+    {       
+        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                {
+                    TooltipUI.Show(context.GetInfor(), Input.mousePosition, context.gameObject);
+                }
+                else
+                {
+                    TooltipUI.Hide();
+                }
+            }
+        }
+
+
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                {
+                    StructureUI.Show(context);
+                }
+                else
+                {
+                    StructureUI.Hide();
+                }
+            }
+        }
+
+
+        
+
+    }    
 
     public override void FixedUpdateNetwork()
     {

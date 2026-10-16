@@ -10,12 +10,8 @@ public class ResourceRequirement : StructRequirement
     public int CopperOre;
     public int GoldOre;
 
-
-
     public override CheckResult CheckRequirement()
     {
-
-
         PlayerRef player = structAuthority.Object.InputAuthority;
         if (structAuthority.Object.Runner.TryGetPlayerObject(player, out NetworkObject playerObj))
         {

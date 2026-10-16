@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8611106135696193694}
   - component: {fileID: 5103926938980237646}
   - component: {fileID: 3232627973789796430}
-  - component: {fileID: 3808647263762039781}
   m_Layer: 0
   m_Name: Capsule (1)
   m_TagString: Untagged
@@ -91,29 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &3808647263762039781
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 900141777735703212}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2977457852408392514
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,7 +101,6 @@ GameObject:
   - component: {fileID: 8138070516024464381}
   - component: {fileID: 7002488158592767869}
   - component: {fileID: 6173344359419872911}
-  - component: {fileID: 4354787185771528656}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -205,27 +180,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4354787185771528656
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2977457852408392514}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4986438999960077198
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +191,6 @@ GameObject:
   - component: {fileID: 2346930927635331005}
   - component: {fileID: 2371002325094990764}
   - component: {fileID: 6601956024296301015}
-  - component: {fileID: 1829148167303488754}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -317,29 +270,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &1829148167303488754
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4986438999960077198}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5505136185357839792
 GameObject:
   m_ObjectHideFlags: 0
@@ -352,6 +282,7 @@ GameObject:
   - component: {fileID: 579249724772208274}
   - component: {fileID: 137770578338174713}
   - component: {fileID: 1695700423723160842}
+  - component: {fileID: 2072528498854197460}
   m_Layer: 0
   m_Name: Turret
   m_TagString: Untagged
@@ -390,7 +321,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Turret
   _Level: 0
-  StructureDataSO: {fileID: 0}
+  StructureDataSO: {fileID: 11400000, guid: 804930c3990f38c48b337b86fd01c03f, type: 2}
+  structureUI: {fileID: 0}
 --- !u!114 &137770578338174713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,3 +358,24 @@ MonoBehaviour:
   baseStats:
     stats:
       _serializedList: []
+--- !u!65 &2072528498854197460
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5505136185357839792}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.26, z: 1}
+  m_Center: {x: 0, y: 0.14, z: 0}

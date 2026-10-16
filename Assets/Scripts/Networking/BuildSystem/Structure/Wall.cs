@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class Wall : StructureBase
 {
+    public override string GetInfor()
+    {
+        return null;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void Operation()
     {

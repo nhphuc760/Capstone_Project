@@ -1464,16 +1464,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38deae72f33d794ba56d6aebf5a4be3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkObjectPoolManager
-  _runner: {fileID: 0}
-  _object: {fileID: 0}
-  InvokeRpc: 0
-  ObjectIndex: 0
-  WordOffset: 0
-  WordCount: 0
-  DefaultReplicated: 1
-  poolsData:
-  - key: BULLET
-    prefab: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
 --- !u!1 &1791441111
 GameObject:
   m_ObjectHideFlags: 0

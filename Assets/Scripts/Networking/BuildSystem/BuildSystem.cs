@@ -164,6 +164,12 @@ public class BuildSystem : NetworkBehaviour
     }
 
 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_DestroyRequest()
+    {
+
+    }
+
     public void PickStruct(string _idStruct)
     {
         StructureDataSO _structSO = _structDatabase.GetStructSO(_idStruct);

@@ -239,6 +239,12 @@ public class WallBuildStrategy : IBuildStategy
         Debug.Log("Destroy called");
         if (!runner.IsServer || obj == null) return;
 
+
+        if (structureManager.GetEscapesWall().Contains(obj))
+        {
+            structureManager.RemoveEscapeWall(obj.InputAuthority, obj);
+        }
+
         InvalidateCache();
 
         var wallsAndDoor = GetWallAndDoor();

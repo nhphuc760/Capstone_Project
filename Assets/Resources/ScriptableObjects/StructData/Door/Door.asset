@@ -29,7 +29,7 @@ MonoBehaviour:
       stats:
         _serializedList:
         - Key: 2
-          Value: 10
+          Value: 200
     upgradeRequirement:
       requirements: []
   references:

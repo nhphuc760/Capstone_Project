@@ -78,6 +78,11 @@ public class Door : StructureBase, ITakedamageable
     public void TakeDamage(float amount, NetworkObject attacker)
     {
        HealthDoor?.TakeDamage(amount, attacker);
-    }    
+    }
+
+    public override string GetInfor()
+    {
+        return $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth}";
+    }
 }
 

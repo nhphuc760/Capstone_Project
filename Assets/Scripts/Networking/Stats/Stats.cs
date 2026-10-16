@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
@@ -10,7 +8,6 @@ public class Stats : NetworkBehaviour
     public StatsBase baseStats;
 
 
-    [OnChangedRender(nameof(TestChanged))]
     [Networked, Capacity(32)]
     NetworkDictionary<int, Modifier> _modifiers => default;
     [Networked]
@@ -36,20 +33,17 @@ public class Stats : NetworkBehaviour
         }
         return value;
 
-    }
-
-
-    void TestChanged()
-    {
-        Debug.Log("_modifier Added");
-        //Debug.Log($"{_modifiers.First().Value.StatType.ToString()}");
-    }
+    }    
 
     public float GetValueBase(StatsType type)
     {
         return baseStats.stats.TryGetValue(type, out float v) ? v : 0f;
     }
 
+    public void SetStatsBase(StatsBase statsBase)
+    {
+        this.baseStats = statsBase;
+    }
     public void SetValueBase(StatsType type, float value)
     {
         baseStats.stats[type] = value;
