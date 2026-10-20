@@ -6,5 +6,6 @@ public class StructLevelData
 {
     public int Level;
     public StatsBase Stats;
-    public StructureUpgradeData upgradeRequirement;
+    [SerializeReference]
+    public RequirementDefinition[] upgradeRequirement;
 }

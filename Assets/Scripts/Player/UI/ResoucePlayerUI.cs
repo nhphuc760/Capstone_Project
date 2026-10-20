@@ -23,9 +23,9 @@ public class ResoucePlayerUI : MonoBehaviour
     private void OnResourceChanged(NetworkResourcePlayer player)
     {
         woodAmount.text = player.Wood.ToString();
-        ironAmount.text = player.IronOre.ToString();
-        copperAmount.text = player.CopperOre.ToString();
+        ironAmount.text = player.Stone.ToString();
         goldAmount.text = player.GoldOre.ToString();
+        copperAmount.text = player.Electric.ToString();
     }
 
     private void OnDestroy()

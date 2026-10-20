@@ -73,16 +73,19 @@ public class Attack : EnemyBaseState
     {
         if (curTarget == null || !curTarget.gameObject.activeSelf)
         {
+            Debug.Log("Missing mục tiêu => Idle");
             return EnemyState.Idle;
         }        
 
         var controller = context.Controller;
         if ((curTarget.position - controller.transform.position).sqrMagnitude > 1.5)
         {
+            Debug.Log($"Cách quá xa {curTarget.gameObject.name}({(curTarget.position - controller.transform.position).sqrMagnitude}) => Idle");
             return EnemyState.Idle;
         }
         if (controller.MinAttackTimer.ExpiredOrNotRunning(controller.Runner))
         {
+            Debug.Log("Minattack Timer Expire => Idle");
             return EnemyState.Idle;
         }
 

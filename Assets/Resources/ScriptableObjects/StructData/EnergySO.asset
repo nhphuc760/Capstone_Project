@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
+  m_Name: EnergySO
+  m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
+  icon: {fileID: -91816320, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
+  _id:
+    _length: 4
+    _data:
+      Data: 3200000030000000390000003600000000000000000000000000000000000000
+  _name: Electricity
+  _description: "T\u1EA1o ra n\u0103ng l\u01B0\u1EE3ng \u0111i\u1EC7n"
+  structureType: 4
+  structureCategory: 3
+  buildRequirement:
+  - rid: 2680167812576575568
+  prefabs: {fileID: 7588526742645363919, guid: 5f1e874e08f7d294080bc2159d4c7dc3, type: 3}
+  levels:
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  - rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2680167812576575568
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        Wood: 1
+        Stone: 0
+        Gold: 0
+        Electric: 0

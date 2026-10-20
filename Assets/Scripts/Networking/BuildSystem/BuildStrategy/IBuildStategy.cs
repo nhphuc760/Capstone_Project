@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
 public  interface IBuildStategy
 {
+    void SetDataSO(StructureDataSO structureDataSO);
     BuildValidationResult CanBuild(NetworkRunner runner,PlayerRef playerRef , Vector3Int cell);
     void Build(NetworkRunner runner,PlayerRef playerRef, Vector3Int cell);
     void Destroy(NetworkRunner runner, NetworkObject obj);
@@ -43,11 +42,11 @@ public struct BuildStategyEvent : IEvent
         Destroy
     }
     public PlayerRef PlayerRef;
+    public NetworkId ObjectId;
     public BuildEventType BuildType;
     public StructureType StructureType;
     public StructureCategory StructureCategory;
     public Vector3Int cellPosition;
-    public Bounds bounds;
 }
 
 
@@ -62,5 +61,6 @@ public enum BuildFailReason
     OccupiedByStructure,
     MissingRequirement,
     MultipleEnclosedZones,
-    TurretNotInEnclosedZone
+    TurretNotInEnclosedZone,
+    NotMetRequirement
 }

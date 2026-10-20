@@ -41,11 +41,10 @@ public class MoveToDoor : EnemyBaseState
             return EnemyState.Idle;
         }
         var agent = context.Agent;
-        if (agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
+        if (agent.hasPath && agent.remainingDistance <= 0.1f)
         {
             return EnemyState.Attack;
         }
-        Debug.Log("MoveTODoor Pending: " + agent.pathPending);
         if (!agent.pathPending && agent.pathStatus == UnityEngine.AI.NavMeshPathStatus.PathPartial)
         {
             Debug.Log("Path Partial");

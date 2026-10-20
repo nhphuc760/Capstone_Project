@@ -3,70 +3,91 @@ using Fusion;
 using UnityEngine;
 
 [Serializable]
-public class ResourceRequirement : StructRequirement
+
+public class ResourceRequirement : RequirementDefinition
 {
     public int Wood;
-    public int IronOre;
-    public int CopperOre;
-    public int GoldOre;
-
-    public override CheckResult CheckRequirement()
+    public int Stone;
+    public int Gold;
+    public int Electric;
+    public override IRequirement CreateRuntime(RequirementServices services, NetworkObject source = default)
     {
-        PlayerRef player = structAuthority.Object.InputAuthority;
-        if (structAuthority.Object.Runner.TryGetPlayerObject(player, out NetworkObject playerObj))
+        return new ResourceRequirementInstance
         {
-            NetworkResourcePlayer resourcePlayer = playerObj.GetBehaviour<NetworkPlayer>().resourcePlayer;
-            if (CompareResource(resourcePlayer))
-            {
-                return new CheckResult { Reason = UpgradeFailReason.None, Message = "" };
-            }
-            return new CheckResult { Reason = UpgradeFailReason.NotEnoughResource, Message = "Không đủ tài nguyên" };
-        }
-        else
-        {
-            Debug.LogWarning("Lỗi không tìm thấy PlayerObject");
-            return default;
-        }
-    }
-
-    public override StructRequirement CreateInstance(StructureBase structBase)
-    {
-        return new ResourceRequirement 
-        { 
-            structAuthority = structBase,
-            Wood = this.Wood,
-            IronOre = this.IronOre,
-            CopperOre = this.CopperOre,
-            GoldOre = this.GoldOre,
+            definition = this,
+            Player = services.player            
         };
     }
 
-    public override void Destroy()
+   
+
+    
+    
+}
+
+
+public class ResourceRequirementInstance : IRequirement
+{
+
+    public ResourceRequirement definition;
+    public NetworkPlayer Player { get; set; }
+
+    public event Action Changed;
+
+
+    public void Dispose()
     {
-      
+        
     }
 
-    public override string Information()
+    public string GetInfor()
     {
         string info = string.Empty;
-        if (structAuthority.Object.Runner.TryGetPlayerObject(structAuthority.Object.InputAuthority, out NetworkObject playerObj))
-        {
-            NetworkResourcePlayer resourcePlayer = playerObj.GetBehaviour<NetworkPlayer>().resourcePlayer;
-            info += Wood > 0 ? ($"Wood: " + (Wood.ToString().ToColor(resourcePlayer.Wood > Wood ? Color.green : Color.red)) + "\n") : "";
-            info += IronOre > 0 ? ($"IronOre: " + (IronOre.ToString().ToColor(resourcePlayer.IronOre > IronOre ? Color.green : Color.red)) + "\n") : "";
-            info += CopperOre > 0 ? ($"CopperOre: " + (CopperOre.ToString().ToColor(resourcePlayer.CopperOre > CopperOre ? Color.green : Color.red)) + "\n") : "";
-            info += GoldOre > 0 ? ($"GoldOre: " + (GoldOre.ToString().ToColor(resourcePlayer.GoldOre > GoldOre ? Color.green : Color.red))) : "";
-        }
-        return info;        
+
+        info += definition.Wood > 0 ? ($"Wood: " + (definition.Wood.ToString().ToColor(Player.resourcePlayer.Wood > definition.Wood ? Color.green : Color.red)) + "\n") : "";
+        info += definition.Stone > 0 ? ($"Stone: " + (definition.Stone.ToString().ToColor(Player.resourcePlayer.Stone > definition.Stone ? Color.green : Color.red)) + "\n") : "";
+        info += definition.Gold > 0 ? ($"GoldOre: " + (definition.Gold.ToString().ToColor(Player.resourcePlayer.GoldOre > definition.Gold ? Color.green : Color.red))) : "";
+        info += definition.Electric > 0 ? ($"Electric: " + (definition.Electric.ToString().ToColor(Player.resourcePlayer.Electric > definition.Electric ? Color.green : Color.red)) + "\n") : "";
+        return info;
     }
 
-    bool CompareResource(NetworkResourcePlayer resourcePlayer)
+    public CheckMetResult Met()
     {
-        if(resourcePlayer.Wood < Wood) return false;
-        if(resourcePlayer.IronOre < IronOre) return false;
-        if(resourcePlayer.CopperOre < CopperOre) return false;
-        if(resourcePlayer.GoldOre < GoldOre) return false;
+        if (!CompareResource())
+        {
+            return new CheckMetResult
+            {
+                Reason = CheckMetReason.NotEnoughResource,
+                Message = "Không đủ tài nguyên"
+            };
+        }
+        return default;
+    }
+
+    bool CompareResource()
+    {
+        if (Player.resourcePlayer.Wood < definition.Wood) return false;
+        if (Player.resourcePlayer.Stone < definition.Stone) return false;
+        if (Player.resourcePlayer.GoldOre < definition.Gold) return false;
+        if (Player.resourcePlayer.Electric < definition.Electric) return false;
         return true;
     }
+    public void Start()
+    {
+       
+    }
 
+    public void Effect()
+    {
+        Player.ComsumpResource(new NetworkResourcePlayer
+        {
+            Wood = definition.Wood,
+            Stone = definition.Stone,
+            GoldOre = definition.Gold,
+            Electric = definition.Electric,
+        });
+    }
 }
+
+
+

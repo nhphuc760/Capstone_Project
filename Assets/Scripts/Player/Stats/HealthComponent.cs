@@ -99,14 +99,12 @@ public class HealthComponent : NetworkBehaviour
         if (!DelayTimer.ExpiredOrNotRunning(Runner)) return;
         if (!RegenIntervalTimer.IsRunning)
         {
-            Debug.Log("Create RegenIntervalTimer");
             RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
             return;
         }
 
         if (RegenIntervalTimer.ExpiredOrNotRunning(Runner))
         {
-            Debug.Log("Expired RegenIntervalTimer");
             Restore(RegenAmount);
             RegenIntervalTimer = TickTimer.CreateFromSeconds(Runner, RegenInterval);
         }

@@ -122,6 +122,7 @@ namespace UtilityAI.Core
             {
                 TransitionTo(EnemyState.MoveToSafeZone);
             }
+            worldInformation.Agent.speed = enemyStats.Get(StatsType.MoveSpeed);
             machine?.Update(Runner.DeltaTime);
             var next = machine.CurrentState.TryGetNextState();
             TransitionTo(next);
@@ -167,6 +168,7 @@ namespace UtilityAI.Core
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         public void RPC_RequestSetDestination(Vector3 pos)
         {
+
             worldInformation.Agent?.SetDestination(pos);
         }
 
@@ -179,6 +181,12 @@ namespace UtilityAI.Core
         public void TakeDamage(float amount, NetworkObject attacker)
         {
             Health.TakeDamage(amount, attacker);
+        }
+
+        public void RemoveModifier(int _id)
+        {
+            if(HasStateAuthority)
+            enemyStats.RemoveModifierByID(_id);
         }
     }
 }

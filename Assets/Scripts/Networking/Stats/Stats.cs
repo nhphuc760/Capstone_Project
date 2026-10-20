@@ -10,7 +10,7 @@ public class Stats : NetworkBehaviour
 
     [Networked, Capacity(32)]
     NetworkDictionary<int, Modifier> _modifiers => default;
-    [Networked]
+    [Networked, OnChangedRender(nameof(OnDirtyChanged))]
     NetworkBool markDirty {  get; set; }
 
 
@@ -27,7 +27,7 @@ public class Stats : NetworkBehaviour
         {
             foreach (var mod in list)
             {
-                value = mod.Apply(baseValue, value);
+                value = mod.Apply(value, baseValue);
             }
 
         }
@@ -52,28 +52,26 @@ public class Stats : NetworkBehaviour
     public void RemoveModifierByID(int id)
     {
         if (!HasStateAuthority) return;
+        
         if (_modifiers.Remove(id))
         {
             markDirty = true;
         }      
     }
 
+
+
     public void AddModifier(Modifier modifier)
     {
-
         if (!HasStateAuthority) return;
 
         if (modifier.ModID < 1)
         {
             Debug.LogError("Modifier null");
         }
-        
-
-        if (_modifiers.Add(modifier.ModID, modifier))
-        {           
-            markDirty = true;
-        }       
-       
+        Debug.Log($"{gameObject.name}: Addmodifier: StatsType = {modifier.StatType.ToString()} Value = {modifier.Value.ToString()} ApplyType = {modifier.ModApplyType.ToString()}");
+        _modifiers.Set(modifier.ModID, modifier);
+        markDirty = true;              
     }    
 
     public void ClearAllModifiers()
@@ -93,10 +91,7 @@ public class Stats : NetworkBehaviour
     /// </summary>
     public void Tick(float deltaTime)
     {
-        if (markDirty)
-        {
-            UpdateCached(); 
-        }
+       
         var keysToRemove = new List<int>();
         foreach (var i in _modifiers)
         {
@@ -105,7 +100,6 @@ public class Stats : NetworkBehaviour
                 if (i.Value.Duration.Expired(Runner))
                 {
                     keysToRemove.Add(i.Key);
-
                 }
             }
         }
@@ -116,6 +110,14 @@ public class Stats : NetworkBehaviour
         }
     }
 
+
+    void OnDirtyChanged()
+    {
+        if (markDirty)
+        {
+            UpdateCached();
+        }
+    }
 
 
     void UpdateCached()

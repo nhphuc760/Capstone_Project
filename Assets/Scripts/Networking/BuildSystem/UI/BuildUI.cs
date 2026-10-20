@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem.Composites;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 public class BuildUI : MonoBehaviour, IPlayerUI
 {
@@ -40,11 +38,13 @@ public class BuildUI : MonoBehaviour, IPlayerUI
             buttonCategory.Initial(i, this);
             var scrollObj = Instantiate(scrollView, scrollviewContainer.transform);
             keyValuePairs.Add(buttonCategory, scrollObj);
-            var structureCategoryI = structureDatabaseSO.StructureList.Where(x => x.structureCategory == i);
+            var structureCategoryI = structureDatabaseSO.Alls.Where(x => x.structureCategory == i);
             for (int j = 0; j < structureCategoryI.Count(); j ++)
             {
+                var structSO = structureCategoryI.ElementAt(j);
+                if (structSO.structureType == StructureType.Wall || structSO.structureType == StructureType.Door) continue;
                 var elementStructure = Instantiate(elementUI, scrollObj.content);
-                elementStructure.Initialize(j, structureCategoryI.ElementAt(j), this);
+                elementStructure.Initialize(j,  structSO , this);
             }  
             scrollObj.gameObject.SetActive(false);
         }
@@ -73,16 +73,11 @@ public class BuildUI : MonoBehaviour, IPlayerUI
     {
         StructureDataSO so = element.structureSO;
         if (so.buildRequirement == null || so.buildRequirement.Length == 0) return;
-        foreach (var i in element.structureSO.buildRequirement)
+        var met = buildSystem.CheckBuildRequirement(so);
+        if (!met.Success)
         {
-            var check = i.CheckRequirement(buildSystem.Object.Runner, buildSystem.Object.InputAuthority);
-            if (!check.Success)
-            {
-                //Announce
-                Debug.Log(check.Message);
-                return;
-               
-            }            
+            Debug.Log(met.Message); 
+            return;
         }
         CancelButton();
         buildSystem.PickStruct(element.structureSO._id.Value);

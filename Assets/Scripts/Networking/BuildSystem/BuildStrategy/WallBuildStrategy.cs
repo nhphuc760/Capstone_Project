@@ -9,7 +9,7 @@ public class WallBuildStrategy : IBuildStategy
     readonly StructureManager structureManager;
     readonly int _widthMap;
     readonly int _heightMap;
-    readonly StructureDataSO wallSO;
+    StructureDataSO wallSO;
     BuildSystem buildSystem;
     /// <summary>
     /// Cache kết quả CheckFromNewCell giữa CanBuild → Build (cùng player + cell).
@@ -132,7 +132,6 @@ public class WallBuildStrategy : IBuildStategy
                 StructureCategory = StructureCategory.Defense,
                 StructureType = StructureType.Door,
                 cellPosition = cell,
-                bounds = doorObj.GetComponent<Collider>().bounds
             });
         }
         else
@@ -256,7 +255,7 @@ public class WallBuildStrategy : IBuildStategy
             return;
         }
         Vector3Int cell = structureEntry.Key;        
-        if (!obj.TryGetBehaviour<Wall>(out _)) return;        
+        if (!obj.TryGetBehaviour<Wall>(out var wall)) return;        
         var playerObject = runner.GetPlayerObject(obj.InputAuthority).GetBehaviour<NetworkPlayer>();
         Door door = playerObject.Door;
 
@@ -289,6 +288,7 @@ public class WallBuildStrategy : IBuildStategy
         PlayerRef playerRefObj = obj.InputAuthority;
         MakeSureBuildSystemValid(runner, playerRefObj);
         buildSystem.wallAmount += 1;
+        wall.DestroyLogic();
         structureManager.DestroyStructure(obj);
     }
 
@@ -304,5 +304,10 @@ public class WallBuildStrategy : IBuildStategy
                        (data.structureType == StructureType.Wall || data.structureType == StructureType.Door);
             })
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+    }
+
+    public void SetDataSO(StructureDataSO structureDataSO)
+    {
+        this.wallSO =  structureDataSO;
     }
 }

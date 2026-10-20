@@ -7,12 +7,7 @@ public class Wall : StructureBase
         return null;
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public override void Operation()
-    {
-
-    }
-
+    // Start is called once before the first execution of Update after the MonoBehaviour is created 
     public override void UpgradeLogic()
     {
      

@@ -7,6 +7,8 @@ public class HealthDoorUI : MonoBehaviour
 
     [SerializeField] HealthComponent healthComponent;
     [SerializeField] Image healthDoorUI;
+    [SerializeField] float showDuration = 3f;
+    float timer = 0;
     private void Awake()
     {
         healthComponent ??= GetComponent<HealthComponent>();
@@ -16,10 +18,26 @@ public class HealthDoorUI : MonoBehaviour
     {
         if(healthComponent)
             healthComponent.OnHealthChanged += HealthComponent_OnTakeDamage;
+        gameObject.SetActive(false);
     }
+
+
+
+    private void Update()
+    {
+        timer -= Time.deltaTime;
+        if (timer <= 0f)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+
 
     private void HealthComponent_OnTakeDamage(float arg1, float arg2)
     {
+        gameObject.SetActive(true);
+        timer = showDuration;
         if (healthDoorUI)
         {
             healthDoorUI.fillAmount = arg1/arg2;

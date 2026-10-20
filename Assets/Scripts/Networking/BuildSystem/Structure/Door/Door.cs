@@ -6,8 +6,7 @@ public class Door : StructureBase, ITakedamageable
 
     [Networked]
     public Vector3 OutideOppositeDoor { get; private set; }
-    [SerializeField]
-    HealthComponent HealthDoor;
+    public HealthComponent HealthDoor { get; private set; }
 
     
     public void SetOutSideOppositeDoor(Vector3 pos)
@@ -36,12 +35,7 @@ public class Door : StructureBase, ITakedamageable
     {
         Debug.Log("Destroy Door");
         StructureManager.Ins?.DestroyStructure(Object);
-    }
-
-    public override void Operation()
-    {
-
-    }
+    }   
 
     public override void UpgradeLogic()
     {

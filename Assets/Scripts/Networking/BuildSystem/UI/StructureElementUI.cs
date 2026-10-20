@@ -33,29 +33,37 @@ public class StructureElementUI : MonoBehaviour, IPointerClickHandler, IPointerE
 
         foreach (var i in structureDataSO.buildRequirement)
         {
-            if (i is EntityValueBuildRequirement entityValue)
-            {
-                foreach (var j in entityValue.values)
-                {
-                    if(j.Value > 0)
-                    {
-                        var entityObj = Instantiate(EntityValuePrefab, requirementContainer.transform);
-                        entityObj.GetComponent<Image>().sprite = j.Icon;
-                        entityObj.GetComponentInChildren<TextMeshProUGUI>().text = j.Value.ToString();
-                    }
-                }
+            //if (i is EntityValueBuildRequirement entityValue)
+            //{
+            //    foreach (var j in entityValue.values)
+            //    {
+            //        if(j.Value > 0)
+            //        {
+            //            var entityObj = Instantiate(EntityValuePrefab, requirementContainer.transform);
+            //            entityObj.GetComponent<Image>().sprite = j.Icon;
+            //            entityObj.GetComponentInChildren<TextMeshProUGUI>().text = j.Value.ToString();
+            //        }
+            //    }
 
-            }
+            //}
         }
 
     }
+
+    private void OnDisable()
+    {
+        if(hoverImage)
+            hoverImage.enabled = false;
+    }
+
+
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if(eventData.button == PointerEventData.InputButton.Left)
         {
             buildSystemUI.OnSlotClick(this);
-        }
+        }        
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -67,10 +75,10 @@ public class StructureElementUI : MonoBehaviour, IPointerClickHandler, IPointerE
         string toolTip = "";
         foreach (var i in structureSO.buildRequirement)
         {
-            if(i is EventBuildRequirement eventBuild)
-            {
-                toolTip += eventBuild.GetInfo(buildSystemUI.System.Object.InputAuthority) + "\n";
-            }
+            //if(i is EventBuildRequirement eventBuild)
+            //{
+            //    toolTip += eventBuild.GetInfo(buildSystemUI.System.Object.InputAuthority) + "\n";
+            //}
         }
         if (!string.IsNullOrEmpty(toolTip))
         {
