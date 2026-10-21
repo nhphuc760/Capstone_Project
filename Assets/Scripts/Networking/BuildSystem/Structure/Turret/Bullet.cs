@@ -1,4 +1,5 @@
 using Fusion;
+using NUnit.Framework;
 using UnityEngine;
 
 public class Bullet : NetworkBehaviour
@@ -8,7 +9,7 @@ public class Bullet : NetworkBehaviour
     NetworkObject target;
     NetworkTransform networkTransform;
 
-    public void SetStats(float damage, float speed, NetworkObject turretOwn, NetworkObject target)
+    public void InitMission(float damage, float speed, NetworkObject turretOwn, NetworkObject target)
     {
         this.target = target;
         this.turret = turretOwn;
@@ -28,14 +29,24 @@ public class Bullet : NetworkBehaviour
         if(target != null)
         {
             float speed = bulletStats.Get(StatsType.MoveSpeed);
-            Vector3 pos = Vector3.MoveTowards(transform.position, target.transform.position, speed * Runner.DeltaTime);
+            Vector3 targetPos = target.transform.position + Vector3.up;
+            Vector3 pos = Vector3.MoveTowards(transform.position, targetPos, speed * Runner.DeltaTime);
             networkTransform.Teleport(pos);
+            if ((transform.position - targetPos).sqrMagnitude < 0.5f)
+            {
+                OnTriggerTakedamage();
+            }
         }
     }
 
     void OnTriggerTakedamage()
     {
-
+        if (target.TryGetComponent<ITakedamageable>(out var takedamageable))
+        {
+            takedamageable.TakeDamage(bulletStats.Get(StatsType.Damage), turret);
+        }
+        turret = null;
+        target = null;
+        Runner.Despawn(this.Object);
     }
-
 }

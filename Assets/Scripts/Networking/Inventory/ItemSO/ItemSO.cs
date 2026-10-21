@@ -26,6 +26,9 @@ public class ItemSO : ScriptableObject
     [SerializeField] private bool stackable = true;
     [SerializeField] private int maxStack = 1;
 
+    [Header("Logic")]
+    [SerializeReference] ItemLogic itemLogic;
+
     public int ItemId => itemId;
     public string ItemName => itemName;
     public ItemType ItemType => itemType;
@@ -42,8 +45,13 @@ public class ItemSO : ScriptableObject
     {
         if (maxStack < 1)
             maxStack = 1;
-
         if (!stackable)
             maxStack = 1;
+    }    
+
+    public void Use(NetworkPlayer player)
+    {
+
     }
+
 }

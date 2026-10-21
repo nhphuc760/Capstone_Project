@@ -30,9 +30,9 @@ public class StructureManager : NetworkBehaviour
 
 
 
-    public List<Vector3Int> GetEnclosedZone(PlayerRef playerRef)
+    public HashSet<Vector3Int> GetEnclosedZone(PlayerRef playerRef)
     {
-        return enclosedZone.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key.FromKey()).ToList();
+        return enclosedZone.Where(kvp => kvp.Value == playerRef).Select(kvp => kvp.Key.FromKey()).ToHashSet();
     }
 
 
@@ -73,11 +73,12 @@ public class StructureManager : NetworkBehaviour
             buildStategies.Add(playerRef, new List<IBuildStategy>());
         }
 
-        if (type == StructureType.Wall || type == StructureType.Door)
+        if (type == StructureType.Wall)
         {
             IBuildStategy stategy = buildStategies[playerRef].Find(s => s is WallBuildStrategy);
             if (stategy != null)
             {
+                stategy.SetDataSO(structureDataSO);
                 return stategy;
             }
             IBuildStategy wallBuildStrategy = new WallBuildStrategy(
@@ -89,19 +90,21 @@ public class StructureManager : NetworkBehaviour
             return wallBuildStrategy;
 
         }
-        else if (type == StructureType.Turret)
+        else
         {
-            IBuildStategy @var = buildStategies[playerRef].Find(s => s is BuildTurretStategy);
+            IBuildStategy @var = buildStategies[playerRef].Find(s => s is BuildTowerStategy);
             if (@var != null)
             {
+                @var.SetDataSO(structureDataSO);
                 return @var;
             }
-            IBuildStategy buildTurret = new BuildTurretStategy(this, structureDataSO);
+            IBuildStategy buildTurret = new BuildTowerStategy(this, structureDataSO);
+            
             buildStategies[playerRef].Add(buildTurret);
             return buildTurret;
         }
+           
 
-        return null;
     }
 
     public void ClearEscapeWall(PlayerRef playerRef)
@@ -173,17 +176,14 @@ public class StructureManager : NetworkBehaviour
         int hash = cell.ToKey();
 
         structures.Set(hash, structureObject.Object);
-        var bounds = structureObject.GetComponent<Collider>().bounds;
-        Bounds bound = new Bounds((Vector3)cell + Vector3.one * 0.5f, bounds.size);
-
         EventBus<BuildStategyEvent>.Raise(new BuildStategyEvent
         {
             BuildType = BuildStategyEvent.BuildEventType.Build,
             PlayerRef = structureObject.Object.InputAuthority,
+            ObjectId = structureObject.Object,
             StructureCategory = structureObject.StructureDataSO.structureCategory,
             StructureType = structureObject.StructureDataSO.structureType,
             cellPosition = cell,
-            bounds = bound
         });
     }
 
@@ -230,11 +230,11 @@ public class StructureManager : NetworkBehaviour
                 BuildStategyEvent buildStategyEvent = new BuildStategyEvent
                 {
                     BuildType = BuildStategyEvent.BuildEventType.Destroy,
+                    ObjectId = structure,
                     PlayerRef = structure.InputAuthority,
                     StructureCategory = structBase.StructureDataSO.structureCategory,
                     StructureType = structBase.StructureDataSO.structureType,
                     cellPosition = kvp.Key.FromKey(),
-                    bounds = structBase.GetComponent<Collider>().bounds
                 };
                 Runner.Despawn(structure);
                 EventBus<BuildStategyEvent>.Raise(buildStategyEvent);

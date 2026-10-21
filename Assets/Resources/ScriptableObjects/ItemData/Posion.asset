@@ -13,10 +13,19 @@ MonoBehaviour:
   m_Name: Posion
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
   itemId: 2
-  itemName: Potion
+  itemName: Posion
   description: 
-  itemType: 1
-  icon: {fileID: 21300000, guid: decc33e0428e74349941f54fe6299753, type: 3}
+  itemType: 2
+  icon: {fileID: 21300000, guid: 75c1daa61569946f49762ad83a0d3b27, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 1
   maxStack: 99
+  itemLogic:
+    rid: 2680167732894236746
+  references:
+    version: 2
+    RefIds:
+    - rid: 2680167732894236746
+      type: {class: PosionHealth, ns: , asm: Assembly-CSharp}
+      data:
+        HealthPosion: 10

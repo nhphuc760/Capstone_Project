@@ -10,9 +10,9 @@ using UnityEngine.EventSystems;
 public struct NetworkResourcePlayer : INetworkStruct
 {
     public int Wood;
-    public int IronOre;
-    public int CopperOre;
+    public int Stone;
     public int GoldOre;
+    public int Electric;
 }
 
 public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
@@ -46,10 +46,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
     public event Action<NetworkResourcePlayer> OnResouceChange;
-
-
-
-
 
 
     private void OnResourceChanged()
@@ -128,9 +124,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                if (hit.collider.transform.root.TryGetComponent<ITooltipContext>(out var context))
                 {
-                    TooltipUI.Show(context.GetInfor(), Input.mousePosition, context.gameObject);
+                    TooltipUI.Show(context.GetContent(), Input.mousePosition, hit.collider.gameObject);
                 }
                 else
                 {
@@ -146,7 +142,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                if (hit.collider.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
                 {
                     StructureUI.Show(context);
                 }
@@ -158,7 +154,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
 
 
-        
+
 
     }    
 
@@ -192,8 +188,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             }
             if (data.button.WasPressed(previousInput, ButtonType.TestAddModify))
             {
+                if (!HasStateAuthority) return;
                 Modifier modSpeed = new Modifier
                 {
+                    ModID = ModifierIDGenerator.Next(Runner),
                     ModApplyType = ModApplyType.Flat,
                     StatType = StatsType.MoveSpeed,
                     Value = 10,
@@ -286,11 +284,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     private void OnTriggerEnter(Collider other)
     {
-      
+        
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+
     }
 
     void TryMineResource()
@@ -313,25 +312,26 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             }
         }
     }
+    
 
 
-    void AddResource(int amount, ResourceType type)
+    public void AddResource(int amount, ResourceType type)
     {
         Debug.Log($"AddResource called on {Runner.LocalPlayer} in {Object.InputAuthority}");
         if (!Object.HasStateAuthority) return;
         switch (type)
         {
-            case ResourceType.WOOD:
+            case ResourceType.Wood:
                 resourcePlayer.Wood += amount;
                 break;
-            case ResourceType.IRON:
-                resourcePlayer.IronOre += amount;
-                break;
-            case ResourceType.COPPER:
-                resourcePlayer.CopperOre += amount;
-                break;
-            case ResourceType.GOLD:
+            case ResourceType.Stone:
+                resourcePlayer.Stone += amount;
+                break;           
+            case ResourceType.Gold:
                 resourcePlayer.GoldOre += amount;
+                break;
+            case ResourceType.Electric:
+                resourcePlayer.Electric += amount;
                 break;
         }
 
@@ -341,9 +341,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     {
         if (!HasStateAuthority) return;
         this.resourcePlayer.Wood -= resource.Wood;
-        this.resourcePlayer.IronOre -= resource.IronOre;
-        this.resourcePlayer.CopperOre -= resource.CopperOre;    
+        this.resourcePlayer.Stone -= resource.Stone;    
         this.resourcePlayer.GoldOre -= resource.GoldOre;
+        this.resourcePlayer.Electric -= resource.Electric;
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -380,8 +380,13 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     {
         if (HasStateAuthority)
         {
-            mod.ModID = ModifierIDGenerator.Next(Runner);
             _stats.AddModifier(mod);
         }
+    }
+
+    public void RemoveModifier(int _id)
+    {
+        if(HasStateAuthority)
+            _stats.RemoveModifierByID(_id);
     }
 }

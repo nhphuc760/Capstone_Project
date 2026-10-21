@@ -5,10 +5,10 @@ using UnityEngine;
 
 public enum ResourceType
 {
-    WOOD,
-    IRON,
-    COPPER,
-    GOLD
+    Wood,
+    Stone,
+    Gold,
+    Electric
 }
 
 public enum ToolType
@@ -21,7 +21,7 @@ public enum ToolType
 
 
 
-public class ResourceNode : NetworkBehaviour
+public class ResourceNode : NetworkBehaviour, ITooltipContext
 {   
 
     [SerializeField] ResourceType resourceType;
@@ -37,12 +37,12 @@ public class ResourceNode : NetworkBehaviour
     public int MaxAmount => maxAmount;  
     public int StaminaCostPerGather => staminaCostPerGather;
     public int RemainingAmount => CurrentAmount;
-    [Networked] int CurrentAmount { get; set; }
+    [Networked, OnChangedRender(nameof(OnAmountChange))] int CurrentAmount { get; set; }
     public bool IsDepleted => CurrentAmount <= 0;
 
     public event Action<ResourceNode> OnDepleted;
     public event Action<ResourceNode> OnRegenerated;
-    public event Action<ResourceNode, int> OnAmountChanged;
+    public event Action<int, int> OnAmountChanged;
 
 
 
@@ -57,8 +57,6 @@ public class ResourceNode : NetworkBehaviour
         int requested = Mathf.RoundToInt(amountPerGather * Mathf.Max(0f, efficiencyMultiplier));
         int actual = Mathf.Min(requested, CurrentAmount);
         CurrentAmount -= actual;
-        OnAmountChanged?.Invoke(this, CurrentAmount);
-        Debug.Log($"{resourceType.ToString()} Extract {amountPerGather}, Remaing: {CurrentAmount}");
         if (CurrentAmount <= 0)
         {
             OnDepleted?.Invoke(this);
@@ -73,12 +71,21 @@ public class ResourceNode : NetworkBehaviour
         bool wasDepleted = IsDepleted;
         int regenAmount = Mathf.RoundToInt(maxAmount * regenRatePerWave);
         CurrentAmount = Mathf.Min(maxAmount, CurrentAmount + regenAmount);
-        OnAmountChanged?.Invoke(this, CurrentAmount);
-
         if (wasDepleted && CurrentAmount > 0)
         {
             OnRegenerated?.Invoke(this);
         }
     }
 
+
+    void OnAmountChange()
+    {
+        OnAmountChanged?.Invoke(CurrentAmount, maxAmount);
+    }
+
+    public string GetContent()
+    {
+        return $"{ResourceType.ToString()}\n" +
+            $"{CurrentAmount}/{MaxAmount}";
+    }
 }

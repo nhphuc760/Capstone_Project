@@ -1,5 +1,4 @@
-﻿using System;
-using Fusion;
+﻿using Fusion;
 using UnityEngine;
 
 
@@ -10,6 +9,9 @@ public enum StructureType
     Door,
     Turret,
     ElectricTower,
+    Acceleration,
+    BuffRangeTower,
+    Refrigrator,
     Trap,
 }
 
@@ -19,7 +21,6 @@ public enum StructureCategory
     Attack,//Tower, Turret, Trap
     Defense,//Shield, Wall, Door
     Support,//Buff, Heal
-
 }
 
 
@@ -28,6 +29,7 @@ public enum StructureCategory
 public class StructureDataSO : ScriptableObject
 {
     public Sprite icon;
+    [Tooltip("NetworkString<_8>")]
     public NetworkString<_8> _id;
     public string _name;
     public string _description;
@@ -35,10 +37,10 @@ public class StructureDataSO : ScriptableObject
     public StructureCategory structureCategory;
     //Build Requirement
     [SerializeReference]
-    public BuildRequirement[] buildRequirement;
+    public RequirementDefinition[] buildRequirement;
     public GameObject prefabs;
     //Upgrade Requirement
-    //[SerializeReference]
+    [SerializeReference]
     public StructLevelData[] levels;
  }
 

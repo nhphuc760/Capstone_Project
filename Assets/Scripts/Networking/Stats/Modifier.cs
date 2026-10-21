@@ -18,8 +18,8 @@ public struct Modifier: INetworkStruct
         return ModApplyType switch
         {
             ModApplyType.Flat => currentValue + Value,
-            ModApplyType.PercentAdd => Mathf.RoundToInt(currentValue + (baseValue * Value / 100f)),
-            ModApplyType.PercentMult => Mathf.RoundToInt(currentValue * (1f + Value / 100f)),
+            ModApplyType.PercentAdd => currentValue + (currentValue * Value / 100f),
+            ModApplyType.PercentMult => currentValue * (1f + Value / 100f),
             ModApplyType.Override => Value,
             _ => currentValue
         };
@@ -33,7 +33,7 @@ public struct Modifier: INetworkStruct
 public interface IAffector
 {
     void AddModifier(Modifier modifier);
-
+    void RemoveModifier(int _id);
 }
 
 

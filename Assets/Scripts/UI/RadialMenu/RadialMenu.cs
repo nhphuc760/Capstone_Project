@@ -29,7 +29,7 @@ public class RadialMenu : MonoBehaviour, IPlayerUI
     List<Vector2> originalPositions = new List<Vector2>();
     RectTransform thisRect;
     int _currentIndex = 0;
-
+    PlayerUIComponent _playerUI;
     private void Awake()
     {
         thisRect = GetComponent<RectTransform>();
@@ -38,15 +38,14 @@ public class RadialMenu : MonoBehaviour, IPlayerUI
         {
             originalPositions.Add(element.anchoredPosition);
         }
-        GetComponentInParent<PlayerUIComponent>().RegisterPlayerUI(PlayerUIComponent.OpenUI.RadialMenu, this);
+        _playerUI = GetComponentInParent<PlayerUIComponent>();
+        _playerUI.RegisterPlayerUI(PlayerUIComponent.OpenUI.RadialMenu, this);
         gameObject.SetActive(false);
     }
 
     private void Update()
-    {
-        CalculateIndex();
-        //if (Input.GetKeyUp(KeyCode.BackQuote))
-        //    Hide();
+    {                
+        CalculateIndex();      
     }
 
 
@@ -152,6 +151,7 @@ public class RadialMenu : MonoBehaviour, IPlayerUI
                    .SetDelay(i * delayBetween);
         }
         await Task.Delay((int)((durationTween + (items.Count - 1) * delayBetween) * 1000));
+        Debug.Log("RadialMenuIndex: " + _currentIndex);
         onSelectIndex?.Invoke(_currentIndex);
         gameObject.SetActive(false);
     }

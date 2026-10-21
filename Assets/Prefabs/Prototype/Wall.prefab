@@ -117,7 +117,6 @@ GameObject:
   - component: {fileID: 3184610643794956328}
   - component: {fileID: 6563257326823140956}
   - component: {fileID: 7088622997051463612}
-  - component: {fileID: 8362683783570432401}
   m_Layer: 0
   m_Name: Wall
   m_TagString: Untagged
@@ -155,6 +154,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wall
   _Level: 0
+  _IsUpgradeable:
+    _value: 0
   StructureDataSO: {fileID: 11400000, guid: dde95cba76ec23b4483d6ba1e0b6bf9d, type: 2}
   structureUI: {fileID: 0}
 --- !u!114 &4364989384486649618
@@ -231,20 +232,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &8362683783570432401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835964164062538361}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbba8b19a8eb951428aff89550cf8d97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StructureToolTipTrigger
-  tooltip: {fileID: 0}
-  description: "Hello, \u0111\xE2y l\xE0 wall\nXin ch\xE0o th\u1EBF gi\u1EDBi"
 --- !u!1 &3787907401894073668
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@ public class StructDatabase : ScriptableObject
     Dictionary<string, StructureDataSO> structDatabase = new Dictionary<string, StructureDataSO>();
     [SerializeField] List<StructureDataSO> structsList = new List<StructureDataSO>();
 
-    public List<StructureDataSO> StructureList => structsList;
+    public List<StructureDataSO> Alls => structsList;
 
 
 

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
+  m_Name: Refrigrator
+  m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
+  icon: {fileID: 0}
+  _id:
+    _length: 4
+    _data:
+      Data: 3100000032000000330000003500000000000000000000000000000000000000
+  _name: Refrigrator
+  _description: "Gi\u1EA3m t\u1ED1c \u0111\u1ED9 \u0111\xE1nh c\u1EE7a qu\xE1i khi
+    qu\xE1i \u0111\xE1nh v\xE0o c\u1EEDa"
+  structureType: 7
+  structureCategory: 2
+  buildRequirement:
+  - rid: 2680167812576575569
+  prefabs: {fileID: 8875094650692854156, guid: 205d22b8e64df9f409e966bf4751d751, type: 3}
+  levels:
+  - rid: 2680167812576575572
+  references:
+    version: 2
+    RefIds:
+    - rid: 2680167812576575569
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        Wood: 1
+        Stone: 0
+        Gold: 0
+        Electric: 0
+    - rid: 2680167812576575572
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 1
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 11
+              Value: 50
+        upgradeRequirement: []

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
 using Util.Core;
+using System.Linq;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -20,16 +22,18 @@ public class BuildSystem : NetworkBehaviour
     [OnChangedRender(nameof(OnWallAmountChange))]
     [Networked] public int wallAmount { get; set; }
 
-    private void OnWallAmountChange()
-    {
-        GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
-    }
+    Dictionary<StructureDataSO, IRequirement[]> structureBuildRequirement = new();
+
+
+
+
+
 
     Vector3Int _cellPos;
     BuildValidationResult buildValidationResult = default;
 
     public event Action<BuildValidationResult> buildFailReason;
-    
+
     public Vector3Int CellPos
     {
         get => _cellPos; private set
@@ -42,7 +46,23 @@ public class BuildSystem : NetworkBehaviour
         }
     }
 
-
+    void InitBuildRequirement()
+    {
+        foreach (var i in _structDatabase.Alls)
+        {
+            if (i.structureType == StructureType.Wall || i.structureType == StructureType.Door) continue;
+            RequirementServices services = GetComponent<RequirementServices>();
+            IRequirement[] requirements = i.buildRequirement
+                .Select((x) =>
+                {
+                    IRequirement requirement = x.CreateRuntime(services, Object);
+                    requirement.Start();
+                    return requirement;
+                })
+                .ToArray();
+            structureBuildRequirement[i] = requirements;
+        }
+    }
 
 
     public override void Spawned()
@@ -57,12 +77,17 @@ public class BuildSystem : NetworkBehaviour
             {
                 radialmenu.onSelectIndex += OnRadialMenuSelected;
             }
+            GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
         }
         if (HasStateAuthority)
         {
             wallAmount = 30;
-            GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
         }
+        InitBuildRequirement();
+    }
+    private void OnWallAmountChange()
+    {
+        GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
     }
 
     private void OnRadialMenuSelected(int obj)
@@ -86,7 +111,7 @@ public class BuildSystem : NetworkBehaviour
 
     private void Update()
     {
-        if (!Object.HasInputAuthority) return;        
+        if (!Object.HasInputAuthority) return;
         if (Input.GetMouseButtonDown(0) && _curStructureSO != null)
         {
             // Request build
@@ -107,12 +132,6 @@ public class BuildSystem : NetworkBehaviour
             _curStructureSO = null;
         }
     }
-
-
-    //BuildValidationResult CheckCostBuild(StructureBase structure)
-    //{
-
-    //}
 
     void IntervalPhysicsCast()
     {
@@ -141,7 +160,10 @@ public class BuildSystem : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3Int buildPos, Quaternion buildRot)
     {
-
+        if (!CheckBuildRequirement(_structDatabase.GetStructSO(_idStruct.Value)).Success)
+        {
+            return;
+        }
         IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct, Object.InputAuthority);
         //Debug.Log("BuildStategy exist " + buildStrategy != null);
         if (buildStrategy != null)
@@ -151,8 +173,14 @@ public class BuildSystem : NetworkBehaviour
             if (buildValidation.Success)
             {
                 Debug.Log("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}", this);
-                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);               
-
+                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);
+                if (structureBuildRequirement.TryGetValue(_structDatabase.GetStructSO(_idStruct.Value), out var requirements))
+                {
+                    foreach (var item in structureBuildRequirement[_structDatabase.GetStructSO(_idStruct.Value)])
+                    {
+                        item.Effect();
+                    }
+                }                
             }
             else
             {
@@ -170,8 +198,23 @@ public class BuildSystem : NetworkBehaviour
 
     }
 
+    public CheckMetResult CheckBuildRequirement(StructureDataSO structureDataSO)
+    {
+        if(structureBuildRequirement.TryGetValue(structureDataSO, out var requirements))
+        {
+            foreach (var i in structureBuildRequirement[structureDataSO])
+            {
+                var result = i.Met();
+                if (!result.Success)
+                    return result;
+            }
+        }
+        return default;       
+    }
+
     public void PickStruct(string _idStruct)
     {
+        Debug.Log("PickStructure");
         StructureDataSO _structSO = _structDatabase.GetStructSO(_idStruct);
         if (_structSO == null) return;
         meshFilters = _structSO.prefabs.GetComponentsInChildren<MeshFilter>();
@@ -194,11 +237,11 @@ public class BuildSystem : NetworkBehaviour
                 previewRot,
                 i.transform.localScale
                 );
-            Graphics.DrawMesh(i.sharedMesh, matrix, buildValidationResult.Success ? _transparentGreenMaterial : _transparentRedMaterial, 0);
+            Graphics.DrawMesh(i.sharedMesh, matrix, buildValidationResult.Success ? _transparentGreenMaterial : _transparentRedMaterial, 0, camera: _playerCam, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false);
         }
     }
 
-    private void OnRenderObject()
+    public override void Render()
     {
         if (_curStructureSO == null) return;
         RenderPreview();
@@ -216,7 +259,8 @@ public class BuildSystem : NetworkBehaviour
         if (count == 0)
         {
             return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id, Object.InputAuthority).CanBuild(Runner, Object.InputAuthority, _cellPos);
-        }else
+        }
+        else
         {
             return BuildValidationResult.Fail(BuildFailReason.InvalidPosition, "Không thể xây, có vật cản");
         }
