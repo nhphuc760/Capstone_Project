@@ -10,6 +10,12 @@ public static class CollectionUtils
             return true;        
        return source.Count() == 0;
     }
+    /// <summary>
+    /// Trộn List
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public static void Shuffle<T>(this List<T> source)
     {
         if (source.IsNullOrEmplty())
@@ -27,6 +33,12 @@ public static class CollectionUtils
             source[count] = value;
         }
     }
+    /// <summary>
+    /// Trộn mảng
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="array"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public static void Shuffle<T>(this T[] array)
     {
         if (array.IsNullOrEmplty())
@@ -50,18 +62,19 @@ public static class CollectionUtils
     {
         if (array.IsNullOrEmplty())
         {
-            throw new ArgumentNullException(nameof(array));
+            return default(T);
         }
         int index = UnityEngine.Random.Range(0, array.Length); // chọn số từ 0 đến array.Length - 1
         return array[index];
-    }
-    public static T RandomElement<T>(this List<T> source)
+    }   
+
+    public static T RandomElement<T>(this IEnumerable<T> source)
     {
         if (source.IsNullOrEmplty())
         {
-            throw new ArgumentNullException(nameof(source));
+            return default(T);
         }
-        int index = UnityEngine.Random.Range(0, source.Count);
-        return source[index];
+        int index = UnityEngine.Random.Range(0, source.Count());
+        return source.ElementAt(index);
     }
 }

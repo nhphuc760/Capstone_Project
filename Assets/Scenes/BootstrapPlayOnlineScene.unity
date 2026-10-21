@@ -1896,6 +1896,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1893897634}
   - component: {fileID: 1893897635}
+  - component: {fileID: 1893897636}
   m_Layer: 0
   m_Name: NetworkRunnerHandle
   m_TagString: Untagged
@@ -1932,6 +1933,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkRunnerHandler
   NetworkRunnerPrefab: {fileID: 1857745361433860855, guid: d07824ec8013fb14a81f978bee1f6e0c, type: 3}
   _runner: {fileID: 0}
+--- !u!114 &1893897636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1893897633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12d01b65588b5a0438c8911406f367e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PooledNetworkObjectProvider
+  DelayIfSceneManagerIsBusy: 1
+  poolData:
+  - prefab: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
+    defaultCapacity: 0
+    maxSize: 0
 --- !u!1 &1919246576
 GameObject:
   m_ObjectHideFlags: 0

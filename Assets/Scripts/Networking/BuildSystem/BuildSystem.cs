@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
-
+using Util.Core;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -17,12 +16,20 @@ public class BuildSystem : NetworkBehaviour
     public StructDatabase _structDatabase;
     StructureDataSO _curStructureSO;
     [SerializeField] LayerMask _layerObstacleBuild;
-    [SerializeField] LayerMask _groundMask;  
+    [SerializeField] LayerMask _groundMask;
+    [OnChangedRender(nameof(OnWallAmountChange))]
+    [Networked] public int wallAmount { get; set; }
+
+    private void OnWallAmountChange()
+    {
+        GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
+    }
 
     Vector3Int _cellPos;
     BuildValidationResult buildValidationResult = default;
 
     public event Action<BuildValidationResult> buildFailReason;
+    
     public Vector3Int CellPos
     {
         get => _cellPos; private set
@@ -43,21 +50,43 @@ public class BuildSystem : NetworkBehaviour
         if (_playerCam == null) _playerCam = GetComponentInChildren<Camera>();
         if (!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
         if (Object.HasInputAuthority)
+        {
             Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();
+            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+            if (radialmenu != null)
+            {
+                radialmenu.onSelectIndex += OnRadialMenuSelected;
+            }
+        }
+        if (HasStateAuthority)
+        {
+            wallAmount = 30;
+            GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
+        }
+    }
+
+    private void OnRadialMenuSelected(int obj)
+    {
+        if (obj == 2)
+        {
+            var wallID = GetComponentInChildren<RadialMenuItem>(includeInactive: true).wallSO._id;
+            PickStruct(wallID.Value);
+        }
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        base.Despawned(runner, hasState);
+        var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
+        if (radialmenu != null)
+        {
+            radialmenu.onSelectIndex -= OnRadialMenuSelected;
+        }
     }
 
     private void Update()
     {
-        if (!Object.HasInputAuthority) return;
-
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            PickStruct("1093");
-            
-        }
-
-
-
+        if (!Object.HasInputAuthority) return;        
         if (Input.GetMouseButtonDown(0) && _curStructureSO != null)
         {
             // Request build
@@ -67,6 +96,7 @@ public class BuildSystem : NetworkBehaviour
             }
             else
             {
+                Debug.Log(buildValidationResult.Message);
                 buildFailReason?.Invoke(buildValidationResult);
             }
         }
@@ -99,7 +129,7 @@ public class BuildSystem : NetworkBehaviour
             int y = Mathf.FloorToInt(hitInfor.point.y);
             int z = Mathf.FloorToInt(hitInfor.point.z);
             CellPos = new Vector3Int(x, y, z);
-            previewPos = _cellPos + Vector3.one * 0.5f;
+            previewPos = _cellPos + new Vector3(.5f, 0f, .5f);
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -112,9 +142,7 @@ public class BuildSystem : NetworkBehaviour
     void RPC_BuildRequest(NetworkString<_8> _idStruct, Vector3Int buildPos, Quaternion buildRot)
     {
 
-        Utils.EditorLogOnly("This fuction called on Host");
-        Utils.EditorLogOnly($"Has StructManager: {StructureManager.Ins != null} \n structureCount: {(StructureManager.Ins != null ? StructureManager.Ins.GetStructures()?.Count ?? 0 : 0)}");
-        IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct);
+        IBuildStategy buildStrategy = StructureManager.Ins.GetStrategyBuild(_idStruct, Object.InputAuthority);
         //Debug.Log("BuildStategy exist " + buildStrategy != null);
         if (buildStrategy != null)
         {
@@ -122,18 +150,23 @@ public class BuildSystem : NetworkBehaviour
             BuildValidationResult buildValidation = buildStrategy.CanBuild(Runner, Object.InputAuthority, buildPos);
             if (buildValidation.Success)
             {
-                Utils.EditorLogOnly("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}");
-                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);
+                Debug.Log("Can build" + _structDatabase.GetStructSO(_idStruct.Value)._name + $" for {Object.InputAuthority}", this);
+                buildStrategy.Build(Runner, Object.InputAuthority, buildPos);               
+
             }
             else
             {
-                Utils.EditorLogOnly(buildValidation.Message);
+                Debug.Log(buildValidation.Message, this);
             }
 
 
         }
+    }
 
 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_DestroyRequest()
+    {
 
     }
 
@@ -171,8 +204,22 @@ public class BuildSystem : NetworkBehaviour
         RenderPreview();
     }
 
+    Collider[] results = new Collider[2];
+
     BuildValidationResult CheckValidCell()
     {
-        return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id).CanBuild(Runner, Object.InputAuthority, _cellPos);
+
+        Vector3 center = _cellPos + Vector3.one * 0.5f;
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f) + new Vector3(-0.01f, 0, -0.01f);
+        int count = Physics.OverlapBoxNonAlloc(center, halfExtents, results, Quaternion.identity, _layerObstacleBuild);
+        DrawLog.DrawCube(center, halfExtents, Color.blue, Time.deltaTime);
+        if (count == 0)
+        {
+            return StructureManager.Ins.GetStrategyBuild(_curStructureSO._id, Object.InputAuthority).CanBuild(Runner, Object.InputAuthority, _cellPos);
+        }else
+        {
+            return BuildValidationResult.Fail(BuildFailReason.InvalidPosition, "Không thể xây, có vật cản");
+        }
     }
 }
+

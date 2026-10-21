@@ -1,25 +1,29 @@
 ﻿using System;
-using System.Linq;
 using Fusion;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public abstract class StructureBase : NetworkBehaviour
+public abstract class StructureBase : NetworkBehaviour, IAffector
 {
     [Networked]
-    public int Level {  get; set; }
-    [Networked] 
-    NetworkBool IsUpgradeable {  get; set; }
+    public int Level { get; set; }
+
+    public Stats _structureStats { get; set; }
+
+    [Networked]
+    public NetworkBool IsUpgradeable { get; private set; }
     public StructureDataSO StructureDataSO;
-    StructureUpgradeData _currentUpgradeData;
+    public StructureUpgradeData _currentUpgradeData { get; private set; }
+
+    [SerializeField] StructureUI structureUI;
+
     //public StructureManager Manager { get; set; }
-    public abstract void Operation();  
+    public abstract void Operation();
 
     public override void Spawned()
     {
-        base.Spawned();
-
         Level = 1;
+        _structureStats ??= GetComponent<Stats>();
         IsUpgradeable = false;
         _currentUpgradeData = null;
 
@@ -29,16 +33,21 @@ public abstract class StructureBase : NetworkBehaviour
         var firstLevelData = StructureDataSO.levels[0];
         if (firstLevelData == null || firstLevelData.upgradeRequirement == null)
             return;
-
+        _structureStats.SetStatsBase(firstLevelData.Stats);
         _currentUpgradeData = firstLevelData.upgradeRequirement.CreateInstance(this) as StructureUpgradeData;
         IsUpgradeable = _currentUpgradeData != null;
     }
 
-    public UpgradeResult CanUpgrade()
+
+    public override void FixedUpdateNetwork()
+    {
+        _structureStats.Tick(Runner.DeltaTime);
+    }
+    public CheckResult CanUpgrade()
     {
         if (StructureDataSO == null || StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Công trình này không thể nâng cấp"
@@ -49,7 +58,7 @@ public abstract class StructureBase : NetworkBehaviour
 
         if (Level >= StructureDataSO.levels.Length)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.MaxLevel,
                 Message = "Công trình đã đạt cấp tối đa"
@@ -57,7 +66,7 @@ public abstract class StructureBase : NetworkBehaviour
         }
         if (Level < 1)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Level không hợp lệ"
@@ -67,7 +76,7 @@ public abstract class StructureBase : NetworkBehaviour
         var nextLevelData = StructureDataSO.levels[Level]; // index = Level (vì Level bắt đầu từ 1)
         if (nextLevelData == null || nextLevelData.upgradeRequirement == null)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Không có dữ liệu nâng cấp cho cấp tiếp theo"
@@ -77,7 +86,7 @@ public abstract class StructureBase : NetworkBehaviour
         // 5. Chưa khởi tạo được _currentUpgradeData
         if (_currentUpgradeData == null)
         {
-            return new UpgradeResult
+            return new CheckResult
             {
                 Reason = UpgradeFailReason.NonUpgradable,
                 Message = "Không thể nâng cấp"
@@ -94,7 +103,7 @@ public abstract class StructureBase : NetworkBehaviour
         if (!Object.HasStateAuthority)
             return;
 
-        UpgradeResult result = CanUpgrade();
+        CheckResult result = CanUpgrade();
         if (!result.Success)
         {
             Debug.LogWarning($"[StructureBase] Không thể nâng cấp: {result.Message} ({result.Reason})");
@@ -140,23 +149,35 @@ public abstract class StructureBase : NetworkBehaviour
         //if (HasStateAuthority) Runner.Despawn(this.Object);
     }
 
+    public abstract string GetInfor();
 
     public abstract void UpgradeLogic();
 
     private void OnMouseDown()
     {
-        if (Runner.LocalPlayer != Object.InputAuthority) return;
-        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id);
-        Debug.Log("Strategy: " + strategy != null ? strategy.GetType().Name : "null");
+        if (Runner.LocalPlayer != Object.InputAuthority) return;        
+        var strategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);        
         strategy.Destroy(Runner, Object);
     }
+
+    
+
+    
+
+    public void AddModifier(Modifier mod)
+    {
+        if(HasStateAuthority)
+            _structureStats.AddModifier(mod );
+    }
+
+
+
 }
 
 
 public abstract class StructAttackBase: StructureBase
 {
-    public event Action<int> OnDamage;
-
+    public event Action<float> OnDamage;        
 }
 
 

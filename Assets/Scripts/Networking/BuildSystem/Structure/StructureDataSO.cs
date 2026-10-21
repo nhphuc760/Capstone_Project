@@ -35,7 +35,7 @@ public class StructureDataSO : ScriptableObject
     public StructureCategory structureCategory;
     //Build Requirement
     [SerializeReference]
-    public StructRequirement[] buildRequirement;
+    public BuildRequirement[] buildRequirement;
     public GameObject prefabs;
     //Upgrade Requirement
     //[SerializeReference]

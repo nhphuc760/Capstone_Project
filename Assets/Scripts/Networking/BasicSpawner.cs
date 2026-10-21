@@ -81,6 +81,7 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
             button.Set(ButtonType.Jump, curBoard.spaceKey.isPressed);
             button.Set(ButtonType.Interact, curBoard.eKey.isPressed);
             button.Set(ButtonType.EquipTool, curBoard.digit1Key.isPressed);
+            button.Set(ButtonType.TestAddModify, curBoard.digit2Key.isPressed);
         }
         accumulatedInput.button = new NetworkButtons(accumulatedInput.button.Bits | button.Bits);
     }
@@ -132,6 +133,7 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
 
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
     {
+
     }
 
     public void OnSceneLoadDone(NetworkRunner runner)

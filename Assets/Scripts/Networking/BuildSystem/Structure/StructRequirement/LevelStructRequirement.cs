@@ -6,7 +6,7 @@ public class LevelStructRequirement : StructRequirement
     public int Level;
     public StructureType StructureType;
     
-    public override UpgradeResult CheckRequirement()
+    public override CheckResult CheckRequirement()
     {
          if(StructureManager.Ins != null)
         {
@@ -16,10 +16,10 @@ public class LevelStructRequirement : StructRequirement
                 StructureBase typeRequire = i.Value;
                 if (typeRequire.Level >= Level)
                 {
-                    return new UpgradeResult { Reason = UpgradeFailReason.None};
+                    return new CheckResult { Reason = UpgradeFailReason.None};
                 }
             }
-            return new UpgradeResult { Reason = UpgradeFailReason.MissingRequirement, Message = $"Yêu cầu {StructureType.ToString()} Level {Level}" };
+            return new CheckResult { Reason = UpgradeFailReason.MissingRequirement, Message = $"Yêu cầu {StructureType.ToString()} Level {Level}" };
         }
         else
         {

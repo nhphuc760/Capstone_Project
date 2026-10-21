@@ -22,7 +22,7 @@ MonoBehaviour:
   structureType: 1
   structureCategory: 2
   buildRequirement: []
-  prefabs: {fileID: 5172976552091184941, guid: ec104651423ce9242a4b9902a1200d48, type: 3}
+  prefabs: {fileID: 1835964164062538361, guid: ec104651423ce9242a4b9902a1200d48, type: 3}
   levels: []
   references:
     version: 2

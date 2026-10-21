@@ -1,21 +1,26 @@
-using System;
+﻿using System;
 using AYellowpaper.SerializedCollections;
-public enum StatsType
+public enum StatsType: byte
 {
-    Speed,
+    MoveSpeed,
     Damage,
     Health,
     Stamina,
     Force,
     Range,
-    HealthRegen,
-    StaminaRegen,
+    HealthRegenInterval, //Thời gian hồi giá trị
+    StaminaRegenInterval,//Thời gian hồi giá trị
+    HealthRegen, //Amount
+    StaminaRegen,//Amount
+    AttackSpeed, //Số đòn đánh trong 1s
+    Value,
+    Speed
 }
 
 [Serializable]
 public struct StatsBase
 {
     [SerializedDictionary("Stats", "Value")]
-    public SerializedDictionary<StatsType, int> stats;
+    public SerializedDictionary<StatsType, float> stats;
 }
 

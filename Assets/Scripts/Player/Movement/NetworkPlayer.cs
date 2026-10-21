@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 
 public struct NetworkResourcePlayer : INetworkStruct
@@ -14,16 +15,17 @@ public struct NetworkResourcePlayer : INetworkStruct
     public int GoldOre;
 }
 
-public class NetworkPlayer : NetworkBehaviour, IAffector
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
     public static NetworkPlayer Local { get; private set; }
-
-    [SerializeField] StatsBase baseStats;
-
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
 
-    public Stats Stats { get; private set; }
+    [SerializeField] GameObject CanvasWorldSpace;
+    [SerializeField] GameObject CanvasOverlay;
+    [SerializeField] TooltipUI TooltipUI;
+    [SerializeField] StructureUI StructureUI;
+    public Stats _stats { get; private set; }
 
 
     [SerializeField] SimpleKCC controller;
@@ -41,24 +43,27 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
 
     readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
-    [Networked]
+    [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
+    public event Action<NetworkResourcePlayer> OnResouceChange;
+
+
+
+
+
+
+    private void OnResourceChanged()
+    {
+        OnResouceChange?.Invoke(resourcePlayer);
+    }
 
     public event Action<ResourceType, int> OnResourceGathered;
     public event Action<string> OnGatheredFailed;
 
+    [SerializeField] NetworkPrefabRef doorPrefab;
 
-
-
-
-
-    public void Awake()
-    {
-        Health = GetComponent<HealthComponent>();
-        Stamina = GetComponent<StaminaComponent>();
-        inventory = GetComponent<NetworkInventory>();
-    }
-
+    Door doorPlayer;
+    public Door Door => doorPlayer;
 
     public override void Spawned()
     {
@@ -69,20 +74,23 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         if (!Object.HasInputAuthority)
         {
             cameraView.gameObject.SetActive(false);
+            CanvasOverlay.SetActive(false);
         }
         Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
-        Stats = new Stats(baseStats, Resources.LoadAll<ModifierDatabaseSO>("ScriptableObjects").First());
+        inventory ??= GetComponent<NetworkInventory>();
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
-        Health.Initialize(Stats);
-        Stamina.Initialize(Stats);
-
+        _stats ??= GetComponent<Stats>();
+        Health.Initialize(_stats);
+        Stamina.Initialize(_stats);
         if (HasInputAuthority)
         {
 
             //Subcribe Inventory Event
+            cameraView.tag = "MainCamera";
+            CanvasWorldSpace.gameObject.SetActive(false);
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -102,27 +110,66 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
             }
         }
 
+        if (HasStateAuthority)
+        {
+            doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
+            doorPlayer.RPC_SetActiveNetworked(false);
+        }
 
     }
 
 
     private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
+    {       
+        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
         {
-            RPC_RequestAddModifier(new NetworkString<_8> { Value = "SP_FL_10" });
+            
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                {
+                    TooltipUI.Show(context.GetInfor(), Input.mousePosition, context.gameObject);
+                }
+                else
+                {
+                    TooltipUI.Hide();
+                }
+            }
         }
 
-    }
+
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.TryGetComponent<StructureBase>(out var context))
+                {
+                    StructureUI.Show(context);
+                }
+                else
+                {
+                    StructureUI.Hide();
+                }
+            }
+        }
+
+
+        
+
+    }    
 
     public override void FixedUpdateNetwork()
     {
 
-        Stats.Tick(Runner.DeltaTime);
+        _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
             Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
-            Vector3 moveDirection = inputDirection.normalized * Stats.Get(StatsType.Speed);
+            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
             {
@@ -142,6 +189,19 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
                 if (equipTool == ToolType.None) return;
 
                 TryMineResource();
+            }
+            if (data.button.WasPressed(previousInput, ButtonType.TestAddModify))
+            {
+                Modifier modSpeed = new Modifier
+                {
+                    ModApplyType = ModApplyType.Flat,
+                    StatType = StatsType.MoveSpeed,
+                    Value = 10,
+                    Source = Object.Id,
+                    Duration = TickTimer.CreateFromSeconds(Runner, 5f),
+                    IsTimed = true,
+                };
+                AddModifier(modSpeed);
             }
             previousInput = data.button;
             controller.Move(moveDirection, jumpImpluse);
@@ -224,6 +284,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         return true;
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+      
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+    }
 
     void TryMineResource()
     {
@@ -268,22 +336,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         }
 
     }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_RequestAddModifier(NetworkString<_8> modID, NetworkId sourceID = default)
+  
+    public void ComsumpResource(NetworkResourcePlayer resource)
     {
-        NetworkObject source = null;
-        if (sourceID != default)
-        {
-            source = Runner.FindObject(sourceID);
-        }
-
-        AddModifier(modID.Value, source);
-    }
-
-    public void AddModifier(string idMod, NetworkObject source = null)
-    {
-        Stats.AddModifierById(idMod, source);
+        if (!HasStateAuthority) return;
+        this.resourcePlayer.Wood -= resource.Wood;
+        this.resourcePlayer.IronOre -= resource.IronOre;
+        this.resourcePlayer.CopperOre -= resource.CopperOre;    
+        this.resourcePlayer.GoldOre -= resource.GoldOre;
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -311,6 +371,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector
         }
     }
 
+    public void TakeDamage(float amount, NetworkObject attacker)
+    {
+        Health?.TakeDamage(amount, attacker);
+    }
 
-
+    public void AddModifier(Modifier mod)
+    {
+        if (HasStateAuthority)
+        {
+            mod.ModID = ModifierIDGenerator.Next(Runner);
+            _stats.AddModifier(mod);
+        }
+    }
 }
