@@ -16,7 +16,7 @@ public class ItemSO : ScriptableObject
     [SerializeField] private int itemId;
     [SerializeField] private string itemName;
     [SerializeField] private string description;
-    [SerializeField] private ItemType itemType;
+    public ItemType itemType;
 
     [Header("Visual")]
     [SerializeField] private Sprite icon;
