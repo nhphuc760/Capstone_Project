@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2586695234842499293}
   - component: {fileID: 6603741241984531042}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HealthUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -52,6 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthDoorUI
   healthComponent: {fileID: 0}
   healthDoorUI: {fileID: 7182190229188466053}
+  showDuration: 3
 --- !u!1 &4626021114658736230
 GameObject:
   m_ObjectHideFlags: 0
@@ -63,7 +64,7 @@ GameObject:
   - component: {fileID: 3331160025727867559}
   - component: {fileID: 3527933261721284892}
   - component: {fileID: 7182190229188466053}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,9 +255,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Door
   _Level: 2
+  _IsUpgradeable:
+    _value: 0
   StructureDataSO: {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}
   _OutideOppositeDoor: {x: 0, y: 0, z: 0}
-  HealthDoor: {fileID: 0}
 --- !u!65 &8470741666298412340
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -290,7 +292,7 @@ GameObject:
   - component: {fileID: 8993825588417625270}
   - component: {fileID: 6461129689260149412}
   - component: {fileID: 4025737178800326179}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -483,7 +485,7 @@ GameObject:
   - component: {fileID: 3525242408342280095}
   - component: {fileID: 1837825340309815696}
   - component: {fileID: 4122807602814079421}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: BackGroundHealth
   m_TagString: Untagged
   m_Icon: {fileID: 0}

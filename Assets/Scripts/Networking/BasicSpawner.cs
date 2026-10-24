@@ -129,11 +129,12 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
 
     public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
     {
+      
     }
 
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
-    {
-
+    {      
+        EventBus<ReliableReceiveData>.Raise(new ReliableReceiveData { key = key, data = data.ToArray() });        
     }
 
     public void OnSceneLoadDone(NetworkRunner runner)
@@ -163,4 +164,15 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
     }
 
    
+
+
 }
+
+public struct ReliableReceiveData : IEvent
+{
+    public ReliableKey key;
+    public byte[] data;
+
+}
+
+

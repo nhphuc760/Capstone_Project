@@ -10,7 +10,7 @@ using UnityEngine;
 /// </summary>
 public class MapManager : NetworkBehaviour
 {
-    public static readonly ReliableKey MapData = ReliableKey.FromInts(1, 0, 0, 0);
+   
     public static MapManager Ins { get; private set; }
 
     [Header("Map Boundaries")]

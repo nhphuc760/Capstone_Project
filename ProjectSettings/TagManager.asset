@@ -14,7 +14,7 @@ TagManager:
   - UI
   - Enemy
   - Structure
-  - Grabable
+  - NPC
   - Resources
   - Ground
   - 
