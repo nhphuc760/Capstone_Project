@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47a00697027989a4f9aaefcd05a93db2, type: 3}
+  m_Name: IconTMP
+  m_EditorClassIdentifier: Assembly-CSharp::IconTMP
+  woodCode: <sprite name="Resource_3">
+  stoneCode: <sprite name="Resource_0">
+  goldCode: <sprite name="Resource_1">
+  electricCode: <sprite name="Resource_4">

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
@@ -6,6 +7,7 @@ using UnityEngine;
 
 public class ResourceRequirement : RequirementDefinition
 {
+    [SerializeField] IconTMP iconTMP;
     public int Wood;
     public int Stone;
     public int Gold;
@@ -19,12 +21,25 @@ public class ResourceRequirement : RequirementDefinition
         };
     }
 
-   
 
-    
+
+    public override string ToString()
+    {
+        string s = string.Empty;
+        if(iconTMP == null)
+        {
+            Debug.LogWarning("iconTMP null");
+            iconTMP = Resources.LoadAll<IconTMP>("IconTextMeshPro").First();
+        }
+
+        s += Wood > 0 ? $"{iconTMP.WoodCode} {Wood}  " : "";
+        s += Stone > 0 ? $"{iconTMP.StoneCode} {Stone}  " : "";
+        s += Gold > 0 ? $"{iconTMP.GoldCode} {Gold}  " : "";
+        s += Electric > 0 ? $"{iconTMP.ElectricCode} {Electric}" : "";
+        return s;
+    }
     
 }
-
 
 public class ResourceRequirementInstance : IRequirement
 {

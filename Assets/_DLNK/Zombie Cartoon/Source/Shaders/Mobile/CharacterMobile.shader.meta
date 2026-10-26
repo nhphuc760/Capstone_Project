@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 74b148cf2fbeb864eb66af0e955ef76e
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 28461
+  packageName: Zombie Cartoon
+  packageVersion: 1.1.4
+  assetPath: Assets/_DLNK/Zombie Cartoon/Source/Shaders/Mobile/CharacterMobile.shader
+  uploadId: 490569

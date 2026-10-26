@@ -10,9 +10,7 @@ public class StructureElementUI : MonoBehaviour, IPointerClickHandler, IPointerE
     [SerializeField] Image hoverImage;
     [SerializeField] Image iconImage;
     [SerializeField] TextMeshProUGUI Name;
-    [SerializeField] GameObject requirementContainer;
-    [SerializeField] GameObject EntityValuePrefab;
-
+    [SerializeField] TextMeshProUGUI requirements;
     private int slotIndex = -1;
 
     public int SlotIndex => slotIndex;
@@ -31,8 +29,11 @@ public class StructureElementUI : MonoBehaviour, IPointerClickHandler, IPointerE
         if (iconImage)
             this.iconImage.sprite = structureDataSO.icon;
 
+        string s = "";
         foreach (var i in structureDataSO.buildRequirement)
         {
+
+            s = string.Join("\n", new string[] {s, i.ToString()});
             //if (i is EntityValueBuildRequirement entityValue)
             //{
             //    foreach (var j in entityValue.values)
@@ -44,10 +45,10 @@ public class StructureElementUI : MonoBehaviour, IPointerClickHandler, IPointerE
             //            entityObj.GetComponentInChildren<TextMeshProUGUI>().text = j.Value.ToString();
             //        }
             //    }
-
             //}
         }
-
+        if (requirements)
+            requirements.text = s.Trim('\n');
     }
 
     private void OnDisable()

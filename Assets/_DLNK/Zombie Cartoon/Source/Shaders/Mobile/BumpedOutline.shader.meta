@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 82ce07e98b193ce4583ded3372db5571
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 28461
+  packageName: Zombie Cartoon
+  packageVersion: 1.1.4
+  assetPath: Assets/_DLNK/Zombie Cartoon/Source/Shaders/Mobile/BumpedOutline.shader
+  uploadId: 490569

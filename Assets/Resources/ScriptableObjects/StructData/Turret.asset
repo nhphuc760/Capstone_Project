@@ -58,6 +58,7 @@ MonoBehaviour:
     - rid: 2680167812576575566
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
+        iconTMP: {fileID: 0}
         Wood: 1
         Stone: 0
         Gold: 0
@@ -65,10 +66,11 @@ MonoBehaviour:
     - rid: 2680167812576575576
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
         Wood: 1
-        Stone: 0
-        Gold: 0
-        Electric: 0
+        Stone: 2012
+        Gold: 13
+        Electric: 48109
     - rid: 2680167813166923850
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
       data:
@@ -87,6 +89,7 @@ MonoBehaviour:
     - rid: 2680167813166923851
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
+        iconTMP: {fileID: 0}
         Wood: 1
         Stone: 0
         Gold: 0

@@ -58,9 +58,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     //Resource Exploitation
     [SerializeField] float gatherRanged = 1.5f;
-    [SerializeField] float mineInterval = 1f;
     [Networked] public ToolType equipTool { get; set; }
     [Networked] TickTimer mineIntervalTimer { get; set; }
+    [SerializeField] IconTMP iconTMP;
 
 
     [SerializeField] SuggestTarget suggestTarget;
@@ -112,7 +112,13 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             //Subcribe Inventory Event
 
             cameraView.tag = "MainCamera";
-            CanvasWorldSpace.gameObject.SetActive(false);
+
+            // Disable Stats WorldSpace
+            CanvasWorldSpace.GetComponentInChildren<PlayerHealthUI>().gameObject.SetActive(false);
+            CanvasWorldSpace.GetComponentInChildren<PlayerStaminaUI>().gameObject.SetActive(false);
+            //CanvasWorldSpace.gameObject.SetActive(false);
+
+
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -302,7 +308,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
         int resourceExtract = nodeRes.Extract();
         AddResource(nodeRes.Extract(), nodeRes.ResourceType);
-        return GatherResult.OK($"Đã thu thập <Sprite_{nodeRes.ResourceType.ToString()}> x{resourceExtract}");
+        return GatherResult.OK($"Đã thu thập {iconTMP.GetResourceCode( nodeRes.ResourceType)} x{resourceExtract}");
     }
 
     private void OnTriggerEnter(Collider other)
@@ -452,7 +458,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.GatherResult, sData);            
         }
         //Lookat target here
-        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, mineInterval);
+        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, 1/_stats.Get(StatsType.AttackSpeed));
 
     }
 

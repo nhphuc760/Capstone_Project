@@ -7,8 +7,8 @@ public class ResoucePlayerUI : MonoBehaviour
 
     [SerializeField] NetworkPlayer player;
     [SerializeField] TextMeshProUGUI woodAmount;
-    [SerializeField] TextMeshProUGUI ironAmount;
-    [SerializeField] TextMeshProUGUI copperAmount;
+    [SerializeField] TextMeshProUGUI stoneAmount;
+    [SerializeField] TextMeshProUGUI electricAmount;
     [SerializeField] TextMeshProUGUI goldAmount;
 
 
@@ -22,15 +22,19 @@ public class ResoucePlayerUI : MonoBehaviour
 
     private void OnResourceChanged(NetworkResourcePlayer player)
     {
-        woodAmount.text = player.Wood.ToString();
-        ironAmount.text = player.Stone.ToString();
-        goldAmount.text = player.GoldOre.ToString();
-        copperAmount.text = player.Electric.ToString();
+        if(player.Wood > 0)
+            woodAmount.text = player.Wood.ToString();
+        if(player.Stone > 0)
+            stoneAmount.text = player.Stone.ToString();
+        if(player.GoldOre > 0)
+            goldAmount.text = player.GoldOre.ToString();
+        if(player.Electric > 0)
+            electricAmount.text = player.Electric.ToString();
     }
 
     private void OnDestroy()
     {
         if(player != null) 
-        player.OnResouceChange -= OnResourceChanged;
+            player.OnResouceChange -= OnResourceChanged;
     }
 }
