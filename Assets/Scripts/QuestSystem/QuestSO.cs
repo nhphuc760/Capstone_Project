@@ -21,7 +21,7 @@ public class QuestObjective
     public bool IsCompleted => currentAmount >= requiredAmount;
 }
 
-[CreateAssetMenu(menuName = "Quests/Quest")]
+[CreateAssetMenu(fileName = "QuestSO", menuName = "Quests/Quest")]
 public class QuestSO : ScriptableObject
 {
     public string questID;

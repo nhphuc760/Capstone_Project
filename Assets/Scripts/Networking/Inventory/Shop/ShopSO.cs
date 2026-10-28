@@ -12,9 +12,12 @@ public class ShopSO : ScriptableObject
         [Header("Product")]
         public ItemSO itemSO;
 
-        [Header("Prices")]
-        [Min(1)] public int buyPrice = 100;
-        [Min(1)] public int sellPrice = 50;
+        [Header("Consumable Prices")]
+        [Min(1)] public int buyPrice;
+        [Min(1)] public int sellPrice;
+
+        [Header("Valuable Price")]
+        [Min(1)] public int valuablePrice;
     }
 
     [Header("Shop Products")]
@@ -34,13 +37,39 @@ public class ShopSO : ScriptableObject
             if (shopItem.itemSO.ItemId != itemID)
                 continue;
 
-            if (shopItem.buyPrice <= 0 || shopItem.sellPrice <= 0)
+            if (shopItem.itemSO.itemType == ItemType.Consumable)
+            {
+                if (shopItem.buyPrice <= 0 || shopItem.sellPrice <= 0)
+                    return false;
+            }
+            else if (shopItem.itemSO.itemType == ItemType.Valuable)
+            {
+                if (shopItem.valuablePrice <= 0)
+                    return false;
+            }
+            else
+            {
                 return false;
+            }
 
             result = shopItem;
             return true;
         }
 
         return false;
+    }
+
+    public bool TryGetValuablePrice(int itemID, out int price)
+    {
+        price = 0;
+
+        if (!TryGetItem(itemID, out ShopItem shopItem))
+            return false;
+
+        if (shopItem.itemSO.itemType != ItemType.Valuable)
+            return false;
+
+        price = shopItem.valuablePrice;
+        return true;
     }
 }

@@ -15,7 +15,7 @@ public class NetworkTrading : NetworkBehaviour
     private const int MaxPlayers = 4;
 
     [Header("Auction Settings")]
-    [SerializeField] private ItemSO itemSO;
+    [SerializeField] private ShopSO shopSO;
     [SerializeField] private float auctionDuration = 10f;
 
     [Header("Participants")]
@@ -150,63 +150,75 @@ public class NetworkTrading : NetworkBehaviour
     // 2. START AUCTION
     // =========================================================
 
-    public bool TradeItem(int itemId, int quantity, int price)
+    public bool TradeItem(int itemId, int quantity)
     {
         if (Object == null || !Object.HasStateAuthority)
         {
             Debug.LogWarning(
-                "[NetworkTrading] Only State Authority can start an auction."
-            );
+                "[NetworkTrading] Only State Authority can start an auction.");
             return false;
         }
 
         if (State == AuctionState.Active)
         {
             Debug.LogWarning(
-                "[NetworkTrading] An auction is already active."
-            );
+                "[NetworkTrading] An auction is already active.");
             return false;
         }
 
         if (ParticipantCount < 2 || ParticipantCount > MaxPlayers)
         {
             Debug.LogWarning(
-                "[NetworkTrading] Auction requires 2 to 4 participants."
-            );
+                "[NetworkTrading] Auction requires 2 to 4 participants.");
             return false;
         }
 
-        // Kiểm tra người chơi vẫn đang kết nối.
         for (int i = 0; i < ParticipantCount; i++)
         {
             if (!Runner.ActivePlayers.Contains(Participants[i]))
             {
                 Debug.LogWarning(
-                    "[NetworkTrading] A participant has disconnected."
-                );
+                    "[NetworkTrading] A participant has disconnected.");
                 return false;
             }
         }
 
-        if (itemSO == null)
+        if (shopSO == null)
         {
-            Debug.LogWarning("[NetworkTrading] ItemSO is missing.");
+            Debug.LogWarning("[NetworkTrading] ShopSO is missing.");
             return false;
         }
 
-        if (itemSO.itemType != ItemType.Valuable)
+        if (itemId <= 0 || quantity <= 0)
         {
             Debug.LogWarning(
-                "[NetworkTrading] Only Valuable items can be auctioned."
-            );
+                "[NetworkTrading] Invalid item ID or quantity.");
             return false;
         }
 
-        if (itemId <= 0 || quantity <= 0 || price <= 0)
+        // Lấy thông tin vật phẩm từ ShopSO.
+        if (!shopSO.TryGetItem(itemId, out ShopSO.ShopItem shopItem))
         {
             Debug.LogWarning(
-                "[NetworkTrading] Invalid item ID, quantity, or price."
-            );
+                $"[NetworkTrading] ItemID={itemId} not found in ShopSO.");
+            return false;
+        }
+
+        // Chỉ cho phép đấu giá vật phẩm Valuable.
+        if (shopItem.itemSO.itemType != ItemType.Valuable)
+        {
+            Debug.LogWarning(
+                "[NetworkTrading] Only Valuable items can be auctioned.");
+            return false;
+        }
+
+        // Lấy giá khởi điểm từ ShopSO.
+        int price = shopItem.valuablePrice;
+
+        if (price <= 0)
+        {
+            Debug.LogWarning(
+                $"[NetworkTrading] Invalid valuable price: {price}");
             return false;
         }
 
@@ -220,21 +232,19 @@ public class NetworkTrading : NetworkBehaviour
 
         AuctionTimer = TickTimer.CreateFromSeconds(
             Runner,
-            Mathf.Max(0.1f, auctionDuration)
-        );
+            Mathf.Max(0.1f, auctionDuration));
 
         State = AuctionState.Active;
 
         Debug.Log(
             $"[NetworkTrading] Auction Started | " +
+            $"Item={shopItem.itemSO.name} | " +
             $"ItemID={ItemID} | Quantity={Quantity} | " +
             $"StartingPrice={StartingPrice} | " +
-            $"Participants={ParticipantCount}"
-        );
+            $"Participants={ParticipantCount}");
 
         return true;
     }
-
     // =========================================================
     // 3. REQUEST BID
     // =========================================================
