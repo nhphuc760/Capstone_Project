@@ -23,7 +23,9 @@ namespace UtilityAI.Considerations
                         float maxDistance = Mathf.Sqrt(2) * wMap;
                         float actualDistance = PathDistance(path);
                         //diem tang dan
-                        return responseCurve.Evaluate(Mathf.Clamp01(actualDistance/maxDistance));
+                        float score  = responseCurve.Evaluate(Mathf.Clamp01(actualDistance / maxDistance));
+                        Debug.Log($"DistanceToTarget: {score}");
+                        return score;
                     }
                 }
                 else
@@ -52,8 +54,7 @@ namespace UtilityAI.Considerations
             }
             return distance;
         }
-
-        
+       
     }
 }
 
