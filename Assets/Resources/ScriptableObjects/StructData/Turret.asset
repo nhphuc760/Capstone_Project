@@ -68,9 +68,9 @@ MonoBehaviour:
       data:
         iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
         Wood: 1
-        Stone: 2012
-        Gold: 13
-        Electric: 48109
+        Stone: 10
+        Gold: 20
+        Electric: 0
     - rid: 2680167813166923850
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
       data:

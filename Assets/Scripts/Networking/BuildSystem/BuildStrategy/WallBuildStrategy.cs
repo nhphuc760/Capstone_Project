@@ -98,7 +98,7 @@ public class WallBuildStrategy : IBuildStategy
         if (createsEnclosure && regionCount == 1)
         {
             StructureManager.Ins?.ClearEscapeWall(playerRef);
-            Debug.LogError("Cell: " + cell);
+            //Debug.LogError("Cell: " + cell);
             Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallSet,filter: w =>  EnclosedChecker.IsValidDoorPosition(w, wallSet ,enclosedList));
 
 

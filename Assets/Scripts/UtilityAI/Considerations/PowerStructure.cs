@@ -1,4 +1,5 @@
-﻿using Fusion;
+﻿
+using Fusion;
 using UnityEngine;
 using UtilityAI.Core;
 
