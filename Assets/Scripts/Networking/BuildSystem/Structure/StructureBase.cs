@@ -25,7 +25,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
         {
             IsUpgradeable = false;
             return;
-        }
+        }        
         Level = 1;
         _structureStats ??= GetComponent<Stats>();
         var firstLevelData = StructureDataSO.levels[0];
@@ -159,7 +159,8 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
     }
 
     public string GetContent() => GetInfor();
-    
+        
+
 }
 
 

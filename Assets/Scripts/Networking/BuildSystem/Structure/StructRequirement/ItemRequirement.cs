@@ -17,7 +17,12 @@ public class ItemRequirement : RequirementDefinition
         };
     }
 
-   
+
+    public override string ToString()
+    {
+        return $"<sprite item> x{_quantity}";
+    }
+
 }
 
 

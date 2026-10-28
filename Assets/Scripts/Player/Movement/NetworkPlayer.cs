@@ -3,8 +3,9 @@ using Fusion;
 using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.EventSystems;
+using System.Text;
+using Newtonsoft.Json;
 
 
 public struct NetworkResourcePlayer : INetworkStruct
@@ -14,6 +15,26 @@ public struct NetworkResourcePlayer : INetworkStruct
     public int GoldOre;
     public int Electric;
 }
+
+[Serializable]
+public class GatherResult
+{
+    public enum FailReason
+    {
+        None,
+        PlayerDead,//Player chết
+        Depleted,//Tài nguyên cạn
+        FarDistance,
+        InvalidTool,
+        Exhausted // Kiệt sức- hết stamina
+    }
+    public FailReason Reason;
+    public bool Success => Reason == FailReason.None;
+    public string Message;
+    public static GatherResult OK(string Message = null) => new GatherResult { Message = Message };
+    public static GatherResult FAIL(FailReason reason, string Message = null) => new GatherResult { Reason = reason, Message = Message };
+}
+
 
 public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
@@ -37,15 +58,20 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     //Resource Exploitation
     [SerializeField] float gatherRanged = 1.5f;
-    [SerializeField] float mineInterval = 1f;
     [Networked] public ToolType equipTool { get; set; }
     [Networked] TickTimer mineIntervalTimer { get; set; }
+    [SerializeField] IconTMP iconTMP;
+
+
+    [SerializeField] SuggestTarget suggestTarget;
 
     readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
 
     [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
     public event Action<NetworkResourcePlayer> OnResouceChange;
+
+    EventBinding<ReliableReceiveData> relialeEvent;
 
 
     private void OnResourceChanged()
@@ -54,7 +80,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     }
 
     public event Action<ResourceType, int> OnResourceGathered;
-    public event Action<string> OnGatheredFailed;
 
     [SerializeField] NetworkPrefabRef doorPrefab;
 
@@ -85,8 +110,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         {
 
             //Subcribe Inventory Event
+
             cameraView.tag = "MainCamera";
-            CanvasWorldSpace.gameObject.SetActive(false);
+
+            // Disable Stats WorldSpace
+            CanvasWorldSpace.GetComponentInChildren<PlayerHealthUI>().gameObject.SetActive(false);
+            CanvasWorldSpace.GetComponentInChildren<PlayerStaminaUI>().gameObject.SetActive(false);
+            //CanvasWorldSpace.gameObject.SetActive(false);
+
+
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             Debug.Log(inventoryUI.gameObject.name);
             Debug.Log("InventoryUI: " + inventoryUI == null);
@@ -97,13 +129,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
             }
 
-
+            //Suggest Target
+            suggestTarget ??= GetComponent<SuggestTarget>();
+            suggestTarget.enabled = true;
             //Subcribe RadialMenu event
             var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
             if (radialmenu != null)
             {
                 radialmenu.onSelectIndex += OnRadialMenuSelected;
             }
+            relialeEvent = new EventBinding<ReliableReceiveData>(OnReliableReceiveData);
+            EventBus<ReliableReceiveData>.Register(relialeEvent);
         }
 
         if (HasStateAuthority)
@@ -112,6 +148,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             doorPlayer.RPC_SetActiveNetworked(false);
         }
 
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        if (HasInputAuthority)
+        {
+            EventBus<ReliableReceiveData>.Deregister(relialeEvent);
+        }
     }
 
 
@@ -233,53 +277,38 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
     }
 
-    public bool TryGather(ResourceNode nodeRes, object source = null)
+    public GatherResult TryGather(ResourceNode nodeRes, object source = null)
     {
         Debug.Log("TryGather");
         if (!Health.IsAlive)
         {
-            Debug.Log("Người chơi đã chết");
-            OnGatheredFailed?.Invoke("Người chơi đã chết");
-            return false;
+            return GatherResult.FAIL(reason: GatherResult.FailReason.PlayerDead, "Ngỏm củ tỏi rồi!");
         }
 
         if (nodeRes == null || nodeRes.IsDepleted)
         {
-            Debug.Log("Tài nguyên đã cạn");
-            OnGatheredFailed?.Invoke("Tài nguyên đã cạn");
-            return false;
-        }
-
-        float distance = Vector3.Distance(nodeRes.transform.position, transform.position);
-        if (distance > gatherRanged)
-        {
-            Debug.Log("Đứng quá xa điểm tài nguyên");
-            OnGatheredFailed?.Invoke("Đứng quá xa điểm tài nguyên");
-            return false;
-        }
+            return GatherResult.FAIL(GatherResult.FailReason.Depleted, "Tài nguyên đã cạn kiệt");
+        }        
 
         if (nodeRes.RequiredTool != ToolType.None && equipTool != nodeRes.RequiredTool)
         {
-            Debug.Log("Công cụ khai thác không phù hợp");
-            OnGatheredFailed?.Invoke("Công cụ khai thác không phù hợp");
-            return false;
+            return GatherResult.FAIL(GatherResult.FailReason.InvalidTool, "Công cụ khai thác không phù hợp");
         }
 
-        Vector3 dirToNode = (nodeRes.transform.position - transform.position).normalized;
-        if (!(Vector3.Dot(dirToNode, transform.forward) > 0))
-        {
-            Debug.Log("Player không úp mặt vào node");
-            return false;
-        }
+        //Vector3 dirToNode = (nodeRes.transform.position - transform.position).normalized;
+        //if (!(Vector3.Dot(dirToNode, transform.forward) > 0))
+        //{
+        //    Debug.Log("Player không úp mặt vào node");
+        //    return false;
+        //}
 
         if (!Stamina.TryConsume(nodeRes.StaminaCostPerGather))
         {
-            Debug.Log("Hết Stamina, cần nghỉ hoặc vật phẩm hồi phục");
-            OnGatheredFailed?.Invoke("Hết Stamina, cần nghỉ hoặc vật phẩm hồi phục");
-            return false;
+            return GatherResult.FAIL(GatherResult.FailReason.Exhausted, "Kiệt sức !");
         }
+        int resourceExtract = nodeRes.Extract();
         AddResource(nodeRes.Extract(), nodeRes.ResourceType);
-        return true;
+        return GatherResult.OK($"Đã thu thập {iconTMP.GetResourceCode( nodeRes.ResourceType)} x{resourceExtract}");
     }
 
     private void OnTriggerEnter(Collider other)
@@ -294,25 +323,39 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     void TryMineResource()
     {
-        if (mineIntervalTimer.ExpiredOrNotRunning(Runner))
+        if (!HasInputAuthority) return;
+        if (mineIntervalTimer.ExpiredOrNotRunning(Runner) && suggestTarget.CurrentTarget != null)
         {
-            mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, mineInterval);
-            Vector3 center = transform.position + Vector3.up * .5f;
-            Vector3 extents = new Vector3(gatherRanged, 1f, gatherRanged);
-            DrawLog.DrawCube(center, extents, Color.red);
-            int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, resourcesHit, 1 << 9, HitOptions.IncludePhysX, true);
-            if (hitsCount == 0) return;
-            HashSet<ResourceNode> test = new HashSet<ResourceNode>();
-            test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
-            foreach (var i in test)
-            {
-                Debug.Log("Collider Hit: " + i.transform.name);
-                Debug.Log($"Node != null ? {i != null}");
-                TryGather(i);
-            }
+            RPC_RequestToolAction(suggestTarget.CurrentTarget.GetComponent<NetworkObject>());
+            //mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, mineInterval);
+            //Vector3 center = transform.position + Vector3.up * .5f;
+            //Vector3 extents = new Vector3(gatherRanged, 1f, gatherRanged);
+            //DrawLog.DrawCube(center, extents, Color.red);
+            //int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, resourcesHit, 1 << 9, HitOptions.IncludePhysX, true);
+            //if (hitsCount == 0) return;
+            //HashSet<ResourceNode> test = new HashSet<ResourceNode>();
+            //test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
+            //foreach (var i in test)
+            //{
+            //    Debug.Log("Collider Hit: " + i.transform.name);
+            //    Debug.Log($"Node != null ? {i != null}");
+            //    TryGather(i);
+            //}
         }
     }
     
+    void OnReliableReceiveData(ReliableReceiveData data)
+    {
+        if(data.key == ConstReliableKey.GatherResult)
+        {
+            string json = Encoding.UTF8.GetString(data.data);
+            GatherResult result = JsonConvert.DeserializeObject<GatherResult>(json);
+            if (result != null)
+            {
+                NotificationManager.Ins.ShowNotification(result.Message, result.Success ? 1 : 2);
+            }
+        }
+    }
 
 
     public void AddResource(int amount, ResourceType type)
@@ -346,11 +389,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         this.resourcePlayer.Electric -= resource.Electric;
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_RequestUseTool(ToolType toolUse)
-    {
-        equipTool = toolUse;
-    }
+  
 
     void OnRadialMenuSelected(int index)
     {
@@ -389,4 +428,38 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         if(HasStateAuthority)
             _stats.RemoveModifierByID(_id);
     }
+
+
+    //RPC calls
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestUseTool(ToolType toolUse)
+    {
+        equipTool = toolUse;
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestToolAction(NetworkId target)
+    {
+        NetworkObject obj = Runner.FindObject(target);
+        if (obj == null) return;
+        if ((transform.position - suggestTarget.CurrentTarget.transform.position).sqrMagnitude > gatherRanged * gatherRanged) return;
+
+        if (suggestTarget.CurrentTarget.TryGetComponent<NetworkPlayer>(out var player))
+        {
+            player.TakeDamage(_stats.Get(StatsType.Damage), Object);
+        }
+        else if (suggestTarget.CurrentTarget.TryGetComponent<ResourceNode>(out var resourceNode))
+        {
+            var gatherResult = TryGather(resourceNode);           
+            string json = JsonConvert.SerializeObject(gatherResult);
+            byte[] sData = Encoding.UTF8.GetBytes(json);
+            Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.GatherResult, sData);            
+        }
+        //Lookat target here
+        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, 1/_stats.Get(StatsType.AttackSpeed));
+
+    }
+
 }

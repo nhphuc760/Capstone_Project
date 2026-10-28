@@ -26,8 +26,9 @@ namespace UtilityAI.Core
         public AIBrain Brain { get; private set; }
         public AIController Controller { get; private set; }
         public NavMeshAgent Agent { get; private set; }
-
         public PlayerRef TargetPlayer;
+
+
         public Context(AIBrain brain)
         {
             this.Brain = brain;

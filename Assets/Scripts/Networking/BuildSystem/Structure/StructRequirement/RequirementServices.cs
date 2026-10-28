@@ -11,8 +11,6 @@ public class RequirementServices : MonoBehaviour
         player ??= GetComponent<NetworkPlayer>();
         inventory ??= GetComponent<NetworkInventory>();
         structureManager ??= FindAnyObjectByType<StructureManager>();
-
-
     }
 
 

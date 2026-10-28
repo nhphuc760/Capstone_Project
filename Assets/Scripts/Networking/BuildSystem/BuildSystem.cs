@@ -19,6 +19,9 @@ public class BuildSystem : NetworkBehaviour
     StructureDataSO _curStructureSO;
     [SerializeField] LayerMask _layerObstacleBuild;
     [SerializeField] LayerMask _groundMask;
+    [SerializeField] GameObject gridLine;
+
+
     [OnChangedRender(nameof(OnWallAmountChange))]
     [Networked] public int wallAmount { get; set; }
 
@@ -117,6 +120,7 @@ public class BuildSystem : NetworkBehaviour
             // Request build
             if (buildValidationResult.Success)
             {
+
                 RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
             }
             else
@@ -130,6 +134,7 @@ public class BuildSystem : NetworkBehaviour
         {
             //Hủy hành động build
             _curStructureSO = null;
+            DisableLine();
         }
     }
 
@@ -149,6 +154,7 @@ public class BuildSystem : NetworkBehaviour
             int z = Mathf.FloorToInt(hitInfor.point.z);
             CellPos = new Vector3Int(x, y, z);
             previewPos = _cellPos + new Vector3(.5f, 0f, .5f);
+            //UpdateLine(previewPos);
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -224,6 +230,7 @@ public class BuildSystem : NetworkBehaviour
             return;
         }
         _curStructureSO = _structSO;
+        EnableLine();
     }
 
     void RenderPreview()
@@ -239,6 +246,7 @@ public class BuildSystem : NetworkBehaviour
                 );
             Graphics.DrawMesh(i.sharedMesh, matrix, buildValidationResult.Success ? _transparentGreenMaterial : _transparentRedMaterial, 0, camera: _playerCam, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false);
         }
+        UpdateLine(previewPos);
     }
 
     public override void Render()
@@ -264,6 +272,21 @@ public class BuildSystem : NetworkBehaviour
         {
             return BuildValidationResult.Fail(BuildFailReason.InvalidPosition, "Không thể xây, có vật cản");
         }
+    }
+
+    void EnableLine()
+    {
+        gridLine?.SetActive(true);
+    }    
+
+    void UpdateLine(Vector3 pos)
+    {
+        gridLine.transform.position = pos;
+    }
+
+    void DisableLine()
+    {           
+        gridLine?.SetActive(false);
     }
 }
 

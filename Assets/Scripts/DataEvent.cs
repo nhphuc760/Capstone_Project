@@ -8,7 +8,7 @@ public class DataEvent
     }
 
     public struct OnFriendAdded : IEvent 
-    {
+    {       
         public string userID;
     }
 

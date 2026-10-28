@@ -9,6 +9,13 @@
       },
       "hash": "3b206f6b26c9724a5bd3f76dabcc27df7aad91b9"
     },
+    "com.cysharp.unitask": {
+      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "a77a1b4a89824fb6df293099de3060daf2a432c1"
+    },
     "com.oddworm.dbgdraw": {
       "version": "https://github.com/pschraut/UnityDbgDraw.git#1.2.0",
       "depth": 0,

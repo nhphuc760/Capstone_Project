@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: cd0204fe4081acb40bbcd4f3d6a359d2
+AssetOrigin:
+  serializedVersion: 1
+  productId: 28461
+  packageName: Zombie Cartoon
+  packageVersion: 1.1.4
+  assetPath: Assets/_DLNK/Zombie Cartoon/Source/Motion/ZombieCartoon@gethit01.FBX
+  uploadId: 490569
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: ZombieCartoon RIGHead
+  - first:
+      1: 100002
+    second: ZombieCartoon RIGLCalf
+  - first:
+      1: 100004
+    second: ZombieCartoon RIGLCollarbone
+  - first:
+      1: 100006
+    second: ZombieCartoon RIGLDigit11
+  - first:
+      1: 100008
+    second: ZombieCartoon RIGLDigit11 1
+  - first:
+      1: 100010
+    second: ZombieCartoon RIGLDigit12
+  - first:
+      1: 100012
+    second: ZombieCartoon RIGLDigit21
+  - first:
+      1: 100014
+    second: ZombieCartoon RIGLDigit22
+  - first:
+      1: 100016
+    second: ZombieCartoon RIGLFoot
+  - first:
+      1: 100018
+    second: ZombieCartoon RIGLForearm
+  - first:
+      1: 100020
+    second: ZombieCartoon RIGLPalm
+  - first:
+      1: 100022
+    second: ZombieCartoon RIGLThigh
+  - first:
+      1: 100024
+    second: ZombieCartoon RIGLUpperarm
+  - first:
+      1: 100026
+    second: ZombieCartoon RIGNeck
+  - first:
+      1: 100028
+    second: ZombieCartoon RIGPelvis
+  - first:
+      1: 100030
+    second: ZombieCartoon RIGRArmCollarbone
+  - first:
+      1: 100032
+    second: ZombieCartoon RIGRArmDigit11
+  - first:
+      1: 100034
+    second: ZombieCartoon RIGRArmDigit12
+  - first:
+      1: 100036
+    second: ZombieCartoon RIGRArmDigit21
+  - first:
+      1: 100038
+    second: ZombieCartoon RIGRArmDigit22
+  - first:
+      1: 100040
+    second: ZombieCartoon RIGRArmForearm
+  - first:
+      1: 100042
+    second: ZombieCartoon RIGRArmPalm
+  - first:
+      1: 100044
+    second: ZombieCartoon RIGRArmUpperarm
+  - first:
+      1: 100046
+    second: ZombieCartoon RIGRibcage
+  - first:
+      1: 100048
+    second: ZombieCartoon RIGRLegCalf
+  - first:
+      1: 100050
+    second: ZombieCartoon RIGRLegDigit11
+  - first:
+      1: 100052
+    second: ZombieCartoon RIGRLegFoot
+  - first:
+      1: 100054
+    second: ZombieCartoon RIGRLegThigh
+  - first:
+      1: 100056
+    second: ZombieCartoon RIGSpine1
+  - first:
+      1: 100058
+    second: ZombieCartoon RIGSpine2
+  - first:
+      1: 100060
+    second: ZombieCartoon RIGSpine3
+  - first:
+      1: 100062
+    second: //RootNode
+  - first:
+      4: 400000
+    second: ZombieCartoon RIGHead
+  - first:
+      4: 400002
+    second: ZombieCartoon RIGLCalf
+  - first:
+      4: 400004
+    second: ZombieCartoon RIGLCollarbone
+  - first:
+      4: 400006
+    second: ZombieCartoon RIGLDigit11
+  - first:
+      4: 400008
+    second: ZombieCartoon RIGLDigit11 1
+  - first:
+      4: 400010
+    second: ZombieCartoon RIGLDigit12
+  - first:
+      4: 400012
+    second: ZombieCartoon RIGLDigit21
+  - first:
+      4: 400014
+    second: ZombieCartoon RIGLDigit22
+  - first:
+      4: 400016
+    second: ZombieCartoon RIGLFoot
+  - first:
+      4: 400018
+    second: ZombieCartoon RIGLForearm
+  - first:
+      4: 400020
+    second: ZombieCartoon RIGLPalm
+  - first:
+      4: 400022
+    second: ZombieCartoon RIGLThigh
+  - first:
+      4: 400024
+    second: ZombieCartoon RIGLUpperarm
+  - first:
+      4: 400026
+    second: ZombieCartoon RIGNeck
+  - first:
+      4: 400028
+    second: ZombieCartoon RIGPelvis
+  - first:
+      4: 400030
+    second: ZombieCartoon RIGRArmCollarbone
+  - first:
+      4: 400032
+    second: ZombieCartoon RIGRArmDigit11
+  - first:
+      4: 400034
+    second: ZombieCartoon RIGRArmDigit12
+  - first:
+      4: 400036
+    second: ZombieCartoon RIGRArmDigit21
+  - first:
+      4: 400038
+    second: ZombieCartoon RIGRArmDigit22
+  - first:
+      4: 400040
+    second: ZombieCartoon RIGRArmForearm
+  - first:
+      4: 400042
+    second: ZombieCartoon RIGRArmPalm
+  - first:
+      4: 400044
+    second: ZombieCartoon RIGRArmUpperarm
+  - first:
+      4: 400046
+    second: ZombieCartoon RIGRibcage
+  - first:
+      4: 400048
+    second: ZombieCartoon RIGRLegCalf
+  - first:
+      4: 400050
+    second: ZombieCartoon RIGRLegDigit11
+  - first:
+      4: 400052
+    second: ZombieCartoon RIGRLegFoot
+  - first:
+      4: 400054
+    second: ZombieCartoon RIGRLegThigh
+  - first:
+      4: 400056
+    second: ZombieCartoon RIGSpine1
+  - first:
+      4: 400058
+    second: ZombieCartoon RIGSpine2
+  - first:
+      4: 400060
+    second: ZombieCartoon RIGSpine3
+  - first:
+      4: 400062
+    second: //RootNode
+  - first:
+      74: 7400000
+    second: Take 001
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      111: 11100000
+    second: //RootNode
+  externalObjects: {}
+  materials:
+    materialImportMode: 0
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
+      might lower retargeting quality:\nNote: Activate translation DOF on avatar
+      to improve retargeting quality.\n\t'ZombieCartoon RIGRibcage' is inbetween
+      humanoid transforms and has rotation animation that will be discarded.\n"
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.01
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 4
+    normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton:
+    - name: ZombieCartoon@gethit01(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ZombieCartoon RIGPelvis
+      parentName: ZombieCartoon@gethit01(Clone)
+      position: {x: 0.00000004340437, y: 0.8133365, z: -0.07846217}
+      rotation: {x: 0.49912265, y: -0.50086725, z: -0.4991312, w: 0.5008759}
+      scale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
+    - name: ZombieCartoon RIGLThigh
+      parentName: ZombieCartoon RIGPelvis
+      position: {x: -0.015610046, y: 0.04256203, z: 0.1191926}
+      rotation: {x: -0.058597885, y: 0.9977312, z: 0.025307426, w: 0.021408647}
+      scale: {x: 0.9999998, y: 1.0000012, z: 1.0000001}
+    - name: ZombieCartoon RIGLCalf
+      parentName: ZombieCartoon RIGLThigh
+      position: {x: -0.4978529, y: 0.0000001335144, z: 0.000000057220458}
+      rotation: {x: -0.027846117, y: -0.0012466921, z: 0.25828224, w: 0.9656673}
+      scale: {x: 0.999998, y: 1.0000029, z: 0.9999997}
+    - name: ZombieCartoon RIGLFoot
+      parentName: ZombieCartoon RIGLCalf
+      position: {x: -0.3349738, y: 0, z: 0}
+      rotation: {x: 0.031823885, y: 0.049326133, z: -0.8186854, w: 0.57123417}
+      scale: {x: 0.9999952, y: 1.0000048, z: 1.0000001}
+    - name: ZombieCartoon RIGLDigit11
+      parentName: ZombieCartoon RIGLFoot
+      position: {x: -0.20488507, y: 0, z: -0.000000009536743}
+      rotation: {x: -0.000019642395, y: 0.00078622403, z: -0.024327049, w: 0.99970376}
+      scale: {x: 1.0000001, y: 1, z: 1}
+    - name: ZombieCartoon RIGSpine1
+      parentName: ZombieCartoon RIGPelvis
+      position: {x: -0.041437835, y: -0.003170428, z: -0.0000000078683655}
+      rotation: {x: 0.000000011534176, y: -0.00000005485519, z: -0.11023291, w: 0.9939058}
+      scale: {x: 1.0000002, y: 1.0000002, z: 0.99999994}
+    - name: ZombieCartoon RIGSpine2
+      parentName: ZombieCartoon RIGSpine1
+      position: {x: -0.19342765, y: 0, z: 0}
+      rotation: {x: -0.000000014350107, y: 0.00000001940782, z: 0.07846661, w: 0.9969168}
+      scale: {x: 1, y: 1.0000002, z: 1}
+    - name: ZombieCartoon RIGSpine3
+      parentName: ZombieCartoon RIGSpine2
+      position: {x: -0.16477463, y: 0, z: 0}
+      rotation: {x: -0.000000015454829, y: 0.00000003793131, z: -0.15355305, w: 0.9881404}
+      scale: {x: 0.9999999, y: 0.9999999, z: 1}
+    - name: ZombieCartoon RIGRibcage
+      parentName: ZombieCartoon RIGSpine3
+      position: {x: -0.16477478, y: 0, z: 1.4551915e-13}
+      rotation: {x: 0.0000000060618444, y: 0.000000017512626, z: -0.07739342, w: 0.99700063}
+      scale: {x: 0.9999997, y: 0.99999976, z: 1.0000001}
+    - name: ZombieCartoon RIGLCollarbone
+      parentName: ZombieCartoon RIGRibcage
+      position: {x: 0.015737457, y: 0.02074913, z: 0.068603}
+      rotation: {x: -0.13439089, y: 0.8006867, z: 0.09544599, w: 0.57596}
+      scale: {x: 1.0000002, y: 0.99999994, z: 0.9999996}
+    - name: ZombieCartoon RIGLUpperarm
+      parentName: ZombieCartoon RIGLCollarbone
+      position: {x: -0.12808827, y: 0, z: 0}
+      rotation: {x: 0.061959628, y: -0.14753537, z: 0.009063379, w: 0.9870725}
+      scale: {x: 1.0000004, y: 1.0000005, z: 0.9999997}
+    - name: ZombieCartoon RIGLForearm
+      parentName: ZombieCartoon RIGLUpperarm
+      position: {x: -0.34139135, y: -0.000000019073486, z: 0.000000038146972}
+      rotation: {x: -0.14517002, y: 0.016909288, z: -0.022699067, w: 0.9890018}
+      scale: {x: 0.9999994, y: 1.0000036, z: 0.999996}
+    - name: ZombieCartoon RIGLPalm
+      parentName: ZombieCartoon RIGLForearm
+      position: {x: -0.31464598, y: 0.0000000011920929, z: 0}
+      rotation: {x: -0.71623504, y: -0.09948084, z: 0.048237305, w: 0.6890458}
+      scale: {x: 0.999999, y: 0.99999744, z: 1.0000035}
+    - name: ZombieCartoon RIGLDigit11 1
+      parentName: ZombieCartoon RIGLPalm
+      position: {x: -0.030529212, y: 0, z: 0.044097327}
+      rotation: {x: 0.12483862, y: 0.147756, z: 0.028658947, w: 0.9806947}
+      scale: {x: 0.99999654, y: 1.0000098, z: 0.9999932}
+    - name: ZombieCartoon RIGLDigit12
+      parentName: ZombieCartoon RIGLDigit11 1
+      position: {x: -0.050010033, y: 0, z: 0}
+      rotation: {x: 7.176626e-10, y: -0.07625538, z: 0.031239722, w: 0.99659884}
+      scale: {x: 0.99999887, y: 1.000011, z: 0.9999891}
+    - name: ZombieCartoon RIGLDigit21
+      parentName: ZombieCartoon RIGLPalm
+      position: {x: -0.10176391, y: 0, z: 0.000000009536743}
+      rotation: {x: -0.0066804574, y: 0.05597779, z: 0.076416984, w: 0.99548095}
+      scale: {x: 0.9999999, y: 0.9999888, z: 1.0000114}
+    - name: ZombieCartoon RIGLDigit22
+      parentName: ZombieCartoon RIGLDigit21
+      position: {x: -0.055302467, y: 0.000000019073486, z: 0}
+      rotation: {x: -0.017190041, y: -0.05415795, z: 0.2978554, w: 0.95291847}
+      scale: {x: 1.000016, y: 0.99999374, z: 0.99998915}
+    - name: ZombieCartoon RIGNeck
+      parentName: ZombieCartoon RIGRibcage
+      position: {x: -0.0007199859, y: 0.023599166, z: -0.000000010130607}
+      rotation: {x: 0.000000031193515, y: 0.000000077880905, z: 0.022135867, w: 0.99975497}
+      scale: {x: 1.0000001, y: 1, z: 1}
+    - name: ZombieCartoon RIGHead
+      parentName: ZombieCartoon RIGNeck
+      position: {x: -0.2100624, y: 0, z: 0}
+      rotation: {x: -0.000000037399808, y: -0.000000036786446, z: 0.15180595, w: 0.9884103}
+      scale: {x: 0.9999998, y: 0.9999997, z: 1}
+    - name: ZombieCartoon RIGRArmCollarbone
+      parentName: ZombieCartoon RIGRibcage
+      position: {x: 0.015737534, y: 0.020749092, z: -0.06860299}
+      rotation: {x: -0.13439086, y: 0.8006868, z: -0.09544597, w: -0.57596004}
+      scale: {x: 0.9999996, y: 0.9999996, z: 1.0000002}
+    - name: ZombieCartoon RIGRArmUpperarm
+      parentName: ZombieCartoon RIGRArmCollarbone
+      position: {x: -0.12808827, y: 0.000000019073486, z: 0}
+      rotation: {x: 0.033995602, y: 0.14794558, z: -0.0061349696, w: 0.988392}
+      scale: {x: 1, y: 1.0000008, z: 0.99999994}
+    - name: ZombieCartoon RIGRArmForearm
+      parentName: ZombieCartoon RIGRArmUpperarm
+      position: {x: -0.34139135, y: 0, z: 0.000000038146972}
+      rotation: {x: 0.103855886, y: -0.007747262, z: -0.034695253, w: 0.99395686}
+      scale: {x: 0.9999996, y: 0.9999987, z: 1.0000018}
+    - name: ZombieCartoon RIGRArmPalm
+      parentName: ZombieCartoon RIGRArmForearm
+      position: {x: -0.31464598, y: 0, z: 0}
+      rotation: {x: 0.7187336, y: 0.0077043814, z: 0.015963554, w: 0.6950596}
+      scale: {x: 0.99999934, y: 1.0000031, z: 0.999998}
+    - name: ZombieCartoon RIGRArmDigit11
+      parentName: ZombieCartoon RIGRArmPalm
+      position: {x: -0.030529212, y: 0, z: -0.044097994}
+      rotation: {x: -0.18480851, y: -0.029320247, z: 0.013373518, w: 0.98224604}
+      scale: {x: 0.99999774, y: 1.0000072, z: 0.99999464}
+    - name: ZombieCartoon RIGRArmDigit12
+      parentName: ZombieCartoon RIGRArmDigit11
+      position: {x: -0.050010033, y: -0.000000019073486, z: 0.000000038146972}
+      rotation: {x: 0.000000044899465, y: 0.07625586, z: 0.031239433, w: 0.9965988}
+      scale: {x: 1.0000052, y: 0.99999934, z: 0.99999547}
+    - name: ZombieCartoon RIGRArmDigit21
+      parentName: ZombieCartoon RIGRArmPalm
+      position: {x: -0.10176403, y: 0, z: 0.000000009536743}
+      rotation: {x: -0.0025449984, y: 0.0014140435, z: 0.04653049, w: 0.9989127}
+      scale: {x: 0.9999985, y: 1.0000054, z: 0.9999957}
+    - name: ZombieCartoon RIGRArmDigit22
+      parentName: ZombieCartoon RIGRArmDigit21
+      position: {x: -0.055302426, y: 0, z: 0}
+      rotation: {x: 0.01240648, y: 0.05545512, z: 0.21366386, w: 0.9752531}
+      scale: {x: 1.000003, y: 1.0000014, z: 0.99999565}
+    - name: ZombieCartoon RIGRLegThigh
+      parentName: ZombieCartoon RIGPelvis
+      position: {x: -0.015609969, y: 0.04256203, z: -0.119192615}
+      rotation: {x: -0.058595177, y: 0.9977289, z: -0.025286354, w: -0.021547053}
+      scale: {x: 0.9999997, y: 1.000001, z: 1.0000006}
+    - name: ZombieCartoon RIGRLegCalf
+      parentName: ZombieCartoon RIGRLegThigh
+      position: {x: -0.497853, y: 0.00000015258789, z: -0.000000076293944}
+      rotation: {x: 0.027885702, y: 0.001087406, z: 0.25847864, w: 0.9656138}
+      scale: {x: 1.0000004, y: 0.9999999, z: 0.99999994}
+    - name: ZombieCartoon RIGRLegFoot
+      parentName: ZombieCartoon RIGRLegCalf
+      position: {x: -0.3349738, y: -0.000000009536743, z: 0.000000009536743}
+      rotation: {x: -0.032210797, y: -0.049565103, z: -0.8187376, w: 0.57111686}
+      scale: {x: 0.99999976, y: 1.0000001, z: 1}
+    - name: ZombieCartoon RIGRLegDigit11
+      parentName: ZombieCartoon RIGRLegFoot
+      position: {x: -0.2048851, y: 0.0000000023841857, z: 0}
+      rotation: {x: 0.000010233441, y: -0.00040208103, z: -0.024406014, w: 0.9997021}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 0.01
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

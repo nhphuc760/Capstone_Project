@@ -24,6 +24,7 @@ namespace UtilityAI.Core
         [SerializeField] StatsBase baseStats;
         public Stats enemyStats;
         public HealthComponent Health { get; private set; }
+        [OnChangedRender(nameof(OnEnemyStateChanged))]
         [Networked] EnemyState _currentState { get; set; }
 
         [Networked] public TickTimer AttackIntervalTimer { get; set; }
@@ -39,6 +40,7 @@ namespace UtilityAI.Core
 
         EventBinding<BuildStategyEvent> onStructureChanged;
         public event System.Action OnAttack;
+        public event System.Action OnStateChanged;
        
 
         public override void Spawned()
@@ -187,6 +189,13 @@ namespace UtilityAI.Core
         {
             if(HasStateAuthority)
             enemyStats.RemoveModifierByID(_id);
+        }
+
+
+        void OnEnemyStateChanged()
+        {
+            if (Runner.IsResimulation) return;
+            OnStateChanged?.Invoke();
         }
     }
 }
