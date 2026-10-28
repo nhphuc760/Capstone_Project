@@ -98,7 +98,8 @@ public class WallBuildStrategy : IBuildStategy
         if (createsEnclosure && regionCount == 1)
         {
             StructureManager.Ins?.ClearEscapeWall(playerRef);
-            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallSet);
+            Debug.LogError("Cell: " + cell);
+            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallSet,filter: w =>  EnclosedChecker.IsValidDoorPosition(w, wallSet ,enclosedList));
 
 
             var playerObject = runner.GetPlayerObject(playerRef).GetBehaviour<NetworkPlayer>();
@@ -189,6 +190,15 @@ public class WallBuildStrategy : IBuildStategy
             {
                 Reason = BuildFailReason.InvalidPosition,
                 Message = "👉 Bố cấm mày xây sát tường người khác."
+            };
+        }
+
+        if (cell.x < 1 || cell.x > _widthMap - 1 || cell.z < 1 || cell.z > _heightMap - 1)
+        {
+            return new BuildValidationResult
+            {
+                Reason = BuildFailReason.InvalidPosition,
+                Message = "Vị trí nằm ngoài phạm vi"
             };
         }
 

@@ -551,12 +551,40 @@ public static class EnclosedChecker
     // Door helper
     // -------------------------------------------------------------------------
 
+    public static bool IsValidDoorPosition(Vector3Int wallCell, HashSet<Vector3Int> walls, ICollection<Vector3Int> enclosedCells)
+    {
+        if (enclosedCells == null || enclosedCells.Count == 0) return false;
+        bool parallel = false;
+        foreach (var dir in Dirs4)
+        {
+            if (enclosedCells.Contains(wallCell + dir))
+                parallel = true;
+        }
+        if(!parallel) return false;
+        bool touchesInside = false;
+        bool touchesOutside = false;
+
+        foreach (var dir in Dirs4)
+        {
+            Vector3Int n = wallCell + dir;
+            if (enclosedCells.Contains(n))
+                touchesInside = true;
+            else if (!walls.Contains(n))
+                touchesOutside = true;
+        }
+
+        return touchesInside && touchesOutside;
+    }
+    //[Obsolete("use IsvalidDoorPostition instead")]
+   
     static bool IsStraightDegree2(Vector3Int cell, HashSet<Vector3Int> walls)
     {
         var neighbors = GetNeighborIsWall(cell, walls);
         if (neighbors.Count != 2) return false;
         return (neighbors[0] - cell) + (neighbors[1] - cell) == Vector3Int.zero;
     }
+
+
 
     public static Vector3Int FindNearestStraightDegree2(Vector3Int start, HashSet<Vector3Int> walls, Func<Vector3Int, bool> filter = null)
     {
@@ -638,6 +666,8 @@ public static class EnclosedChecker
 
         return doorCell;
     }
+
+
 
     static List<Vector3Int> GetNeighborIsWall(Vector3Int cell, HashSet<Vector3Int> walls)
     {

@@ -1,4 +1,4 @@
-using UnityEngine;
+ using UnityEngine;
 using UtilityAI.Core;
 
 namespace UtilityAI.Considerations
@@ -27,7 +27,7 @@ namespace UtilityAI.Considerations
             }
             //Average scheme of overall score
             return score;
-        }       
+        }        
     }
 
 }

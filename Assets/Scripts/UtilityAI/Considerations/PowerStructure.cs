@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using UnityEngine;
 using UtilityAI.Core;
 
@@ -33,7 +33,10 @@ public class PowerStructure : Consideration
                 Debug.LogWarning("Current health is zero or negative");
                 return 0f;
             }
-            responseCurve.Evaluate(Mathf.Clamp01(totalDPS / curHealth));
+            float maxHealth = context.Controller.Health.MaxHealth;
+            float score = Mathf.Sqrt(totalDPS/maxHealth);
+            Debug.Log($"powerStruct: {score}");
+            return Mathf.Sqrt(totalDPS/maxHealth);         
         }
         else
         {

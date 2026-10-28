@@ -2,6 +2,7 @@
 using System.Linq;
 using Fusion;
 using Unity.AI.Navigation;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using Util.Core;
@@ -91,6 +92,7 @@ namespace UtilityAI.Core
                     // Has door → evaluate attractiveness
                     var context = controller.worldInformation;
                     context.SetData(ContextKey.CandidatePlaceTarget, doorEntry.Value.transform.position);
+                    Debug.Log("=====================" + $"{player}: DoorEvaluate" + "======================");
                     float score = doorEvaluate != null
                         ? doorEvaluate.ScoreConsiderations(context)
                         : 0.5f;
@@ -101,6 +103,8 @@ namespace UtilityAI.Core
                     // No door → highest priority, rush the player
                     scores.Add(new TargetEvaluateContext { player = player, score = 1f });
                 }
+               
+
             }
 
             if (scores.Count == 0)

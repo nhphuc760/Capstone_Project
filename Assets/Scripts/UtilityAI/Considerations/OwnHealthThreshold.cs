@@ -21,7 +21,7 @@ namespace UtilityAI.Considerations
 
             // Curve: X = level chuẩn hoá, Y = ngưỡng máu (0.5 → 0.1)
             float threshold = Mathf.Clamp(responseCurve.Evaluate(t), 0.01f, 1f);
-
+            Debug.Log($"HealthThreshold: {threshold}");
             return threshold;
             // Máu càng cao so với ngưỡng → score càng cao (RandomWeight ưu tiên ở lại)
         }
