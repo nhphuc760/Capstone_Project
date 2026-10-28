@@ -262,7 +262,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             if (inventory)
             {
                 var InventoryUI = GetComponentInChildren<InventoryUI>();
-
+    
                 if (InventoryUI != null)
                 {
                     inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;

@@ -19,8 +19,6 @@ public struct InventoryItem : INetworkStruct
         itemID == 0 || amount <= 0;
 }
 
-
-
 public class NetworkInventory : NetworkBehaviour
 {
     [Header("Inventory")]
@@ -61,9 +59,11 @@ public class NetworkInventory : NetworkBehaviour
         {
             database = Resources.Load<ItemDatabase>("ItemData");
             if(database == null)
-            Debug.LogError(
-                $"{name}: ItemDatabase is not assigned."
-            );
+            {
+                Debug.LogError(
+                    $"{name}: ItemDatabase is not assigned."
+                );
+            }
         }
     }
 
@@ -80,7 +80,7 @@ public class NetworkInventory : NetworkBehaviour
     }
 
     #region Host add item
-    public bool AddItem(int itemID, int amount)
+    public bool CanAddItem(int itemID, int amount)
     {
         if (!Object.HasStateAuthority)
         {
@@ -172,7 +172,7 @@ public class NetworkInventory : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_AddItem(int itemID, int amount)
     {
-        AddItem(itemID, amount);
+        CanAddItem(itemID, amount);
     }
     #endregion
 

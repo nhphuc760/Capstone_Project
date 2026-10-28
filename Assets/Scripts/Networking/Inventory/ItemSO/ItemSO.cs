@@ -4,8 +4,9 @@ using Fusion;
 public enum ItemType
 {
     None,
-    Weapon,
-    Consumable
+    Consumable,
+    Valuable,
+    
 }
 
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Online Inventory/ItemSO")]
@@ -15,7 +16,7 @@ public class ItemSO : ScriptableObject
     [SerializeField] private int itemId;
     [SerializeField] private string itemName;
     [SerializeField] private string description;
-    [SerializeField] private ItemType itemType;
+    public ItemType itemType;
 
     [Header("Visual")]
     [SerializeField] private Sprite icon;
