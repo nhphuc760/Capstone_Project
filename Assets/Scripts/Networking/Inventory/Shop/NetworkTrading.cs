@@ -15,7 +15,7 @@ public class NetworkTrading : NetworkBehaviour
     private const int MaxPlayers = 4;
 
     [Header("Auction Settings")]
-    [SerializeField] private ShopSO shopSO;
+    [SerializeField] private ValuableShopSO valuableShopSO;
     [SerializeField] private float auctionDuration = 10f;
 
     [Header("Participants")]
@@ -183,9 +183,9 @@ public class NetworkTrading : NetworkBehaviour
             }
         }
 
-        if (shopSO == null)
+        if (valuableShopSO == null)
         {
-            Debug.LogWarning("[NetworkTrading] ShopSO is missing.");
+            Debug.LogWarning("[NetworkTrading] ValuableShopSO is missing.");
             return false;
         }
 
@@ -197,10 +197,10 @@ public class NetworkTrading : NetworkBehaviour
         }
 
         // Lấy thông tin vật phẩm từ ShopSO.
-        if (!shopSO.TryGetItem(itemId, out ShopSO.ShopItem shopItem))
+        if (!valuableShopSO.TryGetItem(itemId, out ValuableShopSO.ValuableShopItem shopItem))
         {
             Debug.LogWarning(
-                $"[NetworkTrading] ItemID={itemId} not found in ShopSO.");
+                $"[NetworkTrading] ItemID={itemId} not found in ValuableShopSO.");
             return false;
         }
 
@@ -212,7 +212,7 @@ public class NetworkTrading : NetworkBehaviour
             return false;
         }
 
-        // Lấy giá khởi điểm từ ShopSO.
+        // Lấy giá khởi điểm từ ValuableShopSO.
         int price = shopItem.valuablePrice;
 
         if (price <= 0)

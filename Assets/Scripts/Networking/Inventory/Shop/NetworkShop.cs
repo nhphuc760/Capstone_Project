@@ -5,7 +5,7 @@ using UnityEngine;
 public class NetworkShop : NetworkBehaviour
 {
     [Header("Shop Data")]
-    [SerializeField] private ShopSO shopSO;
+    [SerializeField] private ConsumableShopSO consumableShopSO;
 
     [Header("Settings")]
     [SerializeField, Min(1)]
@@ -47,7 +47,7 @@ public class NetworkShop : NetworkBehaviour
         if (!ValidateRequest(player, itemID, amount))
             return;
 
-        if (!TryGetShopItem(itemID, out ShopSO.ShopItem shopItem))
+        if (!TryGetShopItem(itemID, out ConsumableShopSO.ConsumableShopItem shopItem))
             return;
 
         if (!IsConsumable(shopItem.itemSO))
@@ -94,8 +94,8 @@ public class NetworkShop : NetworkBehaviour
             return;
         }
 
-        // Thêm vật phẩm vào Inventory.
-        if (!inventory.CanAddItem(itemID, amount))
+        // Thêm vật phẩm vào Inventory sau khi đã thanh toán.
+        if (!inventory.TryAddItem(itemID, amount))
         {
             // Hoàn lại giá trị đã thanh toán nếu thêm vật phẩm thất bại.
             bool refunded = wallet.TryAddValueAsWood(totalPrice);
@@ -127,7 +127,7 @@ public class NetworkShop : NetworkBehaviour
         if (!ValidateRequest(player, itemID, amount))
             return;
 
-        if (!TryGetShopItem(itemID, out ShopSO.ShopItem shopItem))
+        if (!TryGetShopItem(itemID, out ConsumableShopSO.ConsumableShopItem shopItem))
             return;
 
         if (!IsConsumable(shopItem.itemSO))
@@ -171,7 +171,7 @@ public class NetworkShop : NetworkBehaviour
         if (!wallet.TryAddValueAsWood(totalPrice))
         {
             // Hoàn lại vật phẩm nếu không thể trả tiền.
-            bool itemRestored = inventory.CanAddItem(itemID, amount);
+            bool itemRestored = inventory.TryAddItem(itemID, amount);
 
             Debug.LogError(
                 $"[ConsumableShop] Payment failed. " +
@@ -208,20 +208,20 @@ public class NetworkShop : NetworkBehaviour
 
     private bool TryGetShopItem(
         int itemID,
-        out ShopSO.ShopItem shopItem)
+        out ConsumableShopSO.ConsumableShopItem shopItem)
     {
         shopItem = null;
 
-        if (shopSO == null)
+        if (consumableShopSO == null)
         {
-            Debug.LogWarning("[ConsumableShop] ShopSO is not assigned.");
+            Debug.LogWarning("[ConsumableShop] ConsumableShopSO is not assigned.");
             return false;
         }
 
-        if (!shopSO.TryGetItem(itemID, out shopItem))
+        if (!consumableShopSO.TryGetItem(itemID, out shopItem))
         {
             Debug.LogWarning(
-                $"[ConsumableShop] ItemID {itemID} was not found in ShopSO.");
+                $"[ConsumableShop] ItemID {itemID} was not found in ConsumableShopSO.");
             return false;
         }
 

@@ -1,9 +1,9 @@
 ﻿<Solution>
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Fusion.Unity.Editor.csproj" />
   <Project Path="Gamelogic.Extensions.Editor.csproj" />
   <Project Path="AYellowpaper.SerializedCollections.csproj" />
   <Project Path="Firebase.App.Internal.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Gamelogic.Extensions.csproj" />
   <Project Path="Fusion.Addons.Physics.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />

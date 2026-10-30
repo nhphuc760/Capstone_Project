@@ -16,10 +16,7 @@ public class ShopManager : MonoBehaviour
     {
         ShowTradingPanel(false);
         ShowShoppingPanel(false);
-    }
 
-    private void Update()
-    {
         if (tradingButton != null)
             tradingButton.onClick.AddListener(OpenTrading);
 
@@ -30,7 +27,22 @@ public class ShopManager : MonoBehaviour
             closeButton.onClick.AddListener(CloseShop);
     }
 
-    private void OpenTrading()
+    private void OnDestroy()
+    {
+        if (tradingButton != null)
+            tradingButton.onClick.RemoveListener(OpenTrading);
+
+        if (shoppingButton != null)
+            shoppingButton.onClick.RemoveListener(OpenShopping);
+
+        if (closeButton != null)
+            closeButton.onClick.RemoveListener(CloseShop);
+    }
+
+    public bool IsTradingPanelOpen => tradingPanel != null && tradingPanel.activeSelf;
+    public bool IsShoppingPanelOpen => shoppingPanel != null && shoppingPanel.activeSelf;
+
+    public void OpenTrading()
     {
         ShowTradingPanel(true);
         ShowShoppingPanel(false);
@@ -38,7 +50,7 @@ public class ShopManager : MonoBehaviour
         Debug.Log("[ShopManager] Trading panel opened.");
     }
 
-    private void OpenShopping()
+    public void OpenShopping()
     {
         ShowTradingPanel(false);
         ShowShoppingPanel(true);
@@ -46,7 +58,7 @@ public class ShopManager : MonoBehaviour
         Debug.Log("[ShopManager] Shopping panel opened.");
     }
 
-    private void CloseShop()
+    public void CloseShop()
     {
         ShowTradingPanel(false);
         ShowShoppingPanel(false);

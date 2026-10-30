@@ -3280,6 +3280,7 @@ GameObject:
   - component: {fileID: 4933714085852605442}
   - component: {fileID: 3764696480944377191}
   - component: {fileID: 8000677038320043257}
+  - component: {fileID: 1000000000000000001}
   - component: {fileID: 282213416285512670}
   - component: {fileID: 3267005897384838362}
   - component: {fileID: -4642978615242726096}
@@ -3361,6 +3362,7 @@ MonoBehaviour:
   - {fileID: 4933714085852605442}
   - {fileID: 3764696480944377191}
   - {fileID: 8000677038320043257}
+  - {fileID: 1000000000000000001}
   ForceRemoteRenderTimeframe: 0
 --- !u!54 &-7849153057991330858
 Rigidbody:
@@ -3528,6 +3530,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkInventory
   database: {fileID: 11400000, guid: b85efbd77e5676c4ea3a71e60335f96c, type: 2}
+--- !u!114 &282213416285512670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09d151031c8d1804698d63102db1dbb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkResourceWallet
+  startingWood: 100
+  startingCopperOre: 10
+  startingIronOre: 5
+  startingGoldOre: 1
+  woodValue: 1
+  copperOreValue: 5
+  ironOreValue: 10
+  goldOreValue: 50
 --- !u!114 &282213416285512670
 MonoBehaviour:
   m_ObjectHideFlags: 0
