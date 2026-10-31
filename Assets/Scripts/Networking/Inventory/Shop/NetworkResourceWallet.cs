@@ -55,8 +55,21 @@ public class NetworkResourceWallet : NetworkBehaviour
     // Kiểm tra người chơi có đủ Gold để mua hàng hay không.
     public bool CanAffordGold(int price)
     {
-        return price > 0 && GetTotalGoldValue() >= price;
+        if (Object == null || !Object.IsValid)
+            return false;
+
+        if (price <= 0)
+            return false;
+
+        long availableGold = GetTotalGoldValue();
+
+        Debug.Log(
+            $"[Wallet] CHECK AFFORD | " +
+            $"Required={price} | Available={availableGold}");
+
+        return availableGold >= price;
     }
+
 
     // Quy đổi toàn bộ tài nguyên có thể quy đổi thành Gold.
     public bool ConvertAllToGold()
@@ -97,31 +110,88 @@ public class NetworkResourceWallet : NetworkBehaviour
 
     // Thanh toán bằng Gold.
     // Tự động quy đổi tài nguyên trước khi trừ Gold.
-    public bool TrySpendGold(int price)
+    
+    public bool TrySpendGold(int amount)
     {
-        if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
+        #region VALIDATION
+        if (Object == null || !Object.IsValid)
+        {
+            Debug.LogError("[Wallet] Spend failed: NetworkObject is invalid.");
             return false;
+        }
 
-        if (!CanAffordGold(price))
+        if (!Object.HasStateAuthority)
+        {
+            Debug.LogError("[Wallet] Spend failed: No State Authority.");
+            return false;
+        }
+
+        if (amount <= 0)
+        {
+            Debug.LogError("[Wallet] Spend failed: Invalid amount.");
+            return false;
+        }
+
+        if (woodPerGold <= 0 || copperPerGold <= 0 || ironPerGold <= 0)
+        {
+            Debug.LogError("[Wallet] Spend failed: Invalid conversion rates.");
+            return false;
+        }
+        #endregion
+
+        #region CALCULATE CONVERSION
+        int goldFromWood = Wood / woodPerGold;
+        int goldFromCopper = CopperOre / copperPerGold;
+        int goldFromIron = IronOre / ironPerGold;
+
+        long totalGold = (long)GoldOre
+                    + goldFromWood
+                    + goldFromCopper
+                    + goldFromIron;
+
+        if (totalGold < amount)
         {
             Debug.Log(
-                $"[Wallet] Payment FAILED | Not enough Gold | Price={price}"
-            );
+                $"[Wallet] Spend failed: Not enough Gold. " +
+                $"Required={amount} | Available={totalGold}");
 
             return false;
         }
 
-        if (!ConvertAllToGold())
+        long remainingGold = totalGold - amount;
+
+        if (remainingGold > int.MaxValue)
+        {
+            Debug.LogError("[Wallet] Spend failed: Gold overflow.");
             return false;
+        }
+        #endregion
 
-        GoldOre -= price;
+        #region APPLY TRANSACTION
+        int usedWood = goldFromWood * woodPerGold;
+        int usedCopper = goldFromCopper * copperPerGold;
+        int usedIron = goldFromIron * ironPerGold;
 
+        Wood -= usedWood;
+        CopperOre -= usedCopper;
+        IronOre -= usedIron;
+
+        GoldOre = (int)remainingGold;
+        #endregion
+
+        #region DEBUG
         Debug.Log(
-            $"[Wallet] Payment SUCCESS | Spent={price} Gold | Remaining={GoldOre} Gold"
-        );
+            $"[Wallet] SPEND GOLD SUCCESS\n" +
+            $"Paid: {amount} Gold\n" +
+            $"Converted: Wood={usedWood} | " +
+            $"Copper={usedCopper} | Iron={usedIron}\n" +
+            $"Remaining: Gold={GoldOre} | " +
+            $"Wood={Wood} | Copper={CopperOre} | Iron={IronOre}");
+        #endregion
 
         return true;
     }
+
 
     // Cộng Gold trực tiếp khi bán vật phẩm hoặc nhận thưởng.
     public bool TryAddGold(int amount)

@@ -119,6 +119,79 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &1980795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1980798}
+  - component: {fileID: 1980797}
+  - component: {fileID: 1980796}
+  m_Layer: 0
+  m_Name: TradingTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1980796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 822285080
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 1980797}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &1980797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38d8865b23ec40a4490ce3e0c9aaf49d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkTrading
+  valuableShopSO: {fileID: 11400000, guid: 6c65cf2fb13f43ba8ec3dd761005e5e8, type: 2}
+  auctionDuration: 10
+  _Participants: []
+  _ParticipantCount: 0
+  _ItemID: 0
+  _Quantity: 0
+  _StartingPrice: 0
+  _CurrentBid: 0
+  _State: 0
+--- !u!4 &1980798
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1980795}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1118.3651, y: 336.11044, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &49189970
 GameObject:
   m_ObjectHideFlags: 0
@@ -263,6 +336,72 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &201312192
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 201312195}
+  - component: {fileID: 201312194}
+  - component: {fileID: 201312193}
+  m_Layer: 0
+  m_Name: ShopTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &201312193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201312192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2560117899
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 201312194}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &201312194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201312192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48858f0a8fc905f4ab7cbac0b885bf6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkShop
+  consumableShopSO: {fileID: 11400000, guid: 2712921a73b6490a86f97c730d74467d, type: 2}
+  maxTransactionAmount: 99
+--- !u!4 &201312195
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201312192}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1118.3651, y: 336.11044, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &650949544
 GameObject:
   m_ObjectHideFlags: 0
@@ -508,10 +647,9 @@ MonoBehaviour:
   startingCopperOre: 0
   startingIronOre: 0
   startingGoldOre: 0
-  woodValue: 1
-  copperOreValue: 5
-  ironOreValue: 10
-  goldOreValue: 50
+  woodPerGold: 5
+  copperPerGold: 4
+  ironPerGold: 3
 --- !u!4 &774030921
 Transform:
   m_ObjectHideFlags: 0
@@ -621,12 +759,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkResourceWalletTester
   wallet: {fileID: 774030920}
+  networkShop: {fileID: 201312194}
+  networkTrading: {fileID: 1980797}
   testWood: 10
   testCopperOre: 5
   testIronOre: 3
-  testGoldOre: 2
-  testSpendPrice: 20
-  testSellValue: 10
+  testItemID: 1
+  testItemAmount: 1
+  auctionItemID: 1
+  auctionItemAmount: 1
+  auctionStartingPrice: 10
+  testBidAmount: 20
+  showOverlay: 1
 --- !u!4 &1182256591
 Transform:
   m_ObjectHideFlags: 0
@@ -866,3 +1010,5 @@ SceneRoots:
   - {fileID: 692802374}
   - {fileID: 1182256591}
   - {fileID: 774030921}
+  - {fileID: 201312195}
+  - {fileID: 1980798}
