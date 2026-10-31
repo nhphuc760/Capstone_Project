@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "ConsumableShopSO", menuName = "Shop/Consumable Shop")]
 public class ConsumableShopSO : ScriptableObject
@@ -13,8 +14,11 @@ public class ConsumableShopSO : ScriptableObject
         public ItemSO itemSO;
 
         [Header("Prices")]
-        [Min(1)] public int buyPrice = 100;
-        [Min(1)] public int sellPrice = 50;
+        [FormerlySerializedAs("buyPrice")]
+        [Min(1)] public int buyPriceGold;
+
+        [FormerlySerializedAs("sellPrice")]
+        [Min(1)] public int sellPriceGold;
     }
 
     [Header("Consumable Products")]
@@ -37,7 +41,8 @@ public class ConsumableShopSO : ScriptableObject
             if (shopItem.itemSO.itemType != ItemType.Consumable)
                 return false;
 
-            if (shopItem.buyPrice <= 0 || shopItem.sellPrice <= 0)
+            if (shopItem.buyPriceGold <= 0 ||
+                shopItem.sellPriceGold <= 0)
                 return false;
 
             result = shopItem;

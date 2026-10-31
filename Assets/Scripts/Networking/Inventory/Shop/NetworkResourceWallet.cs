@@ -1,3 +1,4 @@
+
 using Fusion;
 using UnityEngine;
 
@@ -23,15 +24,13 @@ public class NetworkResourceWallet : NetworkBehaviour
     [SerializeField, Min(0)] private int startingIronOre;
     [SerializeField, Min(0)] private int startingGoldOre;
 
-    [Header("Resource Exchange Rates")]
-    [SerializeField, Min(1)] private int woodValue = 1;
-    [SerializeField, Min(1)] private int copperOreValue = 5;
-    [SerializeField, Min(1)] private int ironOreValue = 10;
-    [SerializeField, Min(1)] private int goldOreValue = 50;
+    [Header("Gold Conversion Rates")]
+    [SerializeField, Min(1)] private int woodPerGold = 5;
+    [SerializeField, Min(1)] private int copperPerGold = 4;
+    [SerializeField, Min(1)] private int ironPerGold = 3;
 
     public override void Spawned()
     {
-        // Chỉ State Authority được khởi tạo dữ liệu mạng.
         if (!Object.HasStateAuthority)
             return;
 
@@ -41,93 +40,108 @@ public class NetworkResourceWallet : NetworkBehaviour
         GoldOre = Mathf.Max(0, startingGoldOre);
     }
 
-    /// <summary>
-    /// Tổng giá trị quy đổi của toàn bộ tài nguyên.
-    /// </summary>
-    public long GetTotalValue()
+    // Tính tổng Gold có thể nhận được từ tài nguyên hiện tại.
+    public long GetTotalGoldValue()
     {
-        return (long)Wood * woodValue
-             + (long)CopperOre * copperOreValue
-             + (long)IronOre * ironOreValue
-             + (long)GoldOre * goldOreValue;
+        if (woodPerGold <= 0 || copperPerGold <= 0 || ironPerGold <= 0)
+            return GoldOre;
+
+        return (long)GoldOre
+             + Wood / woodPerGold
+             + CopperOre / copperPerGold
+             + IronOre / ironPerGold;
     }
 
-    /// <summary>
-    /// Kiểm tra người chơi có đủ giá trị để thanh toán hay không.
-    /// </summary>
-    public bool CanAfford(int price)
+    // Kiểm tra người chơi có đủ Gold để mua hàng hay không.
+    public bool CanAffordGold(int price)
     {
-        return price > 0 && GetTotalValue() >= price;
+        return price > 0 && GetTotalGoldValue() >= price;
     }
 
-    /// <summary>
-    /// Thanh toán bằng tài nguyên.
-    /// Nếu trả dư, phần chênh lệch được hoàn lại dưới dạng Wood.
-    /// Chỉ State Authority được phép thay đổi tài nguyên.
-    /// </summary>
-    public bool TrySpendValue(int price)
+    // Quy đổi toàn bộ tài nguyên có thể quy đổi thành Gold.
+    public bool ConvertAllToGold()
     {
         if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
             return false;
 
-        if (price <= 0 || GetTotalValue() < price)
+        if (woodPerGold <= 0 || copperPerGold <= 0 || ironPerGold <= 0)
             return false;
 
-        int remaining = price;
-        long paidValue = 0;
+        int goldFromWood = Wood / woodPerGold;
+        int goldFromCopper = CopperOre / copperPerGold;
+        int goldFromIron = IronOre / ironPerGold;
 
-        int useGold = Mathf.Min(GoldOre, DivideRoundUp(remaining, goldOreValue));
-        GoldOre -= useGold;
-        remaining -= useGold * goldOreValue;
-        paidValue += (long)useGold * goldOreValue;
+        long totalGold = (long)goldFromWood
+                       + goldFromCopper
+                       + goldFromIron;
 
-        int useIron = Mathf.Min(IronOre, DivideRoundUp(remaining, ironOreValue));
-        IronOre -= useIron;
-        remaining -= useIron * ironOreValue;
-        paidValue += (long)useIron * ironOreValue;
-
-        int useCopper = Mathf.Min(CopperOre, DivideRoundUp(remaining, copperOreValue));
-        CopperOre -= useCopper;
-        remaining -= useCopper * copperOreValue;
-        paidValue += (long)useCopper * copperOreValue;
-
-        int useWood = Mathf.Min(Wood, DivideRoundUp(remaining, woodValue));
-        Wood -= useWood;
-        remaining -= useWood * woodValue;
-        paidValue += (long)useWood * woodValue;
-
-        // Nếu vẫn còn thiếu, không thể thanh toán.
-        // Trường hợp này được kiểm tra trước bằng GetTotalValue,
-        // nhưng vẫn giữ kiểm tra an toàn.
-        if (remaining > 0)
-        {
-            GoldOre += useGold;
-            IronOre += useIron;
-            CopperOre += useCopper;
-            Wood += useWood;
+        if (totalGold > int.MaxValue - (long)GoldOre)
             return false;
-        }
 
-        long change = paidValue - price;
-        long returnedWood = change / woodValue;
+        Wood -= goldFromWood * woodPerGold;
+        CopperOre -= goldFromCopper * copperPerGold;
+        IronOre -= goldFromIron * ironPerGold;
 
-        if (returnedWood > int.MaxValue - (long)Wood)
-        {
-            // Hoàn nguyên giao dịch nếu số Wood bị tràn int.
-            GoldOre += useGold;
-            IronOre += useIron;
-            CopperOre += useCopper;
-            Wood += useWood;
-            return false;
-        }
+        GoldOre += (int)totalGold;
 
-        Wood += (int)returnedWood;
+        Debug.Log(
+            $"[Wallet] Convert To Gold SUCCESS\n" +
+            $"Wood: -{goldFromWood * woodPerGold} | Gold: +{goldFromWood}\n" +
+            $"Copper: -{goldFromCopper * copperPerGold} | Gold: +{goldFromCopper}\n" +
+            $"Iron: -{goldFromIron * ironPerGold} | Gold: +{goldFromIron}\n" +
+            $"Total Gold Received: {totalGold}"
+        );
+
         return true;
     }
 
-    /// <summary>
-    /// Cộng thêm tài nguyên. Dùng khi nhặt tài nguyên hoặc nhận thưởng.
-    /// </summary>
+    // Thanh toán bằng Gold.
+    // Tự động quy đổi tài nguyên trước khi trừ Gold.
+    public bool TrySpendGold(int price)
+    {
+        if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
+            return false;
+
+        if (!CanAffordGold(price))
+        {
+            Debug.Log(
+                $"[Wallet] Payment FAILED | Not enough Gold | Price={price}"
+            );
+
+            return false;
+        }
+
+        if (!ConvertAllToGold())
+            return false;
+
+        GoldOre -= price;
+
+        Debug.Log(
+            $"[Wallet] Payment SUCCESS | Spent={price} Gold | Remaining={GoldOre} Gold"
+        );
+
+        return true;
+    }
+
+    // Cộng Gold trực tiếp khi bán vật phẩm hoặc nhận thưởng.
+    public bool TryAddGold(int amount)
+    {
+        if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
+            return false;
+
+        if (amount <= 0 || amount > int.MaxValue - GoldOre)
+            return false;
+
+        GoldOre += amount;
+
+        Debug.Log(
+            $"[Wallet] Received Gold: +{amount} | Total Gold: {GoldOre}"
+        );
+
+        return true;
+    }
+
+    // Cộng tài nguyên khi nhặt hoặc nhận thưởng.
     public bool TryAddResource(ResourceType type, int amount)
     {
         if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
@@ -139,58 +153,43 @@ public class NetworkResourceWallet : NetworkBehaviour
         switch (type)
         {
             case ResourceType.Wood:
-                if (amount > int.MaxValue - Wood) return false;
+                if (amount > int.MaxValue - Wood)
+                    return false;
+
                 Wood += amount;
-                return true;
+                break;
 
             case ResourceType.CopperOre:
-                if (amount > int.MaxValue - CopperOre) return false;
+                if (amount > int.MaxValue - CopperOre)
+                    return false;
+
                 CopperOre += amount;
-                return true;
+                break;
 
             case ResourceType.IronOre:
-                if (amount > int.MaxValue - IronOre) return false;
+                if (amount > int.MaxValue - IronOre)
+                    return false;
+
                 IronOre += amount;
-                return true;
+                break;
 
             case ResourceType.GoldOre:
-                if (amount > int.MaxValue - GoldOre) return false;
+                if (amount > int.MaxValue - GoldOre)
+                    return false;
+
                 GoldOre += amount;
-                return true;
+                break;
 
             default:
                 return false;
         }
-    }
 
-    /// <summary>
-    /// Bán vật phẩm cho Shop: cộng phần tiền bán dưới dạng Wood.
-    /// </summary>
-    public bool TryAddValueAsWood(int value)
-    {
-        if (Object == null || !Object.IsValid || !Object.HasStateAuthority)
-            return false;
+        Debug.Log(
+            $"[Wallet] Added Resource: {type} +{amount}\n" +
+            $"Wood={Wood} | Copper={CopperOre} | " +
+            $"Iron={IronOre} | Gold={GoldOre}"
+        );
 
-        if (value <= 0)
-            return false;
-
-        if (value % woodValue != 0)
-            return false;
-
-        int woodToAdd = value / woodValue;
-
-        if (woodToAdd > int.MaxValue - Wood)
-            return false;
-
-        Wood += woodToAdd;
         return true;
-    }
-
-    private static int DivideRoundUp(int value, int divisor)
-    {
-        if (value <= 0)
-            return 0;
-
-        return (value + divisor - 1) / divisor;
     }
 }

@@ -1,3 +1,4 @@
+
 using System.Linq;
 using Fusion;
 using UnityEngine;
@@ -14,10 +15,7 @@ public class NetworkShop : NetworkBehaviour
     public void RequestBuy(int itemID, int amount)
     {
         if (Object == null || !Object.IsValid)
-        {
-            Debug.LogWarning("[NetworkShop] Shop NetworkObject is invalid.");
             return;
-        }
 
         RPC_RequestBuy(itemID, amount);
     }
@@ -25,10 +23,7 @@ public class NetworkShop : NetworkBehaviour
     public void RequestSell(int itemID, int amount)
     {
         if (Object == null || !Object.IsValid)
-        {
-            Debug.LogWarning("[ConsumableShop] Shop NetworkObject is invalid.");
             return;
-        }
 
         RPC_RequestSell(itemID, amount);
     }
@@ -51,11 +46,7 @@ public class NetworkShop : NetworkBehaviour
             return;
 
         if (!IsConsumable(shopItem.itemSO))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Item {itemID} is not a Consumable.");
             return;
-        }
 
         if (!TryGetPlayerComponents(
                 player,
@@ -64,53 +55,35 @@ public class NetworkShop : NetworkBehaviour
             return;
 
         if (!TryGetTotalPrice(
-                shopItem.buyPrice,
+                shopItem.buyPriceGold,
                 amount,
                 out int totalPrice))
-        {
-            Debug.LogWarning("[ConsumableShop] Invalid total buy price.");
             return;
-        }
 
         if (!inventory.CanAddItem(itemID, amount))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Player {player} has no inventory space.");
             return;
-        }
 
-        if (!wallet.CanAfford(totalPrice))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Player {player} cannot afford {totalPrice}.");
+        if (!wallet.CanAffordGold(totalPrice))
             return;
-        }
 
-        // Thanh toán bằng tài nguyên trước khi thêm vật phẩm.
-        if (!wallet.TrySpendValue(totalPrice))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Payment failed for player {player}.");
+        if (!wallet.TrySpendGold(totalPrice))
             return;
-        }
 
-        // Thêm vật phẩm vào Inventory sau khi đã thanh toán.
         if (!inventory.TryAddItem(itemID, amount))
         {
-            // Hoàn lại giá trị đã thanh toán nếu thêm vật phẩm thất bại.
-            bool refunded = wallet.TryAddValueAsWood(totalPrice);
+            bool refunded = wallet.TryAddGold(totalPrice);
 
             Debug.LogError(
-                $"[ConsumableShop] AddItem failed. " +
+                $"[NetworkShop] AddItem failed. " +
                 $"Refunded={refunded}, Player={player}");
 
             return;
         }
 
         Debug.Log(
-            $"[ConsumableShop] BUY SUCCESS | " +
+            $"[NetworkShop] BUY SUCCESS | " +
             $"Player={player} | ItemID={itemID} | " +
-            $"Amount={amount} | Price={totalPrice}");
+            $"Amount={amount} | Price={totalPrice} Gold");
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -131,11 +104,7 @@ public class NetworkShop : NetworkBehaviour
             return;
 
         if (!IsConsumable(shopItem.itemSO))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Item {itemID} is not a Consumable.");
             return;
-        }
 
         if (!TryGetPlayerComponents(
                 player,
@@ -144,46 +113,32 @@ public class NetworkShop : NetworkBehaviour
             return;
 
         if (!TryGetTotalPrice(
-                shopItem.sellPrice,
+                shopItem.sellPriceGold,
                 amount,
                 out int totalPrice))
-        {
-            Debug.LogWarning("[ConsumableShop] Invalid total sell price.");
             return;
-        }
 
         if (!inventory.HasItem(itemID, amount))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] Player {player} does not have enough items.");
             return;
-        }
 
-        // Trừ vật phẩm trước khi trả tiền.
         if (!inventory.RemoveItem(itemID, amount))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] RemoveItem failed for player {player}.");
             return;
-        }
 
-        // Giá bán được trả dưới dạng Wood.
-        if (!wallet.TryAddValueAsWood(totalPrice))
+        if (!wallet.TryAddGold(totalPrice))
         {
-            // Hoàn lại vật phẩm nếu không thể trả tiền.
             bool itemRestored = inventory.TryAddItem(itemID, amount);
 
             Debug.LogError(
-                $"[ConsumableShop] Payment failed. " +
+                $"[NetworkShop] Payment failed. " +
                 $"ItemRestored={itemRestored}, Player={player}");
 
             return;
         }
 
         Debug.Log(
-            $"[ConsumableShop] SELL SUCCESS | " +
+            $"[NetworkShop] SELL SUCCESS | " +
             $"Player={player} | ItemID={itemID} | " +
-            $"Amount={amount} | ReceivedValue={totalPrice} Wood");
+            $"Amount={amount} | ReceivedGold={totalPrice} Gold");
     }
 
     private bool ValidateRequest(
@@ -214,18 +169,13 @@ public class NetworkShop : NetworkBehaviour
 
         if (consumableShopSO == null)
         {
-            Debug.LogWarning("[ConsumableShop] ConsumableShopSO is not assigned.");
+            Debug.LogError(
+                "[NetworkShop] ConsumableShopSO is not assigned.");
+
             return false;
         }
 
-        if (!consumableShopSO.TryGetItem(itemID, out shopItem))
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] ItemID {itemID} was not found in ConsumableShopSO.");
-            return false;
-        }
-
-        return true;
+        return consumableShopSO.TryGetItem(itemID, out shopItem);
     }
 
     private bool IsConsumable(ItemSO item)
@@ -246,25 +196,20 @@ public class NetworkShop : NetworkBehaviour
                 player,
                 out NetworkObject playerObject))
         {
-            Debug.LogWarning(
-                $"[ConsumableShop] PlayerObject not found: {player}");
+            Debug.LogError(
+                $"[NetworkShop] PlayerObject not found: {player}");
+
             return false;
         }
 
         wallet = playerObject.GetComponent<NetworkResourceWallet>();
         inventory = playerObject.GetComponent<NetworkInventory>();
 
-        if (wallet == null)
+        if (wallet == null || inventory == null)
         {
-            Debug.LogWarning(
-                $"[ConsumableShop] NetworkResourceWallet missing on {player}.");
-            return false;
-        }
+            Debug.LogError(
+                $"[NetworkShop] Missing Wallet or Inventory on {player}");
 
-        if (inventory == null)
-        {
-            Debug.LogWarning(
-                $"[ConsumableShop] NetworkInventory missing on {player}.");
             return false;
         }
 
