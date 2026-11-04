@@ -551,16 +551,14 @@ public static class EnclosedChecker
     // Door helper
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Door hợp lệ: kề enclosed (bên trong) VÀ có ít nhất 1 hướng 4-neighbor trống
+    /// (không wall, không enclosed) = lối ra ngoài.
+    /// </summary>
     public static bool IsValidDoorPosition(Vector3Int wallCell, HashSet<Vector3Int> walls, ICollection<Vector3Int> enclosedCells)
     {
         if (enclosedCells == null || enclosedCells.Count == 0) return false;
-        bool parallel = false;
-        foreach (var dir in Dirs4)
-        {
-            if (enclosedCells.Contains(wallCell + dir))
-                parallel = true;
-        }
-        if(!parallel) return false;
+
         bool touchesInside = false;
         bool touchesOutside = false;
 
@@ -575,8 +573,7 @@ public static class EnclosedChecker
 
         return touchesInside && touchesOutside;
     }
-    //[Obsolete("use IsvalidDoorPostition instead")]
-   
+
     static bool IsStraightDegree2(Vector3Int cell, HashSet<Vector3Int> walls)
     {
         var neighbors = GetNeighborIsWall(cell, walls);
@@ -584,11 +581,19 @@ public static class EnclosedChecker
         return (neighbors[0] - cell) + (neighbors[1] - cell) == Vector3Int.zero;
     }
 
-
-
+    /// <summary>
+    /// Tìm ô wall thẳng (degree 2) gần nhất từ <paramref name="start"/>.
+    /// <paramref name="filter"/> chỉ dùng khi CHỌN candidate (kể cả start), không cắt BFS
+    /// để vẫn đi được trên toàn bộ component tường.
+    /// Không tìm được → trả về start (caller nên biết có thể không hợp lệ).
+    /// </summary>
     public static Vector3Int FindNearestStraightDegree2(Vector3Int start, HashSet<Vector3Int> walls, Func<Vector3Int, bool> filter = null)
     {
-        if (IsStraightDegree2(start, walls)) return start;
+        bool Passes(Vector3Int c) => filter == null || filter(c);
+
+        // Phải check filter cho start — trước đây return sớm bỏ qua filter → door dính cell mới
+        if (IsStraightDegree2(start, walls) && Passes(start))
+            return start;
 
         var queue = new Queue<Vector3Int>();
         var visited = new HashSet<Vector3Int>();
@@ -598,17 +603,19 @@ public static class EnclosedChecker
         while (queue.Count > 0)
         {
             Vector3Int cur = queue.Dequeue();
-            if (cur != start && IsStraightDegree2(cur, walls)) return cur;
+            if (cur != start && IsStraightDegree2(cur, walls) && Passes(cur))
+                return cur;
 
             foreach (var dir in Dirs4)
             {
                 Vector3Int next = cur + dir;
+                // Không prune bằng filter khi đi — chỉ filter lúc chọn door
                 if (!walls.Contains(next) || visited.Contains(next)) continue;
-                if (filter != null && !filter(next)) continue;
                 visited.Add(next);
                 queue.Enqueue(next);
             }
         }
+
         return start;
     }
 
@@ -621,10 +628,10 @@ public static class EnclosedChecker
     /// <param name="walls">Tập hợp tất cả wall + door (hoặc chỉ wall cũng được)</param>
     /// <param name="enclosedCells">Danh sách ô nằm trong vùng enclosed (đã có từ CheckFromNewCell)</param>
     /// <returns>Ô bên ngoài đối diện door. Nếu không tìm được thì trả về doorCell.</returns>
-    public static Vector3Int GetOutsideCellOppositeDoor(Vector3Int doorCell,HashSet<Vector3Int> walls,
+    public static Vector3Int GetOutsideCellOppositeDoor(Vector3Int doorCell, HashSet<Vector3Int> walls,
         ICollection<Vector3Int> enclosedCells)
     {
-        
+
         // 1. Tìm 2 neighbor là wall (phải là 2 hướng đối nhau)
         var wallNeighbors = GetNeighborIsWall(doorCell, walls);
         if (wallNeighbors.Count != 2)

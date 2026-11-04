@@ -1,20 +1,28 @@
 ﻿using Fusion;
 using UnityEngine;
 
-public class Door : StructureBase, ITakedamageable
+public class Door : StructureBase, ITakedamageable, IInteractable
 {
 
     [Networked]
     public Vector3 OutideOppositeDoor { get; private set; }
     public HealthComponent HealthDoor { get; private set; }
 
-    
+    [Networked]
+    public NetworkBool IsOpen { get; set; }
+
+    [SerializeField] InteractionData InteractionData;
+    public Transform InteractTransform => transform;
+
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
         if (HasStateAuthority)
         {
             OutideOppositeDoor = pos;
-        }
+            Vector3 directionDoor = (OutideOppositeDoor - transform.position).normalized;        
+            GetBehaviour<NetworkTransform>().Teleport(rotation: Quaternion.LookRotation(directionDoor));
+        }      
+        //Quaternion.L
     }
 
     public override void Spawned()
@@ -78,5 +86,42 @@ public class Door : StructureBase, ITakedamageable
     {
         return $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth}";
     }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    void RPC_RequestTriggerDoor(bool open)
+    {
+        if (open)
+        {
+            //Mở             
+            GetComponentInChildren<Animator>().Play("Open");
+        }
+        else
+        {
+            //đóng
+            GetComponentInChildren<Animator>().Play("Close");
+        }
+
+        IsOpen = open;
+
+    }
+
+    public InteractionData Data(NetworkPlayer interactor) => InteractionData;
+
+    public InteractionResult CanInteract(NetworkPlayer interactor)
+    {
+       return new InteractionResult (true);
+    }
+
+    public void OnInteract(InteractionContext ctx)
+    {
+        if(ctx.Phase == InteractPhase.Press)
+            RPC_RequestTriggerDoor(!IsOpen);
+    }
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(OutideOppositeDoor, Vector3.one);
+    }
+
 }
 

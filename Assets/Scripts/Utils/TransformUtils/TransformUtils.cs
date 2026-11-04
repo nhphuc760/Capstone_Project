@@ -17,4 +17,11 @@ public static class TransformUtils
         }
         return t.gameObject.AddComponent<T>();
     }
+
+    public static bool Valid(this GameObject source)
+    {
+        return source != null && source.activeInHierarchy;
+    }
+
+
 }

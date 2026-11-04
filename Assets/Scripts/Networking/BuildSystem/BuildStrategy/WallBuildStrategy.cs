@@ -98,17 +98,24 @@ public class WallBuildStrategy : IBuildStategy
         if (createsEnclosure && regionCount == 1)
         {
             StructureManager.Ins?.ClearEscapeWall(playerRef);
-            //Debug.LogError("Cell: " + cell);
-            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(cell, wallSet,filter: w =>  EnclosedChecker.IsValidDoorPosition(w, wallSet ,enclosedList));
+
+            // Topology sau khi khép kín: wallSet + cell mới
+            var wallsWithNew = new HashSet<Vector3Int>(wallSet) { cell };
+            var enclosedSet = enclosedList.ToHashSet() ?? new HashSet<Vector3Int>(enclosedList);
+            Vector3Int doorPos = EnclosedChecker.FindNearestStraightDegree2(
+                cell,
+                wallsWithNew,
+                w => EnclosedChecker.IsValidDoorPosition(w, wallsWithNew, enclosedSet));
+            Debug.Log($"[Door] cell={cell} doorPos={doorPos} valid={EnclosedChecker.IsValidDoorPosition(doorPos, wallsWithNew, enclosedSet)}");
 
 
             var playerObject = runner.GetPlayerObject(playerRef).GetBehaviour<NetworkPlayer>();
 
-            Door doorObj = playerObject.Door;            
+            Door doorObj = playerObject.Door;
             if (doorObj != null)
             {
                 doorObj.RPC_SetActiveNetworked(true);
-            }                        
+            }
             doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
             if (doorPos != cell)
             {
@@ -124,7 +131,7 @@ public class WallBuildStrategy : IBuildStategy
                 structureManager.SetStructure(cell, doorObj);
             }
             structureManager.SetEnclosedZone(playerRef, enclosedList);
-            Vector3 doorOppositeOutside = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);     
+            Vector3 doorOppositeOutside = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);
             doorObj.SetOutSideOppositeDoor(doorOppositeOutside);
             EventBus<BuildStategyEvent>.Raise(new BuildStategyEvent
             {
@@ -149,10 +156,10 @@ public class WallBuildStrategy : IBuildStategy
             else
             {
                 StructureManager.Ins?.ClearEscapeWall(playerRef);
-            }            
+            }
         }
         MakeSureBuildSystemValid(runner, playerRef);
-        buildSystem.wallAmount -= 1;                    
+        buildSystem.wallAmount -= 1;
     }
 
     void MakeSureBuildSystemValid(NetworkRunner runner, PlayerRef playerRef)
@@ -230,11 +237,11 @@ public class WallBuildStrategy : IBuildStategy
         }
 
         MakeSureBuildSystemValid(runner, playerRef);
-        if(buildSystem.wallAmount < 1)
+        if (buildSystem.wallAmount < 1)
         {
             return BuildValidationResult.Fail(reason: BuildFailReason.NotEnoughResource, message: "Đã hết Wall");
         }
-       
+
         return BuildValidationResult.OK();
 
     }
@@ -264,8 +271,8 @@ public class WallBuildStrategy : IBuildStategy
             Debug.LogWarning("Không tìm thấy Structure tương ứng");
             return;
         }
-        Vector3Int cell = structureEntry.Key;        
-        if (!obj.TryGetBehaviour<Wall>(out var wall)) return;        
+        Vector3Int cell = structureEntry.Key;
+        if (!obj.TryGetBehaviour<Wall>(out var wall)) return;
         var playerObject = runner.GetPlayerObject(obj.InputAuthority).GetBehaviour<NetworkPlayer>();
         Door door = playerObject.Door;
 
@@ -287,7 +294,7 @@ public class WallBuildStrategy : IBuildStategy
                 Debug.Log("Set door active false");
                 remaining.Remove(door.transform.position.ToInt());
                 door.RPC_SetActiveNetworked(false);
-                structureManager.RemoveStructure(door.transform.position.ToInt());              
+                structureManager.RemoveStructure(door.transform.position.ToInt());
             }
             Debug.Log("Vòng kín bị phá vỡ → Clear EnclosedList");
         }
@@ -318,6 +325,6 @@ public class WallBuildStrategy : IBuildStategy
 
     public void SetDataSO(StructureDataSO structureDataSO)
     {
-        this.wallSO =  structureDataSO;
+        this.wallSO = structureDataSO;
     }
 }

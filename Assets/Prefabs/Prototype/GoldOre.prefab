@@ -551,7 +551,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.47, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6522025421946802089}
@@ -582,7 +582,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a83ca22e7fb9940419ecb4e86cb87720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -840,7 +840,17 @@ MonoBehaviour:
   maxAmount: 100
   amountPerGather: 5
   staminaCostPerGather: 15
+  holdDuration: 3
+  animator: {fileID: 0}
   regenRatePerWave: 1
+  interaction:
+    Mode: 1
+    Prompt: Hold E
+    HoldTime: 0
+    InteractorAnimation:
+      stateName: Mining
+      hzState: 1.0344827
+  ratioFrameTarget: 0.4827586
 --- !u!114 &-6243198722043147703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -928,6 +938,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb376020ec296254a8de3f78320342ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IconOnMap
+  updateRealTime: 0
 --- !u!1 &9092260608111217689
 GameObject:
   m_ObjectHideFlags: 0

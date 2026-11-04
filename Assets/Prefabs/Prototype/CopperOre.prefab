@@ -147,7 +147,17 @@ MonoBehaviour:
   maxAmount: 50
   amountPerGather: 10
   staminaCostPerGather: 10
+  holdDuration: 3
+  animator: {fileID: 0}
   regenRatePerWave: 1
+  interaction:
+    Mode: 1
+    Prompt: Hold E
+    HoldTime: 0
+    InteractorAnimation:
+      stateName: Mining
+      hzState: 1.0344827
+  ratioFrameTarget: 0.4827586
 --- !u!114 &2262979560908630428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,7 +339,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8046383621456226954
 Transform:
   m_ObjectHideFlags: 0
@@ -340,8 +350,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.87, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 939896853621700237}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -371,7 +381,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a83ca22e7fb9940419ecb4e86cb87720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

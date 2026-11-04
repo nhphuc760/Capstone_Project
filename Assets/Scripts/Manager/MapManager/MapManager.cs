@@ -268,7 +268,8 @@ public class MapManager : NetworkBehaviour
     {
         if (!DrawDebug) return;
         if (greenZoneConfig == null || yellowZoneConfig == null || redZoneConfig == null)
-            return;       
+            return;
+        if (!Application.isPlaying) return;
         // Editor preview (khi chưa Generate)
         float stepSize = 1.0f;
         for (float x = 0; x < mapWidth; x += stepSize)

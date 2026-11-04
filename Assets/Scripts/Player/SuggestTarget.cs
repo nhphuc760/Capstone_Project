@@ -1,11 +1,12 @@
 ﻿
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
 
-public class SuggestTarget : MonoBehaviour
+public class SuggestTarget : NetworkBehaviour
 {
     [Header("Detection")]
-    [SerializeField, Min(0.1f)]
+    [SerializeField]
     private float searchRadius = 2.5f;
 
     [SerializeField]
@@ -19,7 +20,7 @@ public class SuggestTarget : MonoBehaviour
 
     private Targetable currentTarget;
     private float searchTimer;
-    public Targetable CurrentTarget => currentTarget;
+    public Targetable CurrentTarget => currentTarget;  
 
     private void Start()
     {
@@ -132,15 +133,15 @@ public class SuggestTarget : MonoBehaviour
 
     private void SetTarget(Targetable target)
     {
-        //Clear curTarget
-        if (currentTarget)
+        //Clear curTarget       
+        if (currentTarget && HasInputAuthority)
         {
             currentTarget.SetActiveIndicator(false);
         }
         //Set newTarget
         currentTarget = target;
 
-        if(target != null)
+        if(target != null && HasInputAuthority)
         {
             target.SetActiveIndicator(true);
         }

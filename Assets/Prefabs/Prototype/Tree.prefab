@@ -198,6 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb376020ec296254a8de3f78320342ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IconOnMap
+  updateRealTime: 0
 --- !u!1 &3080577298547454379
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,7 +257,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a83ca22e7fb9940419ecb4e86cb87720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -300,6 +301,7 @@ GameObject:
   - component: {fileID: 3447549450455145362}
   - component: {fileID: 3222162443914874053}
   - component: {fileID: 2895810692737046183}
+  - component: {fileID: 3652130451513554110}
   m_Layer: 9
   m_Name: SpruceTree3
   m_TagString: Untagged
@@ -380,6 +382,28 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!95 &3652130451513554110
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4062513033462714721}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 702b473422c666e46b9b0eb88bdd6277, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4607843113933684539
 GameObject:
   m_ObjectHideFlags: 0
@@ -647,6 +671,7 @@ GameObject:
   - component: {fileID: -8701603475819565025}
   - component: {fileID: 8241440449774646680}
   - component: {fileID: -2011430016449691489}
+  - component: {fileID: 3763639309676167532}
   m_Layer: 9
   m_Name: Tree
   m_TagString: Untagged
@@ -690,7 +715,17 @@ MonoBehaviour:
   maxAmount: 200
   amountPerGather: 10
   staminaCostPerGather: 5
+  holdDuration: 3
+  animator: {fileID: 3652130451513554110}
   regenRatePerWave: 1
+  interaction:
+    Mode: 1
+    Prompt: Hold E
+    HoldTime: 0
+    InteractorAnimation:
+      stateName: Chopping
+      hzState: 1.0344827
+  ratioFrameTarget: 0.55172414
 --- !u!114 &2165563400329243187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -768,6 +803,29 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 3080577298547454379}
   sinA: 0.05
   freq: 3
+--- !u!136 &3763639309676167532
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8828526485439760935}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.99
+  m_Height: 4.95
+  m_Direction: 1
+  m_Center: {x: -0.18, y: 4.41, z: 0}
 --- !u!1 &8903656549508578408
 GameObject:
   m_ObjectHideFlags: 0

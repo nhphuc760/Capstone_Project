@@ -14,15 +14,15 @@ public class TooltipUI : MonoBehaviour
     CancellationTokenSource tokenSource = new();
 
 
-    GameObject followObj;
+    Vector3 followPos;
 
-    public void Show( string description, Vector2 screenPosition, GameObject followObject)
+    public void Show( string description, Vector2 screenPosition, Vector3 followPos)
     {
         descriptionText.text = description;
 
         gameObject.SetActive(true);
 
-        followObj =  followObject;
+        this.followPos =  followPos;
         LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
         
         if(tokenSource != null && !tokenSource.IsCancellationRequested)
@@ -34,13 +34,14 @@ public class TooltipUI : MonoBehaviour
         tokenSource.Token.Register(() => Debug.Log("Token Cancel"));
         Utils.DelayCall(showDuration, () => Hide(), token: tokenSource.Token).Forget();
     }
+    
 
     private void LateUpdate()
     {        
-        if(followObj != null)
+        if(followPos != Vector3.zero)
         {
             RectTransform canvasRect = canvas.transform as RectTransform;
-            var toolTipPos = Camera.main.WorldToScreenPoint(followObj.transform.position);
+            var toolTipPos = Camera.main.WorldToScreenPoint(followPos);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvasRect,
                 toolTipPos,
@@ -63,7 +64,7 @@ public class TooltipUI : MonoBehaviour
             tokenSource.Dispose();
             tokenSource = null;
         }
-        followObj = null;
+        followPos = Vector3.zero;
         gameObject.SetActive(false);
     }
 }

@@ -11,9 +11,12 @@ public class NotificationManager : MonoBehaviour
     [Header("Life Time")]
     [SerializeField] float visibleTime = 3f;
 
+    [SerializeField] IconTMP iconTMP;
+
     private readonly List<NotificationItem> activeItems = new();
 
     public static NotificationManager Ins { get; private set; }
+    public IconTMP IconTMP { get => iconTMP; }
 
     int nextItemIndex;
 
@@ -57,6 +60,7 @@ public class NotificationManager : MonoBehaviour
 
     public void ShowNotification(string message, int flags = 0)
     {
+        if(string.IsNullOrEmpty(message)) return;
         NotificationItem item = allItems[nextItemIndex];
 
         nextItemIndex++;

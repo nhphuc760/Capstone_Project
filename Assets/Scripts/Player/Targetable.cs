@@ -14,9 +14,9 @@ public class Targetable : MonoBehaviour
     [SerializeField]
     GameObject IndicatorTarget;
     [SerializeField]
-    float sinA = .5f;
+    float sinA = .05f;
     [SerializeField]
-    float freq = 1f;
+    float freq = 3f;
 
     Vector3 originPos;
 
@@ -36,7 +36,7 @@ public class Targetable : MonoBehaviour
     private void Update()
     {
         float x = sinA * Mathf.Sin(2 * Mathf.PI * freq * Time.time);
-        if(IndicatorTarget)
+        if(IndicatorTarget.Valid())
         {
             IndicatorTarget.transform.localPosition = originPos + Vector3.up * x;
             LockAtPlayer();

@@ -36,8 +36,16 @@ public class GatherResult
 }
 
 
-public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInteractable
 {
+    [Flags]
+    public enum PlayerState : byte
+    {
+        None,
+        Interacting,
+        Shopping,
+
+    }
     public static NetworkPlayer Local { get; private set; }
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
@@ -46,6 +54,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     [SerializeField] GameObject CanvasOverlay;
     [SerializeField] TooltipUI TooltipUI;
     [SerializeField] StructureUI StructureUI;
+    [SerializeField] InteractionSystem interactionSystem;
+    [SerializeField] InteractionData InteractionData;
+    [SerializeField] GameObject Axe;
+    [SerializeField] GameObject PickAxe;    
+    [SerializeField] GameObject Screwdriver;
     public Stats _stats { get; private set; }
 
 
@@ -57,8 +70,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     public NetworkInventory inventory { get; private set; }
 
     //Resource Exploitation
-    [SerializeField] float gatherRanged = 1.5f;
-    [Networked] public ToolType equipTool { get; set; }
+    [Networked, OnChangedRender(nameof(OnEquipTool))] public ToolType equipTool { get; set; }
     [Networked] TickTimer mineIntervalTimer { get; set; }
     [SerializeField] IconTMP iconTMP;
 
@@ -86,6 +98,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     Door doorPlayer;
     public Door Door => doorPlayer;
 
+    public Transform InteractTransform => transform;
+
     public override void Spawned()
     {
         if (Runner.LocalPlayer == Object.InputAuthority && Local == null)
@@ -97,13 +111,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             cameraView.gameObject.SetActive(false);
             CanvasOverlay.SetActive(false);
         }
-        Debug.Log("HasStateAuthority: " + Object.HasStateAuthority);
         controller.SetGravity(Physics.gravity.y * 2f);
         gameObject.name = Object.InputAuthority.ToString();
         inventory ??= GetComponent<NetworkInventory>();
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         _stats ??= GetComponent<Stats>();
+        //Suggest Target
+        suggestTarget ??= GetComponent<SuggestTarget>();
+        suggestTarget.enabled = true;
         Health.Initialize(_stats);
         Stamina.Initialize(_stats);
         if (HasInputAuthority)
@@ -129,9 +145,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
             }
 
-            //Suggest Target
-            suggestTarget ??= GetComponent<SuggestTarget>();
-            suggestTarget.enabled = true;
             //Subcribe RadialMenu event
             var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
             if (radialmenu != null)
@@ -160,17 +173,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
 
     private void Update()
-    {       
+    {
         if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
         {
-            
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
                 if (hit.collider.transform.root.TryGetComponent<ITooltipContext>(out var context))
                 {
-                    TooltipUI.Show(context.GetContent(), Input.mousePosition, hit.collider.gameObject);
+                    TooltipUI.Show(context.GetContent(), Input.mousePosition, hit.point);
                 }
                 else
                 {
@@ -200,7 +213,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
 
 
-    }    
+    }
 
     public override void FixedUpdateNetwork()
     {
@@ -223,13 +236,29 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 }
                 //RPC_TestSet();
             }
+
+            if (data.button.WasPressed(previousInput, ButtonType.Interact))
+            {
+                interactionSystem.Pressed();
+            }
+
             if (data.button.IsSet(ButtonType.Interact))
             {
-                Debug.Log("EquipTool: " + equipTool.ToString());
-                if (equipTool == ToolType.None) return;
-
-                TryMineResource();
+                interactionSystem.Hold(Runner.DeltaTime);
             }
+
+            if (data.button.WasReleased(previousInput, ButtonType.Interact))
+            {
+                interactionSystem.Released();
+            }
+
+            //if (data.button.IsSet(ButtonType.Interact))
+            //{
+            //    Debug.Log("EquipTool: " + equipTool.ToString());
+            //    //fix to get IInteractable
+            //    //if (equipTool == ToolType.None) return;
+            //    TryMineResource();
+            //}
             if (data.button.WasPressed(previousInput, ButtonType.TestAddModify))
             {
                 if (!HasStateAuthority) return;
@@ -262,7 +291,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             if (inventory)
             {
                 var InventoryUI = GetComponentInChildren<InventoryUI>();
-    
+
                 if (InventoryUI != null)
                 {
                     inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
@@ -288,19 +317,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         if (nodeRes == null || nodeRes.IsDepleted)
         {
             return GatherResult.FAIL(GatherResult.FailReason.Depleted, "Tài nguyên đã cạn kiệt");
-        }        
+        }
 
         if (nodeRes.RequiredTool != ToolType.None && equipTool != nodeRes.RequiredTool)
         {
             return GatherResult.FAIL(GatherResult.FailReason.InvalidTool, "Công cụ khai thác không phù hợp");
         }
-
-        //Vector3 dirToNode = (nodeRes.transform.position - transform.position).normalized;
-        //if (!(Vector3.Dot(dirToNode, transform.forward) > 0))
-        //{
-        //    Debug.Log("Player không úp mặt vào node");
-        //    return false;
-        //}
 
         if (!Stamina.TryConsume(nodeRes.StaminaCostPerGather))
         {
@@ -308,18 +330,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
         int resourceExtract = nodeRes.Extract();
         AddResource(nodeRes.Extract(), nodeRes.ResourceType);
-        return GatherResult.OK($"Đã thu thập {iconTMP.GetResourceCode( nodeRes.ResourceType)} x{resourceExtract}");
+        return GatherResult.OK($"Đã thu thập {iconTMP.GetResourceCode(nodeRes.ResourceType)} x{resourceExtract}");
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-
-    }
 
     void TryMineResource()
     {
@@ -327,26 +340,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         if (mineIntervalTimer.ExpiredOrNotRunning(Runner) && suggestTarget.CurrentTarget != null)
         {
             RPC_RequestToolAction(suggestTarget.CurrentTarget.GetComponent<NetworkObject>());
-            //mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, mineInterval);
-            //Vector3 center = transform.position + Vector3.up * .5f;
-            //Vector3 extents = new Vector3(gatherRanged, 1f, gatherRanged);
-            //DrawLog.DrawCube(center, extents, Color.red);
-            //int hitsCount = Runner.LagCompensation.OverlapBox(center, extents, Quaternion.identity, Object.InputAuthority, resourcesHit, 1 << 9, HitOptions.IncludePhysX, true);
-            //if (hitsCount == 0) return;
-            //HashSet<ResourceNode> test = new HashSet<ResourceNode>();
-            //test = resourcesHit.Select(x => x.Collider.GetComponentInParent<ResourceNode>()).ToHashSet();
-            //foreach (var i in test)
-            //{
-            //    Debug.Log("Collider Hit: " + i.transform.name);
-            //    Debug.Log($"Node != null ? {i != null}");
-            //    TryGather(i);
-            //}
         }
     }
-    
+
     void OnReliableReceiveData(ReliableReceiveData data)
     {
-        if(data.key == ConstReliableKey.GatherResult)
+        if (data.key == ConstReliableKey.GatherResult)
         {
             string json = Encoding.UTF8.GetString(data.data);
             GatherResult result = JsonConvert.DeserializeObject<GatherResult>(json);
@@ -369,7 +368,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 break;
             case ResourceType.Stone:
                 resourcePlayer.Stone += amount;
-                break;           
+                break;
             case ResourceType.Gold:
                 resourcePlayer.GoldOre += amount;
                 break;
@@ -379,17 +378,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
 
     }
-  
+
     public void ComsumpResource(NetworkResourcePlayer resource)
     {
         if (!HasStateAuthority) return;
         this.resourcePlayer.Wood -= resource.Wood;
-        this.resourcePlayer.Stone -= resource.Stone;    
+        this.resourcePlayer.Stone -= resource.Stone;
         this.resourcePlayer.GoldOre -= resource.GoldOre;
         this.resourcePlayer.Electric -= resource.Electric;
     }
 
-  
+
 
     void OnRadialMenuSelected(int index)
     {
@@ -425,10 +424,40 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     public void RemoveModifier(int _id)
     {
-        if(HasStateAuthority)
+        if (HasStateAuthority)
             _stats.RemoveModifierByID(_id);
     }
 
+
+    void OnEquipTool()
+    {
+        switch (equipTool)
+        {
+            case ToolType.None:
+                Axe.SetActive(false);
+                PickAxe.SetActive(false);
+                Screwdriver.SetActive(false);
+                break;
+            case ToolType.Axe:
+                Axe.SetActive(true);
+                PickAxe.SetActive(false);
+                Screwdriver.SetActive(false);
+                break;
+            case ToolType.PickAxe:
+                Axe.SetActive(false);
+                PickAxe.SetActive(true);
+                Screwdriver.SetActive(false);
+                break;
+            case ToolType.Screwdriver:
+                Axe.SetActive(false);
+                PickAxe.SetActive(false);
+                Screwdriver.SetActive(true);
+                break;
+            default:
+                break;
+        }
+
+    }
 
     //RPC calls
 
@@ -444,7 +473,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     {
         NetworkObject obj = Runner.FindObject(target);
         if (obj == null) return;
-        if ((transform.position - suggestTarget.CurrentTarget.transform.position).sqrMagnitude > gatherRanged * gatherRanged) return;
+        if ((transform.position - suggestTarget.CurrentTarget.transform.position).sqrMagnitude > 1.5f) return;
 
         if (suggestTarget.CurrentTarget.TryGetComponent<NetworkPlayer>(out var player))
         {
@@ -452,14 +481,45 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
         else if (suggestTarget.CurrentTarget.TryGetComponent<ResourceNode>(out var resourceNode))
         {
-            var gatherResult = TryGather(resourceNode);           
+            var gatherResult = TryGather(resourceNode);
             string json = JsonConvert.SerializeObject(gatherResult);
             byte[] sData = Encoding.UTF8.GetBytes(json);
-            Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.GatherResult, sData);            
+            Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.GatherResult, sData);
+        }
+        else if (suggestTarget.CurrentTarget.TryGetComponent<IInteractable>(out var interactable))
+        {
+            //interactable.OnInteract(this, interactable.Data(this));
         }
         //Lookat target here
-        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, 1/_stats.Get(StatsType.AttackSpeed));
+        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, 1 / _stats.Get(StatsType.AttackSpeed));
 
     }
 
+
+
+    //IInteractable implementation
+
+    public InteractionData Data(NetworkPlayer interactor) => InteractionData;
+
+    public InteractionResult CanInteract(NetworkPlayer interactor)
+    {
+        if (!interactor.Health.IsAlive)
+        {
+            return new InteractionResult(false, "Ngỏm củ tỏi rồi!");
+        }
+        if (interactor.Stamina.CurrentStamina < 10)
+        {
+            return new InteractionResult(false, "Không đủ thể lực!");
+        }
+        if (interactor.equipTool != ToolType.Axe && interactor.equipTool != ToolType.PickAxe)
+        {
+            return new InteractionResult(false);
+        }
+        return new InteractionResult(true);
+    }
+
+    public void OnInteract(InteractionContext ctx)
+    {
+        TakeDamage(ctx.Interactor._stats.Get(StatsType.Damage), ctx.Interactor.Object);
+    }
 }
