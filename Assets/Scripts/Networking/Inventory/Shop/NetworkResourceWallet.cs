@@ -1,4 +1,5 @@
 
+using System;
 using Fusion;
 using UnityEngine;
 
@@ -261,5 +262,10 @@ public class NetworkResourceWallet : NetworkBehaviour
         );
 
         return true;
+    }
+
+    internal bool TryAddResource(object goldOre, int rewardGoldOre)
+    {
+        throw new NotImplementedException();
     }
 }
