@@ -144,7 +144,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
     {
         if (InteractionInterval.ExpiredOrNotRunning(Runner))
         {
-            animator?.SetTrigger("Trigger");
+            if(animator) animator.SetTrigger("Trigger");
             int extractedAmount = Extract();
             ctx.Interactor.AddResource(extractedAmount, resourceType);
             if (Runner.LocalPlayer == ctx.Interactor.Object.InputAuthority)

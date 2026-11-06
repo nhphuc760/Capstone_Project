@@ -20,19 +20,35 @@ MonoBehaviour:
     weight: 30
     scaleMin: {x: 0, y: 0, z: 0}
     scaleMax: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 9025445585508119793, guid: 690473f3d858eb84e8907e74a7bbeee0, type: 3}
+  - prefab: {fileID: 1056795760572773180, guid: ceb222210fc4f8243bb7543e0f39caf1, type: 3}
     weight: 20
     scaleMin: {x: 0, y: 0, z: 0}
     scaleMax: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 2842403539854231460, guid: 673b86b5a9af6e841bbe7d0fd5103b16, type: 3}
-    weight: 20
-    scaleMin: {x: 0, y: 0, z: 0}
-    scaleMax: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 2262979560908630428, guid: cb41206f809d0614485d691f937fdd68, type: 3}
-    weight: 10
-    scaleMin: {x: 0, y: 0, z: 0}
-    scaleMax: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: -6243198722043147703, guid: adc9c4ddbc2003646b8bf20b241a11c5, type: 3}
+  - prefab: {fileID: 1451913125180742326, guid: ff0633cc4c4d2e74aadc5f8ae47246e5, type: 3}
     weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 5790510526526997346, guid: aafdae5801d32784b97af6af490e5c7b, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 1720806281762163765, guid: 672a0267b7e069042a49b3f63423d5b8, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 7937453108398423669, guid: 06be4ce2fd9ccb64bb720a011e9531ce, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 2832694803254454686, guid: adc9c4ddbc2003646b8bf20b241a11c5, type: 3}
+    weight: 1.5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 7867989093569293452, guid: 2b8a9861ca8dd9d478b1bc47202af26a, type: 3}
+    weight: 1.5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 8809976015122591978, guid: 34e857d45eb178544925456aaeffdf4e, type: 3}
+    weight: 1.5
     scaleMin: {x: 0, y: 0, z: 0}
     scaleMax: {x: 0, y: 0, z: 0}

@@ -20,7 +20,19 @@ MonoBehaviour:
     weight: 70
     scaleMin: {x: 0, y: 0, z: 0}
     scaleMax: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 2262979560908630428, guid: cb41206f809d0614485d691f937fdd68, type: 3}
-    weight: 30
+  - prefab: {fileID: 1451913125180742326, guid: ff0633cc4c4d2e74aadc5f8ae47246e5, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 1720806281762163765, guid: 672a0267b7e069042a49b3f63423d5b8, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 5790510526526997346, guid: aafdae5801d32784b97af6af490e5c7b, type: 3}
+    weight: 5
+    scaleMin: {x: 0, y: 0, z: 0}
+    scaleMax: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 7937453108398423669, guid: 06be4ce2fd9ccb64bb720a011e9531ce, type: 3}
+    weight: 5
     scaleMin: {x: 0, y: 0, z: 0}
     scaleMax: {x: 0, y: 0, z: 0}
