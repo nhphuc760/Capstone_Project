@@ -82,87 +82,76 @@ public class NetworkInventory : NetworkBehaviour
     #region Host add item
     public bool CanAddItem(int itemID, int amount)
     {
-        if (!Object.HasStateAuthority)
-        {
-
-            return false;
-        }
-
-        if (amount <= 0)
+        if (!Object.HasStateAuthority || amount <= 0)
             return false;
 
         ItemSO item = database.GetItem(itemID);
-
         if (item == null)
             return false;
 
-
-        // -----------------------------------------------------
-        // STACKABLE ITEM
-        // -----------------------------------------------------
-
+        int remaining = amount;
         if (item.Stackable)
         {
             for (int i = 0; i < capacity; i++)
             {
                 InventoryItem slot = Items.Get(i);
-
                 if (slot.itemID != itemID)
                     continue;
 
-                if (slot.amount >= item.MaxStack)
-                    continue;
-
-
-                int availableSpace =
-                    item.MaxStack - slot.amount;
-
-                int amountToAdd =
-                    Mathf.Min(amount, availableSpace);
-
-
-                slot.amount += amountToAdd;
-
-                Items.Set(i, slot);
-
-                amount -= amountToAdd;
-
-
-                if (amount <= 0)
-                {
+                remaining -= Mathf.Max(0, item.MaxStack - slot.amount);
+                if (remaining <= 0)
                     return true;
-                }
             }
         }
 
-
-        // -----------------------------------------------------
-        // CREATE NEW SLOT
-        // -----------------------------------------------------
-
-        while (amount > 0)
+        int emptySlots = 0;
+        for (int i = 0; i < capacity; i++)
         {
-            int emptySlot = FindEmptySlot();
-
-            if (emptySlot == -1)
-                return false;
-
-
-            int amountToAdd;
-
-            if (item.Stackable)
-                amountToAdd = Mathf.Min(amount, item.MaxStack);
-            else
-                amountToAdd = 1;
-
-
-            Items.Set(
-                emptySlot,
-                new InventoryItem(itemID, amountToAdd)
-            );
-            amount -= amountToAdd;
+            if (Items.Get(i).IsEmpty)
+                emptySlots++;
         }
 
+        int requiredSlots = item.Stackable
+            ? Mathf.CeilToInt((float)remaining / item.MaxStack)
+            : remaining;
+        return requiredSlots <= emptySlots;
+    }
+
+    public bool TryAddItem(int itemID, int amount)
+    {
+        if (!CanAddItem(itemID, amount))
+            return false;
+
+        ItemSO item = database.GetItem(itemID);
+        int remaining = amount;
+
+        if (item.Stackable)
+        {
+            for (int i = 0; i < capacity && remaining > 0; i++)
+            {
+                InventoryItem slot = Items.Get(i);
+                if (slot.itemID != itemID || slot.amount >= item.MaxStack)
+                    continue;
+
+                int amountToAdd = Mathf.Min(remaining, item.MaxStack - slot.amount);
+                slot.amount += amountToAdd;
+                Items.Set(i, slot);
+                remaining -= amountToAdd;
+            }
+        }
+
+        while (remaining > 0)
+        {
+            int emptySlot = FindEmptySlot();
+            if (emptySlot < 0)
+                return false;
+
+            int amountToAdd = item.Stackable
+                ? Mathf.Min(remaining, item.MaxStack)
+                : 1;
+            Items.Set(emptySlot, new InventoryItem(itemID, amountToAdd));
+            remaining -= amountToAdd;
+        }
 
         return true;
     }
@@ -172,7 +161,7 @@ public class NetworkInventory : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_AddItem(int itemID, int amount)
     {
-        CanAddItem(itemID, amount);
+        TryAddItem(itemID, amount);
     }
     #endregion
 

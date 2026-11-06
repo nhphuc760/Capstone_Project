@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46b207ec5bd0fe54cb362d9644b15b4e, type: 3}
-  m_Name: Wood 1
+  m_Name: TestGem
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
-  itemId: 2
-  itemName: Wood
+  itemId: 1002
+  itemName: Test Gem
+  description: Valuable used only by TestShop.
   itemType: 2
-  icon: {fileID: 21300000, guid: decc33e0428e74349941f54fe6299753, type: 3}
+  icon: {fileID: 0}
   objectPrefab: {fileID: 0}
   stackable: 1
   maxStack: 99

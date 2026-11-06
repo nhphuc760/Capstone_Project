@@ -5,29 +5,81 @@ using System.Collections.Generic;
 public class QuestProgress
 {
     public QuestSO quest;
-    public List<QuestObjective> objectives;
 
-    public QuestProgress(QuestSO quest)
+    public List<QuestObjective> objectives =
+        new List<QuestObjective>();
+
+    public bool IsCompleted()
     {
-        #region Save the quest and initialize objectives
-        this.quest = quest;
-        objectives = new List<QuestObjective>();
-
-        foreach (var obj in quest.objectives)
-        {
-            objectives.Add(new QuestObjective
-            {
-                objectiveID = obj.objectiveID,
-                targetID = obj.targetID,
-                description = obj.description,
-                type = obj.type,
-                requiredAmount = obj.requiredAmount,
-                currentAmount = 0
-            });
-        }
-        #endregion
+        return objectives.Count > 0 &&
+               objectives.TrueForAll(o => o.IsCompleted);
     }
 
-    public bool IsCompleted() => objectives.TrueForAll(o => o.IsCompleted);
-    public string QuestID => quest.questID;
+    public string QuestID => quest != null ? quest.questID : string.Empty;
+
+    public string QuestName => quest != null ? quest.questName : string.Empty;
+
+    // Read Networked Data and update local progress.
+    public bool RefreshFromNetwork(NetworkQuestSys source)
+    {
+        if (source == null || source.Database == null)
+            return false;
+
+        if (!source.HasAssignedQuest)
+            return false;
+
+        QuestSO sourceQuest = source.Database.GetQuest(
+            source.CurrentQuestID
+        );
+
+        if (sourceQuest == null)
+            return false;
+
+        quest = sourceQuest;
+
+        objectives.Clear();
+
+        for (int i = 0; i < source.ObjectiveCount; i++)
+        {
+            if (!source.TryGetObjective(
+                i,
+                out NetworkQuestSys.NetworkObjective networkObjective))
+            {
+                continue;
+            }
+
+            objectives.Add(new QuestObjective
+            {
+                objectiveID = networkObjective.objectiveID.ToString(),
+
+                targetID = networkObjective.targetID.ToString(),
+
+                description = GetDescription(
+                    sourceQuest,
+                    networkObjective.objectiveID.ToString()
+                ),
+
+                type = (ObjectiveType)networkObjective.objectiveType,
+
+                currentAmount = networkObjective.currentAmount,
+
+                requiredAmount = networkObjective.requiredAmount
+            });
+        }
+
+        return true;
+    }
+
+    private string GetDescription(
+        QuestSO sourceQuest,
+        string objectiveID)
+    {
+        foreach (QuestObjective objective in sourceQuest.objectives)
+        {
+            if (objective.objectiveID == objectiveID)
+                return objective.description;
+        }
+
+        return string.Empty;
+    }
 }
