@@ -3433,11 +3433,11 @@ MonoBehaviour:
   Axe: {fileID: 7726858504539527589}
   PickAxe: {fileID: 35574880306695283}
   Screwdriver: {fileID: 6707211205469294620}
+  animator: {fileID: 6721125320261425079}
   controller: {fileID: 5816453605207640125}
   cameraView: {fileID: 2482603673533289662}
   jumpForce: 8
   _equipTool: 0
-  iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   suggestTarget: {fileID: -4642978615242726096}
   doorPrefab:
     RawGuidValue: d2fcbdbbd1972d7499a34dc8e90159db
@@ -3453,7 +3453,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d5a2f9e9386864fab862e7d248348c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuggestTarget
-  searchRadius: 2.5
+  searchRadius: 1.75
   targetLayers:
     serializedVersion: 2
     m_Bits: 905
@@ -3696,7 +3696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a5a8639e9988144caa66afd7af76d24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractionSystem
-  defaultInteractRange: 1
+  defaultInteractRange: 1.2
   suggestTarget: {fileID: -4642978615242726096}
   _IsInteracting:
     _value: 0
@@ -8235,7 +8235,7 @@ MonoBehaviour:
   UpgradeButton: {fileID: 5385680707649132478}
   DestroyButton: {fileID: 8226218595334225542}
   canvas: {fileID: 7898563990685459404}
-  showDuration: 5
+  showDuration: 3
 --- !u!114 &5532412642005891904
 MonoBehaviour:
   m_ObjectHideFlags: 0

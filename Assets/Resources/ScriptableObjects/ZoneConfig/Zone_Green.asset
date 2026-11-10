@@ -36,7 +36,3 @@ MonoBehaviour:
     weight: 5
     scaleMin: {x: 0.5, y: 0.5, z: 0.5}
     scaleMax: {x: 1, y: 1, z: 1}
-  - prefab: {fileID: 7937453108398423669, guid: 06be4ce2fd9ccb64bb720a011e9531ce, type: 3}
-    weight: 3
-    scaleMin: {x: 0.5, y: 0.5, z: 0.5}
-    scaleMax: {x: 1, y: 1, z: 1}

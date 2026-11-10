@@ -1,9 +1,9 @@
 ﻿using Fusion;
 using UnityEngine;
-public class Refrigerator : StructureBase
+public class Refrigerator : StructureBase, IInteractable
 {
     [Networked] int idModifier { get; set; }
-
+    [SerializeField] InteractionData interactionData;
 
     public override void Spawned()
     {
@@ -45,6 +45,30 @@ public class Refrigerator : StructureBase
         
     }
 
-    
+    public Transform InteractTransform => transform;
+
+    public System.Action OnCompleted { get; set; }
+
+
+    public InteractionData Data(NetworkPlayer interactor) => interactionData;
+    public InteractionResult CanInteract(NetworkPlayer interactor)
+    {
+        if (interactor.equipTool != ToolType.Screwdriver)
+        {
+            return new InteractionResult(false);
+        }
+        return new InteractionResult(true);
+    }
+
+    public void OnInteract(InteractionContext ctx)
+    {
+        if (ctx.Phase == InteractPhase.Hold)
+        {
+            if (ctx.HoldTime >= interactionData.HoldTime)
+            {
+                StructureManager.Ins?.DestroyStructure(Object);
+            }
+        }
+    }
 
 }

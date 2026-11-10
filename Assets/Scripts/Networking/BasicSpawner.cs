@@ -67,12 +67,12 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
         NetworkButtons button = default;
         if (curBoard != null)
         {
-            Vector2 dirMove = Vector2.zero;
+            Vector3 dirMove = Vector3.zero;
 
             if (curBoard.wKey.isPressed)
-                dirMove.y += 1;
+                dirMove.z += 1;
             if (curBoard.sKey.isPressed)
-                dirMove.y += -1;
+                dirMove.z += -1;
             if (curBoard.aKey.isPressed)
                 dirMove.x += -1;
             if (curBoard.dKey.isPressed)

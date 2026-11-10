@@ -34,6 +34,10 @@ public class ResourceNodeUI : MonoBehaviour
 
     private void ResourceNode_OnAmountChanged(int arg1, int arg2)
     {
+        if(arg1 == arg2)
+        {
+            return;
+        }
         timer = showDuration;
         gameObject.SetActive(true); 
         if(circleBar)

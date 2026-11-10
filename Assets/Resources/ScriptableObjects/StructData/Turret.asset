@@ -48,7 +48,7 @@ MonoBehaviour:
           stats:
             _serializedList:
             - Key: 10
-              Value: 1.2
+              Value: 0.9
             - Key: 1
               Value: 8
             - Key: 5
@@ -68,8 +68,8 @@ MonoBehaviour:
       data:
         iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
         Wood: 1
-        Stone: 10
-        Gold: 20
+        Stone: 0
+        Gold: 0
         Electric: 0
     - rid: 2680167813166923850
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}

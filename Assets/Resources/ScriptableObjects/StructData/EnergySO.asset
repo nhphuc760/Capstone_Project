@@ -25,7 +25,7 @@ MonoBehaviour:
   - rid: 2680167812576575568
   prefabs: {fileID: 7588526742645363919, guid: 5f1e874e08f7d294080bc2159d4c7dc3, type: 3}
   levels:
-  - rid: -2
+  - rid: 2672765665595359367
   - rid: -2
   - rid: -2
   - rid: -2
@@ -40,9 +40,31 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 2672765665595359367
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 11
+              Value: 1
+            - Key: 12
+              Value: 0.5
+        upgradeRequirement:
+        - rid: 2672765665595359368
+    - rid: 2672765665595359368
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 1
+        Stone: 0
+        Gold: 0
+        Electric: 0
     - rid: 2680167812576575568
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
         Wood: 1
         Stone: 0
         Gold: 0

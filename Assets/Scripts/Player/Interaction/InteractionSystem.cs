@@ -1,12 +1,13 @@
 ﻿using System.Text;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using Newtonsoft.Json;
 using UnityEngine;
 
 public class InteractionSystem : NetworkBehaviour, IBeforeTick
 {
     [Header("Interaction")]
-    [SerializeField] float defaultInteractRange = 2.2f;
+    [SerializeField] float defaultInteractRange = 1f;
     [SerializeField] SuggestTarget suggestTarget;
 
     // ===== Networked State =====
@@ -65,13 +66,15 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
     // Server xử lý Continuous        
     public void Pressed()
     {
-        if(_currentInteractable != null && _currentInteractable.CanInteract(player).Success)
+        if(_currentInteractable != null && (_currentInteractable.InteractTransform.position - player.transform.position).sqrMagnitude < defaultInteractRange * defaultInteractRange)
         {
             var result = _currentInteractable.CanInteract(player);
             if (result.Success)
             {
                 IsInteracting = true;
                 HoldTime = 0;
+                if(_currentInteractable.OnCompleted == null)
+                    _currentInteractable.OnCompleted += OnCompleted;              
                 //Interactor play animation _currentInteractable.Data(player).InteractorAnimation after delay
                 string animState = _currentInteractable.Data(player).InteractorAnimation.stateName;
                 if(!string.IsNullOrEmpty(animState))
@@ -80,6 +83,9 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
                     float speed = player._stats.Get(StatsType.AttackSpeed) / _currentInteractable.Data(player).InteractorAnimation.hzState;
                     animator.speed = speed;                   
                 }
+                //Lockat target
+                Vector3 dir = (_currentInteractable.InteractTransform.position - player.transform.position).normalized;
+                player.transform.GetChild(0).localRotation = Quaternion.LookRotation(dir);
                 SendPhase(_currentInteractable, InteractPhase.Press);
             }           
                 string json = JsonConvert.SerializeObject(result);
@@ -97,9 +103,7 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
     }
 
     public void Released()
-    {
-        animator.Play("Idle");
-        animator.speed = 1f;
+    {       
         if (IsInteracting)
         {
             IsInteracting = false;
@@ -107,6 +111,14 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
             player.GetComponentInChildren<Animator>().Play("Idle");
         }
     }
+
+
+    void OnCompleted()
+    {
+        IsInteracting = false;
+        animator.Play("Idle");
+        animator.speed = 1f;
+    }  
 
     private void SendPhase(
        IInteractable interactable,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
     [SerializeField] int staminaCostPerGather;
     [SerializeField] float holdDuration = 3f;
     [SerializeField] Animator animator;
+    [SerializeField] IconTMP iconTMP;
 
     [Tooltip("Phần trăm maxAmount hồi lại sau mỗi đợt wave")] 
     [SerializeField, Range(0f, 1f)] float regenRatePerWave;
@@ -51,11 +53,23 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
 
     public Transform InteractTransform => transform;
 
+    public Action OnCompleted { get; set; }
+
+    public IProcessor Processor => null;
+
     public event Action<ResourceNode> OnDepleted;
     public event Action<ResourceNode> OnRegenerated;
     public event Action<int, int> OnAmountChanged;
 
 
+    private void Awake()
+    {
+        if (iconTMP == null)
+        {
+            Debug.LogWarning("iconTMP null");
+            iconTMP = Resources.LoadAll<IconTMP>("IconTextMeshPro").First();
+        }
+    }
 
 
     public override void Spawned()
@@ -65,6 +79,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
 
     public int Extract(float efficiencyMultiplier = 1f)
     {
+
         if (IsDepleted) return 0;
         int requested = Mathf.RoundToInt(amountPerGather * Mathf.Max(0f, efficiencyMultiplier));
         int actual = Mathf.Min(requested, CurrentAmount);
@@ -108,7 +123,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
        if(interactor.Stamina.CurrentStamina < staminaCostPerGather)
             return new InteractionResult(false, "Không đủ thể lực!");
         if (requiredTool != ToolType.None && interactor.equipTool != requiredTool)
-            return new InteractionResult(false, $"Cần {requiredTool.ToString()} để khai thác");
+            return new InteractionResult(false, $"Cần {iconTMP.GetToolCode(requiredTool)} để khai thác");
         if (IsDepleted)
             return new InteractionResult(false, "Tài nguyên đã cạn kiệt");
         return new InteractionResult(true);

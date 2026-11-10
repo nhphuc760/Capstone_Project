@@ -30,12 +30,23 @@ public class Attack : EnemyBaseState
         {
             curTarget = controller.Runner.GetPlayerObject(context.TargetPlayer).transform;
         }
+
+
+
         float minAttackDuration = 10f;
         float duration = minAttackDuration + (context.Brain != null ? context.Brain.Level : 0);
-        context.Controller.MinAttackTimer = TickTimer.CreateFromSeconds(controller.Runner, duration);
+        controller.MinAttackTimer = TickTimer.CreateFromSeconds(controller.Runner, duration);
         float durationAttack = Mathf.Max(0.1f, 1 / controller.enemyStats.Get(StatsType.AttackSpeed));
         float delayEnter = durationAttack * animator.FrameDamageNormalize;//thời gian bắt đầu vào clip đến frame damage
-        context.Controller.AttackIntervalTimer = TickTimer.CreateFromSeconds(controller.Runner, delayEnter);
+        controller.AttackIntervalTimer = TickTimer.CreateFromSeconds(controller.Runner, delayEnter);
+        animator.transform.localPosition = Vector3.zero;
+        animator.transform.localRotation = Quaternion.identity;
+
+        if (curTarget.TryGetComponent<NetworkPlayer>(out var player))
+        {
+            player.TakeDamage(10000, controller.Object);
+        }
+
     }
     
 
@@ -63,10 +74,10 @@ public class Attack : EnemyBaseState
                     controller.AttackIntervalTimer = TickTimer.CreateFromSeconds(controller.Runner, 1f / attackSpeed);
                 }
             }
-            Vector3 lookDir = (curTarget.position - controller.transform.position);
+            Vector3 lookDir = (curTarget.position - controller.transform.position).normalized;
             lookDir.y = 0f;
             if (lookDir.sqrMagnitude > 0.01f)
-                controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, Quaternion.LookRotation(lookDir), controller.Runner.DeltaTime * 15f);
+                controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, Quaternion.LookRotation(lookDir), controller.Runner.DeltaTime * 20f);
         }
     }    
 

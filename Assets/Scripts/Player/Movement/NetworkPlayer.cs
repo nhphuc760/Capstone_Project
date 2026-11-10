@@ -59,26 +59,21 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     [SerializeField] GameObject Axe;
     [SerializeField] GameObject PickAxe;    
     [SerializeField] GameObject Screwdriver;
+    [SerializeField] Animator animator;
     public Stats _stats { get; private set; }
-
+    
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
     [SerializeField] float jumpForce = 8f;
 
-    [Networked] NetworkButtons previousInput { get; set; }
+    [Networked] NetworkInputData previousInput { get; set; }
+    Vector3 lastInputDir;
     public NetworkInventory inventory { get; private set; }
 
     //Resource Exploitation
     [Networked, OnChangedRender(nameof(OnEquipTool))] public ToolType equipTool { get; set; }
-    [Networked] TickTimer mineIntervalTimer { get; set; }
-    [SerializeField] IconTMP iconTMP;
-
-
     [SerializeField] SuggestTarget suggestTarget;
-
-    readonly List<LagCompensatedHit> resourcesHit = new List<LagCompensatedHit>(5);
-
     [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
     public event Action<NetworkResourcePlayer> OnResouceChange;
@@ -99,6 +94,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     public Door Door => doorPlayer;
 
     public Transform InteractTransform => transform;
+
+    public Action OnCompleted { get; set ; }
+
 
     public override void Spawned()
     {
@@ -161,6 +159,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             doorPlayer.RPC_SetActiveNetworked(false);
         }
 
+
+        //Cheats
+
+        resourcePlayer.Wood = 100;
+
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
@@ -221,23 +224,22 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
         _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
-            Vector3 inputDirection = new Vector3(data.moveDirection.x, 0f, data.moveDirection.y);
+            Vector3 inputDirection = data.moveDirection.normalized;
             Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);
             float jumpImpluse = 0f;
-            if (data.button.WasPressed(previousInput, ButtonType.Jump) && controller.IsGrounded)
+            if (data.button.WasPressed(previousInput.button, ButtonType.Jump) && controller.IsGrounded)
             {
                 jumpImpluse = jumpForce;
             }
-            if (data.button.WasPressed(previousInput, ButtonType.EquipTool))
+            if (data.button.WasPressed(previousInput.button, ButtonType.EquipTool))
             {
                 if (Object.HasStateAuthority)
                 {
                     equipTool = ToolType.Axe;
-                }
-                //RPC_TestSet();
+                }               
             }
 
-            if (data.button.WasPressed(previousInput, ButtonType.Interact))
+            if (data.button.WasPressed(previousInput.button, ButtonType.Interact))
             {
                 interactionSystem.Pressed();
             }
@@ -247,19 +249,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 interactionSystem.Hold(Runner.DeltaTime);
             }
 
-            if (data.button.WasReleased(previousInput, ButtonType.Interact))
+            if (data.button.WasReleased(previousInput.button, ButtonType.Interact))
             {
                 interactionSystem.Released();
             }
-
-            //if (data.button.IsSet(ButtonType.Interact))
-            //{
-            //    Debug.Log("EquipTool: " + equipTool.ToString());
-            //    //fix to get IInteractable
-            //    //if (equipTool == ToolType.None) return;
-            //    TryMineResource();
-            //}
-            if (data.button.WasPressed(previousInput, ButtonType.TestAddModify))
+            
+            if (data.button.WasPressed(previousInput.button, ButtonType.TestAddModify))
             {
                 if (!HasStateAuthority) return;
                 Modifier modSpeed = new Modifier
@@ -274,8 +269,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data.button;
-            controller.Move(moveDirection, jumpImpluse);
+            previousInput = data;           
+            lastInputDir = inputDirection;
+            animator.SetBool("IsWalking", inputDirection.sqrMagnitude > 0);
+            controller.Move(moveDirection, jumpImpluse);   
+            
         }
 
         if (transform.position.y <= -10f)
@@ -284,6 +282,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
         }
     }
 
+
+
+    public override void Render()
+    {
+        Transform model = transform.GetChild(0);
+        float angularSpeed = 15f;
+        if (lastInputDir.sqrMagnitude > 0)
+        {
+            model.localRotation = Quaternion.Lerp(model.localRotation, Quaternion.LookRotation(lastInputDir), angularSpeed * Runner.DeltaTime);
+        }
+        model.localPosition = Vector3.zero;
+    }
     private void OnDestroy()
     {
         if (HasInputAuthority)
@@ -304,45 +314,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             }
 
         }
-    }
-
-    public GatherResult TryGather(ResourceNode nodeRes, object source = null)
-    {
-        Debug.Log("TryGather");
-        if (!Health.IsAlive)
-        {
-            return GatherResult.FAIL(reason: GatherResult.FailReason.PlayerDead, "Ngỏm củ tỏi rồi!");
-        }
-
-        if (nodeRes == null || nodeRes.IsDepleted)
-        {
-            return GatherResult.FAIL(GatherResult.FailReason.Depleted, "Tài nguyên đã cạn kiệt");
-        }
-
-        if (nodeRes.RequiredTool != ToolType.None && equipTool != nodeRes.RequiredTool)
-        {
-            return GatherResult.FAIL(GatherResult.FailReason.InvalidTool, "Công cụ khai thác không phù hợp");
-        }
-
-        if (!Stamina.TryConsume(nodeRes.StaminaCostPerGather))
-        {
-            return GatherResult.FAIL(GatherResult.FailReason.Exhausted, "Kiệt sức !");
-        }
-        int resourceExtract = nodeRes.Extract();
-        AddResource(nodeRes.Extract(), nodeRes.ResourceType);
-        return GatherResult.OK($"Đã thu thập {iconTMP.GetResourceCode(nodeRes.ResourceType)} x{resourceExtract}");
-    }
-
-
-    void TryMineResource()
-    {
-        if (!HasInputAuthority) return;
-        if (mineIntervalTimer.ExpiredOrNotRunning(Runner) && suggestTarget.CurrentTarget != null)
-        {
-            RPC_RequestToolAction(suggestTarget.CurrentTarget.GetComponent<NetworkObject>());
-        }
-    }
-
+    }   
     void OnReliableReceiveData(ReliableReceiveData data)
     {
         if (data.key == ConstReliableKey.GatherResult)
@@ -466,37 +438,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     void RPC_RequestUseTool(ToolType toolUse)
     {
         equipTool = toolUse;
-    }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_RequestToolAction(NetworkId target)
-    {
-        NetworkObject obj = Runner.FindObject(target);
-        if (obj == null) return;
-        if ((transform.position - suggestTarget.CurrentTarget.transform.position).sqrMagnitude > 1.5f) return;
-
-        if (suggestTarget.CurrentTarget.TryGetComponent<NetworkPlayer>(out var player))
-        {
-            player.TakeDamage(_stats.Get(StatsType.Damage), Object);
-        }
-        else if (suggestTarget.CurrentTarget.TryGetComponent<ResourceNode>(out var resourceNode))
-        {
-            var gatherResult = TryGather(resourceNode);
-            string json = JsonConvert.SerializeObject(gatherResult);
-            byte[] sData = Encoding.UTF8.GetBytes(json);
-            Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.GatherResult, sData);
-        }
-        else if (suggestTarget.CurrentTarget.TryGetComponent<IInteractable>(out var interactable))
-        {
-            //interactable.OnInteract(this, interactable.Data(this));
-        }
-        //Lookat target here
-        mineIntervalTimer = TickTimer.CreateFromSeconds(Runner, 1 / _stats.Get(StatsType.AttackSpeed));
-
-    }
-
-
-
+    }  
     //IInteractable implementation
 
     public InteractionData Data(NetworkPlayer interactor) => InteractionData;

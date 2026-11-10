@@ -15,4 +15,6 @@ MonoBehaviour:
   woodCode: <sprite name="Resource_3">
   stoneCode: <sprite name="Resource_0">
   goldCode: <sprite name="Resource_1">
-  electricCode: <sprite name="Resource_4">
+  electricCode: <sprite name="Electric">
+  axe: <sprite name="Axe">
+  pickAxe: <sprite name="PickAxe">

@@ -1,4 +1,5 @@
 using Fusion;
+using UnityEngine;
 using UtilityAI.Core;
 
 public class WaitingRecoverZone : EnemyBaseState
@@ -14,7 +15,8 @@ public class WaitingRecoverZone : EnemyBaseState
     }
 
     public override void Enter()
-    {        
+    {
+        Debug.Log("Enter Recover");
         healthComponent ??= context.Controller.Health;
         baseHealthRegen = controller.enemyStats.GetValueBase(StatsType.HealthRegen);
         float healthRegen = controller.enemyStats.Get(StatsType.Health) * 0.1f;

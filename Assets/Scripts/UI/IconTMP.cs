@@ -9,12 +9,14 @@ public class IconTMP : ScriptableObject
     [SerializeField] string stoneCode;
     [SerializeField] string goldCode;
     [SerializeField] string electricCode;
-
+    [SerializeField] string axe;
+    [SerializeField] string pickAxe;
     public string WoodCode => woodCode;
     public string StoneCode => stoneCode;
     public string GoldCode => goldCode;
     public string ElectricCode => electricCode;
-    //[Header("Items")]
+    public string Axe => axe;
+    public string PickAxe => pickAxe;   
 
 
     public string GetResourceCode(ResourceType resourceType)
@@ -28,5 +30,16 @@ public class IconTMP : ScriptableObject
             _ => null
         };
     }
+
+    public string GetToolCode(ToolType toolType)
+    {
+        return toolType switch 
+        {
+            ToolType.Axe => axe,
+            ToolType.PickAxe => pickAxe,
+            _ => null
+        };
+    }
+
 
 }

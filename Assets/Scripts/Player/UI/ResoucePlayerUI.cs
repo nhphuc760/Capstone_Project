@@ -22,13 +22,13 @@ public class ResoucePlayerUI : MonoBehaviour
 
     private void OnResourceChanged(NetworkResourcePlayer player)
     {
-        if(player.Wood > 0)
+        if(woodAmount && player.Wood > 0)
             woodAmount.text = player.Wood.ToString();
-        if(player.Stone > 0)
+        if(stoneAmount && player.Stone > 0)
             stoneAmount.text = player.Stone.ToString();
-        if(player.GoldOre > 0)
+        if(goldAmount && player.GoldOre > 0)
             goldAmount.text = player.GoldOre.ToString();
-        if(player.Electric > 0)
+        if(electricAmount && player.Electric > 0)
             electricAmount.text = player.Electric.ToString();
     }
 

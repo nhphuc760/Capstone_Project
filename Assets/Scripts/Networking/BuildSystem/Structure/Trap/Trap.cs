@@ -3,13 +3,15 @@ using UnityEngine;
 using UtilityAI.Core;
 using Util.Core;
 
-public class Trap : StructureBase
+public class Trap : StructureBase, IInteractable
 {
 
     NetworkObject target;
 
+    [SerializeField] TrapBullet bullet;
     [Networked] NetworkBool IsTrapped { get; set; }
-
+    [SerializeField] float speedTime = 1f;
+    [SerializeField] InteractionData interactionData;
     public override void Spawned()
     {
         base.Spawned();
@@ -27,7 +29,7 @@ public class Trap : StructureBase
     {
         base.FixedUpdateNetwork();
 
-        if(target != null && HasStateAuthority && !IsTrapped)
+        if(target != null && !IsTrapped)
         {
             //Nếu target 
             if ((transform.position - target.transform.position).sqrMagnitude <= _structureStats.Get(StatsType.Range) && target.GetBehaviour<AIController>().GetCurrentState() == EnemyState.MoveToSafeZone)
@@ -35,30 +37,8 @@ public class Trap : StructureBase
                 if (Random.value <= _structureStats.Get(StatsType.Value))
                 {
                     IsTrapped = true;
-                    Utils.DelayCall(1f, () => 
-                    {
-                        if(target == null)
-                        {
-                            return;
-                        }
-                        Debug.Log("Trói chân enemy");
-                        target.GetComponent<IAffector>().AddModifier(new Modifier
-                        {
-                            ModID = ModifierIDGenerator.Next(Runner),
-                            Source = Runner.GetPlayerObject(Object.InputAuthority),
-                            IsTimed = true,
-                            Duration = TickTimer.CreateFromSeconds(Runner, 3f),
-                            StatType = StatsType.MoveSpeed,
-                            ModApplyType = ModApplyType.Override,
-                            Priority = 99,
-                            Value = 0
-                        });
-
-                        var stategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);
-                        stategy.Destroy(Runner, Object);
-                    }).Forget();
-                    //Thêm modifier cấm di chuyển
-                    
+                    bullet.SetTarget(target.transform, speedTime);  
+                    bullet.transform.parent = null;
                     return;
                 }
                 target = null;
@@ -84,4 +64,53 @@ public class Trap : StructureBase
     {
 
     }    
+
+    public void RequestStunTarget()
+    {
+        if (!HasStateAuthority || target == null) return;      
+        Debug.Log("Trói chân enemy");
+        target.GetComponent<IAffector>().AddModifier(new Modifier
+        {
+            ModID = ModifierIDGenerator.Next(Runner),
+            Source = Runner.GetPlayerObject(Object.InputAuthority),
+            IsTimed = true,
+            Duration = TickTimer.CreateFromSeconds(Runner, 3f),
+            StatType = StatsType.MoveSpeed,
+            ModApplyType = ModApplyType.Override,
+            Priority = 99,
+            Value = 0
+        });
+        //Play animation stun
+        var stategy = StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);
+        stategy.Destroy(Runner, Object);
+
+    }
+
+
+    public Transform InteractTransform => transform;
+
+    public System.Action OnCompleted { get; set; }
+
+
+    public InteractionData Data(NetworkPlayer interactor) => interactionData;
+    public InteractionResult CanInteract(NetworkPlayer interactor)
+    {
+        if (interactor.equipTool != ToolType.Screwdriver)
+        {
+            return new InteractionResult(false);
+        }
+        return new InteractionResult(true);
+    }
+
+    public void OnInteract(InteractionContext ctx)
+    {
+        if (ctx.Phase == InteractPhase.Hold)
+        {
+            if (ctx.HoldTime >= interactionData.HoldTime)
+            {
+                StructureManager.Ins?.DestroyStructure(Object);
+            }
+        }
+    }
+
 }

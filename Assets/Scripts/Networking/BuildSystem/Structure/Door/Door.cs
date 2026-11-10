@@ -1,9 +1,13 @@
-﻿using Fusion;
+﻿using System;
+using System.Collections.Generic;
+using Fusion;
+using TriInspector;
 using UnityEngine;
 
 public class Door : StructureBase, ITakedamageable, IInteractable
 {
 
+    [HideInInspector]
     [Networked]
     public Vector3 OutideOppositeDoor { get; private set; }
     public HealthComponent HealthDoor { get; private set; }
@@ -11,8 +15,19 @@ public class Door : StructureBase, ITakedamageable, IInteractable
     [Networked]
     public NetworkBool IsOpen { get; set; }
 
-    [SerializeField] InteractionData InteractionData;
+    [SerializeField] InteractionData NormalInteractionData;
+    [SerializeField] InteractionData DismantleInteractionData;
+    [SerializeField] InteractProcess processor;
+
+    List<IInteractable> _interactables = new List<IInteractable>();
+    IInteractable _currentInteractStategy;
+
+
     public Transform InteractTransform => transform;
+
+    public Action OnCompleted { get; set; }
+
+    public IProcessor Processor => processor;
 
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
@@ -24,6 +39,35 @@ public class Door : StructureBase, ITakedamageable, IInteractable
         }      
         //Quaternion.L
     }
+
+
+    private void Awake()
+    {
+        InitializeInteractables();
+    }
+
+
+    void InitializeInteractables()
+    {
+        // Normal interaction strategy
+        _interactables.Add(new NormalInteract(transform, NormalInteractionData, this));
+        var dismantle = new DismantleInteract(transform, DismantleInteractionData, this);
+        dismantle.OnCompleted += () => OnCompleted?.Invoke();
+        _interactables.Add(dismantle);
+    }
+    IInteractable GetInteractStategy(NetworkPlayer interactor)
+    {
+        if (interactor.equipTool == ToolType.Screwdriver)
+        {
+            return _interactables.Find(i => i is DismantleInteract);
+        }
+        else
+        {
+            return _interactables.Find(i => i is NormalInteract);
+        }
+    }
+
+
 
     public override void Spawned()
     {
@@ -87,8 +131,8 @@ public class Door : StructureBase, ITakedamageable, IInteractable
         return $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth}";
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
-    void RPC_RequestTriggerDoor(bool open)
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_RequestTriggerDoor(bool open)
     {
         if (open)
         {
@@ -105,17 +149,18 @@ public class Door : StructureBase, ITakedamageable, IInteractable
 
     }
 
-    public InteractionData Data(NetworkPlayer interactor) => InteractionData;
+    public InteractionData Data(NetworkPlayer interactor) => _currentInteractStategy.Data(interactor);
 
     public InteractionResult CanInteract(NetworkPlayer interactor)
     {
-       return new InteractionResult (true);
+        _currentInteractStategy = GetInteractStategy(interactor);
+        return _currentInteractStategy.CanInteract(interactor);
+        //return new InteractionResult (true);
     }
 
     public void OnInteract(InteractionContext ctx)
     {
-        if(ctx.Phase == InteractPhase.Press)
-            RPC_RequestTriggerDoor(!IsOpen);
+        _currentInteractStategy.OnInteract(ctx);        
     }
     private void OnDrawGizmosSelected()
     {
@@ -123,5 +168,84 @@ public class Door : StructureBase, ITakedamageable, IInteractable
         Gizmos.DrawWireCube(OutideOppositeDoor, Vector3.one);
     }
 
+    public class NormalInteract : IInteractable
+    {
+
+        Transform Transform;
+        InteractionData InteractData;
+        Door door;
+
+
+        public NormalInteract(Transform transform, InteractionData data, Door door)
+        {
+            this.Transform = transform;
+            this.InteractData = data;
+            this.door = door;
+        }
+
+        public Transform InteractTransform => Transform;
+
+        public Action OnCompleted { get; set; }
+
+
+        public InteractionResult CanInteract(NetworkPlayer interactor)
+        {
+
+            return new InteractionResult(success: interactor.Object.InputAuthority == door.Object.InputAuthority);            
+        }
+
+        public InteractionData Data(NetworkPlayer interactor) => InteractData;
+        public void OnInteract(InteractionContext ctx)
+        {
+           if(ctx.Phase == InteractPhase.Press)
+            {
+                door.RPC_RequestTriggerDoor(!door.IsOpen);
+            }
+        }
+    }
+
+
+    public class DismantleInteract : IInteractable
+    {
+        Transform Transform;
+        InteractionData InteractData;
+        Door door;
+
+        public DismantleInteract(Transform transform, InteractionData data, Door door)
+        {
+            this.Transform = transform;
+            this.InteractData = data;
+            this.door = door;
+        }
+        public Transform InteractTransform => Transform;
+
+        public Action OnCompleted { get; set; }
+
+
+        public InteractionResult CanInteract(NetworkPlayer interactor)
+        {
+            return new InteractionResult(!door.IsOpen);
+        }
+        public InteractionData Data(NetworkPlayer interactor) => InteractData;
+        public void OnInteract(InteractionContext ctx)
+        {
+            if (ctx.Phase == InteractPhase.Hold)
+            {
+                door.processor.UpdateProcess(ctx.HoldTime / InteractData.HoldTime);
+                if (ctx.HoldTime >= InteractData.HoldTime)
+                {
+                    door.RPC_RequestTriggerDoor(true);
+                    OnCompleted?.Invoke();
+                }
+            }
+        }
+    }
+
+
+
+
 }
+
+
+
 

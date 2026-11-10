@@ -2,11 +2,12 @@
 using UnityEngine;
 
 public interface IInteractable
-{
+{  
     Transform InteractTransform { get; }
+    Action OnCompleted { get; set; }
     InteractionData Data(NetworkPlayer interactor);
     InteractionResult CanInteract(NetworkPlayer interactor);
-    void OnInteract(InteractionContext ctx);
+    void OnInteract(InteractionContext ctx);    
 }
 
 [Serializable]
