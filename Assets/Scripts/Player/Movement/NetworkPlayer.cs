@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Text;
 using Newtonsoft.Json;
-
+using FischlWorks_FogWar;
 
 public struct NetworkResourcePlayer : INetworkStruct
 {
@@ -49,7 +49,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     public static NetworkPlayer Local { get; private set; }
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
-
+    private csRevealerSpawner fogSpawner;//Fog of war
     [SerializeField] GameObject CanvasWorldSpace;
     [SerializeField] GameObject CanvasOverlay;
     [SerializeField] TooltipUI TooltipUI;
@@ -158,7 +158,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
             doorPlayer.RPC_SetActiveNetworked(false);
         }
+        //fog of war
+        fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
 
+        if (fogSpawner != null)
+        {
+            fogSpawner.RegisterPlayer(transform);
+        }
+        else
+        {
+            Debug.LogError("[FogWar] Cannot find csRevealerSpawner!");
+        }
 
         //Cheats
 
@@ -171,6 +181,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
         if (HasInputAuthority)
         {
             EventBus<ReliableReceiveData>.Deregister(relialeEvent);
+        }
+        if (fogSpawner != null)
+        {
+            fogSpawner.UnregisterPlayer();
         }
     }
 
