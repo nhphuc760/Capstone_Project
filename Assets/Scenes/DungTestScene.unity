@@ -551,6 +551,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FischlWorks_FogWar.csRevealerSpawner
   fogWar: {fileID: 1286250751}
   exampleRevealer: {fileID: 1940834710420241431, guid: 8491258c41850ad448118363fb1dfe8d, type: 3}
+  sightRange: 10
+  updateOnlyOnMove: 1
 --- !u!114 &1286250751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3800,7 +3802,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7387213162252028959, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8210670696494725189, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
       propertyPath: baseStats.stats._serializedList.Array.size

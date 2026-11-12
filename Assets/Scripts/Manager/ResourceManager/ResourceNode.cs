@@ -162,6 +162,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
             if(animator) animator.SetTrigger("Trigger");
             int extractedAmount = Extract();
             ctx.Interactor.AddResource(extractedAmount, resourceType);
+            ctx.Interactor.Stamina.TryConsume(staminaCostPerGather);
             if (Runner.LocalPlayer == ctx.Interactor.Object.InputAuthority)
             {
                 var iconTmp = NotificationManager.Ins?.IconTMP;

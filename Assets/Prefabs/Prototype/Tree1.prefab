@@ -9,6 +9,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 883818043004291980, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+      propertyPath: iconTMP
+      value: 
+      objectReference: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+    - target: {fileID: 883818043004291980, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
       propertyPath: maxAmount
       value: 150
       objectReference: {fileID: 0}

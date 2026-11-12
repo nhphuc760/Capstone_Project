@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class ResourceRequirement : RequirementDefinition
 {
-    [SerializeField] IconTMP iconTMP;
+    public IconTMP iconTMP;
     public int Wood;
     public int Stone;
     public int Gold;
@@ -59,10 +59,10 @@ public class ResourceRequirementInstance : IRequirement
     {
         string info = string.Empty;
 
-        info += definition.Wood > 0 ? ($"Wood: " + (definition.Wood.ToString().ToColor(Player.resourcePlayer.Wood > definition.Wood ? Color.green : Color.red)) + "\n") : "";
-        info += definition.Stone > 0 ? ($"Stone: " + (definition.Stone.ToString().ToColor(Player.resourcePlayer.Stone > definition.Stone ? Color.green : Color.red)) + "\n") : "";
-        info += definition.Gold > 0 ? ($"GoldOre: " + (definition.Gold.ToString().ToColor(Player.resourcePlayer.GoldOre > definition.Gold ? Color.green : Color.red))) : "";
-        info += definition.Electric > 0 ? ($"Electric: " + (definition.Electric.ToString().ToColor(Player.resourcePlayer.Electric > definition.Electric ? Color.green : Color.red)) + "\n") : "";
+        info += definition.Wood > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Wood)}: " + (definition.Wood.ToString().ToColor(Player.resourcePlayer.Wood > definition.Wood ? Color.green : Color.red)) + "\n") : "";
+        info += definition.Stone > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Stone)}: " + (definition.Stone.ToString().ToColor(Player.resourcePlayer.Stone > definition.Stone ? Color.green : Color.red)) + "\n") : "";
+        info += definition.Gold > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Gold)}: " + (definition.Gold.ToString().ToColor(Player.resourcePlayer.GoldOre > definition.Gold ? Color.green : Color.red))) : "";
+        info += definition.Electric > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Electric)}: " + (definition.Electric.ToString().ToColor(Player.resourcePlayer.Electric > definition.Electric ? Color.green : Color.red)) + "\n") : "";
         return info;
     }
 

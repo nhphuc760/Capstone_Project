@@ -216,8 +216,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.collider.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
+                if (hit.transform.root.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
                 {
+                    Debug.Log(hit.transform.root.name);
                     StructureUI.Show(context);
                 }
                 else
@@ -477,5 +478,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     public void OnInteract(InteractionContext ctx)
     {
         TakeDamage(ctx.Interactor._stats.Get(StatsType.Damage), ctx.Interactor.Object);
+        ctx.Interactor.Stamina.TryConsume(10);
     }
 }

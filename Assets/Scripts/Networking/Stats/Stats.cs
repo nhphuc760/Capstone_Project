@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
@@ -6,18 +7,14 @@ using UnityEngine;
 public class Stats : NetworkBehaviour
 {
     public StatsBase baseStats;
-
-
     [Networked, Capacity(32)]
     NetworkDictionary<int, Modifier> _modifiers => default;
     [Networked, OnChangedRender(nameof(OnDirtyChanged))]
     NetworkBool markDirty {  get; set; }
-
+    public event Action DirtyChanged;
 
     Dictionary<StatsType, List<Modifier>> cacheModifiers = new Dictionary<StatsType, List<Modifier>>();
-
-
-
+   
     public float Get(StatsType type)
     {
         float baseValue = GetValueBase(type);
@@ -116,6 +113,7 @@ public class Stats : NetworkBehaviour
         if (markDirty)
         {
             UpdateCached();
+            DirtyChanged?.Invoke();
         }
     }
 

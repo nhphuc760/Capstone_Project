@@ -83,6 +83,7 @@ namespace UtilityAI.Core
 
             foreach (var player in Runner.ActivePlayers)
             {
+                if (!Runner.GetPlayerObject(player).GetBehaviour<NetworkPlayer>().Health.IsAlive) continue;
                 var doorEntry = doors
                     .Where(x => x.Value != null && x.Value.Object != null && x.Value.Object.InputAuthority == player)
                     .FirstOrDefault();

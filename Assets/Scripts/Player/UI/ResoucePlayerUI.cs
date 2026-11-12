@@ -17,7 +17,6 @@ public class ResoucePlayerUI : MonoBehaviour
         player ??= GetComponentInParent<NetworkPlayer>();
         if(player)
         player.OnResouceChange += OnResourceChanged;
-
     }
 
     private void OnResourceChanged(NetworkResourcePlayer player)
