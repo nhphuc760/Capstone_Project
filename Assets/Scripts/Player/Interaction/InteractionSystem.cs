@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Fusion;
-using Fusion.Addons.SimpleKCC;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -76,7 +75,7 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
                 if(_currentInteractable.OnCompleted == null)
                     _currentInteractable.OnCompleted += OnCompleted;              
                 //Interactor play animation _currentInteractable.Data(player).InteractorAnimation after delay
-                string animState = _currentInteractable.Data(player).InteractorAnimation.stateName;
+                string animState = _currentInteractable.Data(player)?.InteractorAnimation.stateName;
                 if(!string.IsNullOrEmpty(animState))
                 {
                     animator.Play(animState);
@@ -85,6 +84,7 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
                 }
                 //Lockat target
                 Vector3 dir = (_currentInteractable.InteractTransform.position - player.transform.position).normalized;
+                dir.y = 0f;
                 player.transform.GetChild(0).localRotation = Quaternion.LookRotation(dir);
                 SendPhase(_currentInteractable, InteractPhase.Press);
             }           

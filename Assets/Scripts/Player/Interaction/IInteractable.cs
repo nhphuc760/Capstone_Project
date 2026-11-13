@@ -15,7 +15,7 @@ public class InteractionData
 {
     public InteractionMode Mode;
     public string Prompt;
-    public float HoldTime;
+    public float HoldTime;   
     public InteractionAnimation InteractorAnimation;
     //public List<.>
 }
@@ -26,6 +26,7 @@ public class InteractionAnimation
     public string stateName;
     [Tooltip("Hz = 1 / time")]
     public float hzState; // Hz = 1 / time
+    public float ratioFrameTarget;
 }
 
 

@@ -3,7 +3,7 @@ using System.Linq;
 using TriInspector;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ItemDatabase", menuName = "Online Inventory/Item Database")]
+[CreateAssetMenu(fileName = "ItemDatabase", menuName = "Item/Item Database")]
 public class ItemDatabase : ScriptableObject
 {
     [Header("All Items")]
@@ -12,6 +12,7 @@ public class ItemDatabase : ScriptableObject
 
     private Dictionary<int, ItemSO> itemLookup;
 
+    public List<ItemSO> Items => items;
 
     [Title("Make sure dataSO inside Resources Folder")]
     [Button("Auto Find ItemDataSO")]

@@ -726,6 +726,7 @@ MonoBehaviour:
     InteractorAnimation:
       stateName: Chopping
       hzState: 1.0344827
+      ratioFrameTarget: 0.5517241
   ratioFrameTarget: 0.55172414
 --- !u!114 &2165563400329243187
 MonoBehaviour:

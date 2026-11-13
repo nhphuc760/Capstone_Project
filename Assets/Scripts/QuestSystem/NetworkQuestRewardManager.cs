@@ -12,7 +12,6 @@ public class NetworkQuestRewardManager : NetworkBehaviour
     [Header("References")]
     [SerializeField] private NetworkQuestSys questSystem;
     [SerializeField] private NetworkInventory inventory;
-    [SerializeField] private NetworkResourceWallet resourceWallet;
 
     [Header("Reward Settings")]
     [SerializeField] private QuestRewardType rewardType;
@@ -42,9 +41,7 @@ public class NetworkQuestRewardManager : NetworkBehaviour
 
         if (inventory == null)
             inventory = GetComponent<NetworkInventory>();
-
-        if (resourceWallet == null)
-            resourceWallet = GetComponent<NetworkResourceWallet>();
+     
 
         if (HasStateAuthority)
         {
@@ -98,8 +95,7 @@ public class NetworkQuestRewardManager : NetworkBehaviour
                 break;
 
             case QuestRewardType.GoldOre:
-
-                success = GiveGoldOre();
+              
 
                 break;
         }
@@ -182,13 +178,5 @@ public class NetworkQuestRewardManager : NetworkBehaviour
         return true;
     }
     #endregion
-
-    #region GoldOre
-    private bool GiveGoldOre()
-    {
-        if (resourceWallet == null || rewardGoldOre <= 0) return false;
-
-        return resourceWallet.TryAddGold(rewardGoldOre);
-    }
-    #endregion
+   
 }

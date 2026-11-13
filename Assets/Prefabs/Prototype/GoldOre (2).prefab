@@ -724,6 +724,7 @@ MonoBehaviour:
     InteractorAnimation:
       stateName: Mining
       hzState: 1.0344827
+      ratioFrameTarget: 0.4827586
   ratioFrameTarget: 0.4827586
 --- !u!114 &8809976015122591978
 MonoBehaviour:

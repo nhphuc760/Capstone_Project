@@ -3376,7 +3376,7 @@ GameObject:
   - component: {fileID: 282213416285512670}
   - component: {fileID: 3267005897384838362}
   - component: {fileID: 5706203986746736668}
-  - component: {fileID: -2253524120337342029}
+  - component: {fileID: 9053022945002887609}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3423,13 +3423,22 @@ MonoBehaviour:
   TooltipUI: {fileID: 2409366945711385227}
   StructureUI: {fileID: 3852660820127214889}
   interactionSystem: {fileID: 5706203986746736668}
-  InteractionData:
-    Mode: 0
+  axeInteraction:
+    Mode: 1
     Prompt: 
     HoldTime: 0
     InteractorAnimation:
-      stateName: 
-      hzState: 0
+      stateName: Chopping
+      hzState: 1.034483
+      ratioFrameTarget: 0.5517241
+  pickAxeInteraction:
+    Mode: 1
+    Prompt: 
+    HoldTime: 0
+    InteractorAnimation:
+      stateName: Mining
+      hzState: 1.034483
+      ratioFrameTarget: 0.4827586
   Axe: {fileID: 7726858504539527589}
   PickAxe: {fileID: 35574880306695283}
   Screwdriver: {fileID: 6707211205469294620}
@@ -3453,7 +3462,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d5a2f9e9386864fab862e7d248348c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuggestTarget
-  searchRadius: 1.75
+  searchRadius: 1.5
   targetLayers:
     serializedVersion: 2
     m_Bits: 905
@@ -3484,7 +3493,7 @@ MonoBehaviour:
   - {fileID: 3764696480944377191}
   - {fileID: 8000677038320043257}
   - {fileID: 5706203986746736668}
-  - {fileID: -2253524120337342029}
+  - {fileID: 9053022945002887609}
   ForceRemoteRenderTimeframe: 0
 --- !u!54 &-7849153057991330858
 Rigidbody:
@@ -3702,7 +3711,7 @@ MonoBehaviour:
     _value: 0
   player: {fileID: 5131017292646362623}
   animator: {fileID: 6721125320261425079}
---- !u!114 &-2253524120337342029
+--- !u!114 &9053022945002887609
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

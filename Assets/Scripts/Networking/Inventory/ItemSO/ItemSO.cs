@@ -9,7 +9,7 @@ public enum ItemType
     
 }
 
-[CreateAssetMenu(fileName = "ItemSO", menuName = "Online Inventory/ItemSO")]
+[CreateAssetMenu(fileName = "ItemSO", menuName = "Item/ItemSO")]
 public class ItemSO : ScriptableObject
 {
     [Header("Item Identity")]
