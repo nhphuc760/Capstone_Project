@@ -7,7 +7,7 @@ public class ShopManager : NetworkBehaviour
 
     [SerializeField] Collider bounds;
     [SerializeField] SnowmanNPC npcShop;
-    [SerializeField] ItemDatabase shopItemDatabase;
+    [SerializeField] ItemShopDatabase shopItemDatabase;
 
 
     [OnChangedRender(nameof(OnBannedListChanged))]

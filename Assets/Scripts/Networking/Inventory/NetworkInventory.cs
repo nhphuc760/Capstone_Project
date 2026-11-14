@@ -66,18 +66,7 @@ public class NetworkInventory : NetworkBehaviour
             }
         }
     }
-
-
-    private void Update()
-    {
-        //Test
-        if (Input.GetKeyDown(KeyCode.T) && HasInputAuthority)
-        {
-            RPC_AddItem(1, 10);
-        }
-        
-
-    }
+   
 
     #region Host add item
     public bool CanAddItem(int itemID, int amount)

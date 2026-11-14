@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Text;
 using FischlWorks_FogWar;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+[Serializable]
 public struct NetworkResourcePlayer : INetworkStruct
 {
     public int Wood;
@@ -46,6 +45,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
     }
     public static NetworkPlayer Local { get; private set; }
+
+    [Networked] public NetworkString<_32> Name { get; private set; }
+
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
     private csRevealerSpawner fogSpawner;//Fog of war

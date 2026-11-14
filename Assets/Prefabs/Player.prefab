@@ -1335,12 +1335,12 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 9999
   m_TargetDisplay: 0
 --- !u!114 &8696585658708730832
 MonoBehaviour:
@@ -3447,6 +3447,11 @@ MonoBehaviour:
   cameraView: {fileID: 2482603673533289662}
   jumpForce: 8
   _equipTool: 0
+  _resourcePlayer:
+    Wood: 0
+    Stone: 0
+    GoldOre: 0
+    Electric: 0
   suggestTarget: {fileID: -4642978615242726096}
   doorPrefab:
     RawGuidValue: d2fcbdbbd1972d7499a34dc8e90159db

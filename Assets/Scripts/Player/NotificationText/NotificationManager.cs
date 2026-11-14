@@ -61,6 +61,7 @@ public class NotificationManager : MonoBehaviour
     public void ShowNotification(string message, int flags = 0)
     {
         if(string.IsNullOrEmpty(message)) return;
+        Debug.Log(message);
         NotificationItem item = allItems[nextItemIndex];
 
         nextItemIndex++;
