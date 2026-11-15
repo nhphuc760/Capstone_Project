@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Fusion;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,7 +31,10 @@ public class AuctionSesstionUI : MonoBehaviour
     AuctionSession curSession;
     CancellationTokenSource updateTimeHistoryToken;
     HistoryTradingElement[] historyTradingElements;
+
     HistoryStore<Trading> historyTradingCache = new HistoryStore<Trading>(10);
+    Dictionary<PlayerRef, Trading> totalTradingCache = new Dictionary<PlayerRef, Trading>();
+
     bool IsTrading;
     private void Awake()
     {
@@ -116,7 +120,6 @@ public class AuctionSesstionUI : MonoBehaviour
         if (timer)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(manager.RemainingTimeSession);
-            Debug.Log("Update Time Session");
             timer.text = timeSpan.ToString(@"mm\:ss");
         }
     }
@@ -128,9 +131,6 @@ public class AuctionSesstionUI : MonoBehaviour
         for (int i = 0; i < historyTradingCache.Count; i++)
         {
             var timeSpan = (DateTime.UtcNow - historyTradingCache[i].DateTime);
-            Debug.Log("TimeNow" +DateTime.UtcNow.ToString());
-            Debug.Log("historyCache: " + historyTradingCache[i].DateTime.ToString());
-            Debug.Log(timeSpan.ToString(), this);
             string lastTime = "";
             if(timeSpan.Minutes > 0)
             {
@@ -145,9 +145,9 @@ public class AuctionSesstionUI : MonoBehaviour
     }
 
    
-    
+    //Events callback
 
-    public void AddedTrading(NetworkRunner runner, Trading trading)
+    public void OnAddedTrading(NetworkRunner runner, Trading trading)
     {
         var element = GetIndexInactiveElement();
         if(element != null)
@@ -168,8 +168,8 @@ public class AuctionSesstionUI : MonoBehaviour
             }           
             element.UpdateUI(string.IsNullOrEmpty(name) ? trading.Player.ToString() : name, money, lastTime);
             //Add data
-            Debug.Log("Trading added: " + trading.ToString());
             historyTradingCache.Add(trading);
+            totalTradingCache[trading.Player] = trading;
             element.transform.SetAsFirstSibling();
         }
     }
@@ -229,8 +229,23 @@ public class AuctionSesstionUI : MonoBehaviour
     void OnInputChange(int value)
     {
         int money = manager.ConvertToMoney(woodInput.Value, stoneInput.Value, goldInput.Value);
+        string s = "";
+        if (totalTradingCache.TryGetValue(manager.Runner.LocalPlayer, out Trading previousTrading))
+        {
+            int preMoney = manager.ConvertToMoney(previousTrading.wood, previousTrading.stone, previousTrading.gold);          
+            s = preMoney.ToString() + $"(+ {money})";            
+        }
+        else
+        {
+            s = money.ToString();
+        }
+
         if (moneyText)
-            moneyText.text = money.ToString();
+        {
+            moneyText.text = s;
+        }
+
+
     }  
 
     void ClearInput()
@@ -268,9 +283,10 @@ public class AuctionSesstionUI : MonoBehaviour
 
     void Trade()
     {
-        if (IsTrading) return;
+        if (curSession == null || IsTrading) return;
         IsTrading = true;
         trade.interactable = false;
+        if (manager.ConvertToMoney(woodInput.Value, stoneInput.Value, goldInput.Value) <= 0) return;
         manager.RPC_RequestTrading(woodInput.Value, stoneInput.Value, goldInput.Value, manager.Runner.LocalPlayer);
     }
 
@@ -295,7 +311,15 @@ public class AuctionSesstionUI : MonoBehaviour
         if (result.Success)
         {
             SetMinMaxInput();
+            woodInput.SetValue(woodInput.Value, true); // hàm ép ui cập nhật 
         }
+    }
+
+
+    public void OnEndSession()
+    {
+        curSession.ApplyOverrideHistoryData(manager.Runner, historyTradingCache.List);
+        curSession.EndSession();
     }
 
     #endregion

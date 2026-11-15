@@ -53,8 +53,6 @@ public class NetworkInventory : NetworkBehaviour
 
     public override void Spawned()
     {
-        base.Spawned();
-
         if (database == null)
         {
             database = Resources.Load<ItemDatabase>("ItemData");
@@ -66,7 +64,15 @@ public class NetworkInventory : NetworkBehaviour
             }
         }
     }
-   
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            TryAddItem(1977, 10);
+        }
+    }
+
 
     #region Host add item
     public bool CanAddItem(int itemID, int amount)
@@ -108,6 +114,7 @@ public class NetworkInventory : NetworkBehaviour
 
     public bool TryAddItem(int itemID, int amount)
     {
+        Debug.Log("Try additem called");
         if (!CanAddItem(itemID, amount))
             return false;
 

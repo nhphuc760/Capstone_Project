@@ -38,6 +38,7 @@ public class SnowmanNPC : MonoBehaviour, IInteractable
     public void OnInteract(InteractionContext ctx)
     {
         if (networkObj.Runner.LocalPlayer != ctx.Interactor.Object.InputAuthority) return;
+        if (ctx.Phase != InteractPhase.Press) return;
         ShowUI(true);
         OnCompleted?.Invoke();
     }

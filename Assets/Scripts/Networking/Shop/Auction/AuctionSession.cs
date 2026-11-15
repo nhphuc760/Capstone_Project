@@ -38,7 +38,7 @@ public class AuctionSession
         if (totalMoneyBiders.TryGetValue(tradingInfo.Player, out Trading value))
         {
             var totalMoney = manager.ConvertToMoney(tradingInfo.wood + value.wood, tradingInfo.stone + value.stone, tradingInfo.gold + value.gold);
-            money += totalMoney;
+            money = totalMoney;
         }
         //Nếu nhỏ hơn giá khởi điểm thì false
         if (money <= ItemAuctionInfo.StartingValue)
@@ -51,7 +51,8 @@ public class AuctionSession
         }
         //So sánh với highest
 
-        if (HighestBider.Player == tradingInfo.Player)
+        bool hasHighestBider = HighestBider.Player != PlayerRef.None;
+        if (hasHighestBider && HighestBider.Player == tradingInfo.Player)
         {
             return new TradingResult
             {
@@ -106,10 +107,7 @@ public class AuctionSession
     public void ApplyOverrideHistoryData(NetworkRunner runner, IReadOnlyList<Trading> overrideData)
     {
         if (runner.IsServer) return;
-        for (int i = 0; i < 10; i++)
-        {
-            historyTradings.Set(i, overrideData[i]);
-        }
+        historyTradings.ReplaceAll(overrideData);
     }
 
 
@@ -142,8 +140,23 @@ public class HistoryStore<T>
 
     public void Set(int index, T value)
     {
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        while (_items.Count <= index)
+        {
+            _items.Add(default);
+        }
+
         _items[index] = value;
     }
+
+    public void ReplaceAll(IReadOnlyList<T> values)
+    {
+        _items.Clear();
+        _items.AddRange(values);
+    }
+
     public void Add(T item)
     {
         // Xóa phần tử cuối nếu vượt giới hạn

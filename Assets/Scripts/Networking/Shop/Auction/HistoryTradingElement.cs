@@ -11,6 +11,7 @@ public class HistoryTradingElement : MonoBehaviour
     [SerializeField] TextMeshProUGUI money;    
 
 
+
     public void Clear()
     {
         if(avatar)

@@ -87,10 +87,19 @@ public class InteractionSystem : NetworkBehaviour, IBeforeTick
                 dir.y = 0f;
                 player.transform.GetChild(0).localRotation = Quaternion.LookRotation(dir);
                 SendPhase(_currentInteractable, InteractPhase.Press);
-            }           
+            }
+            else
+            {
+                if (!HasStateAuthority) return;
                 string json = JsonConvert.SerializeObject(result);
                 byte[] sData = Encoding.UTF8.GetBytes(json);
-                Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.InteractionResult, sData);            
+                Runner.SendReliableDataToPlayer(Object.InputAuthority, ConstReliableKey.InteractionResult, sData);
+
+            }
+            if (HasStateAuthority)
+            {
+                Debug.Log(JsonConvert.SerializeObject(result));
+            }
         }        
     }
     public void Hold(float deltaTime)

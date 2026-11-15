@@ -46,7 +46,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     }
     public static NetworkPlayer Local { get; private set; }
 
-    [Networked] public NetworkString<_32> Name { get; private set; }
+    [Networked] public NetworkString<_32> Name { get; private set; } = default;
 
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }

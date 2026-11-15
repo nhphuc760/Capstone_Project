@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using Fusion;
 using UnityEngine;
 
 public class NotificationManager : MonoBehaviour
 {
     [SerializeField] private NotificationItem[] allItems;
-
+    [SerializeField] NetworkObject objPlayer;
     [Header("Layout")]
     [SerializeField] private float spacing = 100f;
 
@@ -35,15 +37,23 @@ public class NotificationManager : MonoBehaviour
     };
 
 
-    private void Awake()
-    {       
-        Ins = this;
+    private async void Awake()
+    {
+        await UniTask.WaitUntil(() => objPlayer.IsValid);
+        if (objPlayer.HasInputAuthority)
+        {
+            Ins = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
         foreach (var item in allItems)
         {
             item.gameObject.SetActive(false);
         }
     }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
