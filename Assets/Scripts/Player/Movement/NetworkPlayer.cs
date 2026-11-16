@@ -149,16 +149,26 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
             doorPlayer.RPC_SetActiveNetworked(false);
         }
-        //fog of war
-        fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
+        // Fog of War
+        if (Object.HasInputAuthority)
+        {
+            fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
 
-        if (fogSpawner != null)
-        {
-            fogSpawner.RegisterPlayer(transform);
-        }
-        else
-        {
-            Debug.LogError("[FogWar] Cannot find csRevealerSpawner!");
+            if (fogSpawner != null)
+            {
+                Debug.Log(
+                    $"[FogWar] Register Player: {Object.InputAuthority} | " +
+                    $"LocalPlayer: {Runner.LocalPlayer}"
+                );
+
+                fogSpawner.RegisterPlayer(transform);
+            }
+            else
+            {
+                Debug.LogError(
+                    $"[FogWar] Cannot find csRevealerSpawner on {Runner.LocalPlayer}!"
+                );
+            }
         }
 
         //Cheats
@@ -168,10 +178,13 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
-    {       
-        if (fogSpawner != null)
+    {
+        if (Object.HasInputAuthority && fogSpawner != null)
         {
+            Debug.Log($"[FogWar] Unregister Player: {Object.InputAuthority}");
+
             fogSpawner.UnregisterPlayer();
+            fogSpawner = null;
         }
     }
 

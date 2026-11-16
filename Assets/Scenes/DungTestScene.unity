@@ -34173,7 +34173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FischlWorks_FogWar.csRevealerSpawner
   fogWar: {fileID: 1286250751}
   exampleRevealer: {fileID: 1940834710420241431, guid: 8491258c41850ad448118363fb1dfe8d, type: 3}
-  sightRange: 10
+  sightRange: 2
   updateOnlyOnMove: 1
 --- !u!114 &1286250751
 MonoBehaviour:
@@ -34202,9 +34202,9 @@ MonoBehaviour:
   LevelDataToLoad: {fileID: 0}
   saveDataOnScan: 1
   levelNameToSave: Default
-  levelDimensionX: 11
-  levelDimensionY: 11
-  unitScale: 1
+  levelDimensionX: 128
+  levelDimensionY: 128
+  unitScale: 2
   scanSpacingPerUnit: 0.25
   rayStartHeight: 5
   rayMaxDistance: 10
