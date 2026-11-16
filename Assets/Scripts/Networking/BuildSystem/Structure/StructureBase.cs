@@ -15,18 +15,22 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
     public NetworkBool IsUpgradeable { get; private set; }
     public StructureDataSO StructureDataSO;
 
-    IRequirement[] UpgradeRequirement { get; set; }
+
+    ResourceRequirement PreviousResourceRequirement;
+    public IRequirement[] CurUpgradeRequirement { get; private set; }
 
 
 
     public override void Spawned()
     {        
+
         if (StructureDataSO.levels == null || StructureDataSO.levels.Length == 0)
         {
             IsUpgradeable = false;
             return;
         }        
         Level = 1;
+        Util.Core.Utils.DelayCall(1f, OnLevelChanged).Forget();
         _structureStats ??= GetComponent<Stats>();
         var firstLevelData = StructureDataSO.levels[0];
         _structureStats.SetStatsBase(firstLevelData.Stats);
@@ -54,7 +58,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
             };
         }
 
-        foreach (var i in UpgradeRequirement)
+        foreach (var i in CurUpgradeRequirement)
         {
             var result = i.Met();
             if (!result.Success)
@@ -76,11 +80,11 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
         Level++;
         _structureStats.SetStatsBase(StructureDataSO.levels[Level - 1].Stats);
         // Hủy requirement cũ        
-        foreach (var i in UpgradeRequirement)
+        foreach (var i in CurUpgradeRequirement)
         {
             i.Dispose();
         }
-        UpgradeRequirement = null;
+        CurUpgradeRequirement = null;
         
 
         // Gọi logic nâng cấp riêng của từng loại công trình
@@ -101,8 +105,10 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
                 //_currentUpgradeData = nextLevelData.upgradeRequirement.CreateInstance(this) as StructureUpgradeData;
                 //IsUpgradeable = _currentUpgradeData != null;
                 var services = Runner.GetPlayerObject(Object.InputAuthority).GetComponent<RequirementServices>();
-                UpgradeRequirement = nextLevelData.upgradeRequirement.Select(x => x.CreateRuntime(services, Object)).ToArray();
-                IsUpgradeable = UpgradeRequirement != null && UpgradeRequirement.Length != 0;
+                if(CurUpgradeRequirement != null) 
+                PreviousResourceRequirement = CurUpgradeRequirement.Where(x => x is ResourceRequirementInstance y).Select(z => (z as ResourceRequirementInstance).definition).FirstOrDefault();
+                CurUpgradeRequirement = nextLevelData.upgradeRequirement.Select(x => x.CreateRuntime(services, Object)).ToArray();
+                IsUpgradeable = CurUpgradeRequirement != null && CurUpgradeRequirement.Length != 0;
             }
             else
             {
@@ -160,9 +166,98 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
 
     public string GetContent() => GetInfor();
         
+    public virtual string GetInforUpgrade()
+    {
+        string s = null;
+        foreach (var i in CurUpgradeRequirement)
+        {
+            s += i.GetInfor() + "\n";
+        }
+        return s;
+    }    
+    public virtual InforDestroy GetResourceDestroy()
+    {
+
+        if (Level > 0)
+        {
+            if(Level == 1)
+            {
+                var buildRequire = StructureDataSO.buildRequirement?.Where(x => x is ResourceRequirement).FirstOrDefault();
+                if(buildRequire != null)
+                {
+                    
+                    var halfResource = GetHalfResource(buildRequire as ResourceRequirement, out string s);                    
+                    return new InforDestroy
+                    {
+                        info = s,
+                        resources = halfResource
+                    };
+                }
+                return default;
+            }
+            else
+            {
+                 if(PreviousResourceRequirement != null)
+                {
+                   
+                    if(PreviousResourceRequirement != null)
+                    {
+                        var halfResource = GetHalfResource(PreviousResourceRequirement, out string s);
+                        return new InforDestroy
+                        {
+                            info = s,
+                            resources = halfResource
+                        };
+                    }
+                    return default;
+                }
+                return default;
+            }
+        }
+        else 
+        {
+            return default;
+        }
+
+      
+    }
+
+
+    NetworkResourcePlayer GetHalfResource(ResourceRequirement resource, out string toString)
+    {
+        var halfResouce = new NetworkResourcePlayer
+        {
+            Wood = resource.Wood / 2,
+            Stone = resource.Stone / 2,
+            GoldOre = resource.Gold / 2,
+            Electric = resource.Electric / 2,
+        };
+        var iconTMP = resource.iconTMP;
+
+        string s = string.Empty;
+        if (iconTMP == null)
+        {
+            Debug.LogWarning("iconTMP null");
+            iconTMP = Resources.LoadAll<IconTMP>("IconTextMeshPro").First();
+        }
+
+        s += halfResouce.Wood > 0 ? $"{iconTMP.WoodCode} {halfResouce.Wood}  " : "";
+        s += halfResouce.Stone > 0 ? $"{iconTMP.StoneCode} {halfResouce.Stone}  " : "";
+        s += halfResouce.GoldOre > 0 ? $"{iconTMP.GoldCode} {halfResouce.GoldOre}  " : "";
+        s += halfResouce.Electric > 0 ? $"{iconTMP.ElectricCode} {halfResouce.Electric}" : "";
+
+        toString = s;
+        return halfResouce;
+    }
 
 }
 
+
+public struct InforDestroy
+{
+    public string info;
+    public NetworkResourcePlayer resources;
+}
 
 public abstract class StructAttackBase: StructureBase
 {

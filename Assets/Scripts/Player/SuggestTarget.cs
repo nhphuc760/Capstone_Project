@@ -1,56 +1,72 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 
 public class SuggestTarget : NetworkBehaviour
 {
     [Header("Detection")]
-    [SerializeField]
-    private float searchRadius = 2.5f;
+    [SerializeField] private float searchRadius = 2.5f;
+    [SerializeField] private LayerMask targetLayers = ~0;
+    [SerializeField, Min(0.02f)] private float searchInterval = 0.15f;
 
-    [SerializeField]
-    private LayerMask targetLayers = ~0;
+    // === Networked State ===
+    [Networked, OnChangedRender(nameof(OnTargetChanged))]
+    public NetworkId CurrentTargetId { get; set; }
 
-    [SerializeField, Min(0.02f)]
-    private float searchInterval = 0.15f;
+    // Local cache
+    private readonly List<Targetable> _targets = new();
+    private readonly HashSet<Targetable> _uniqueTargets = new();
+    private Targetable _localCurrentTarget;          // cache để tránh lookup liên tục
+    private float _searchTimer;
 
-    private readonly List<Targetable> targets = new();
-    private readonly HashSet<Targetable> uniqueTargets = new();
+    public Targetable CurrentTarget => _localCurrentTarget;
 
-    private Targetable currentTarget;
-    private float searchTimer;
-    public Targetable CurrentTarget => currentTarget;  
-
-    private void Start()
+    public override void Spawned()
     {
-        SetTarget(null);
-        RefreshTargets();
-        SelectNearestTarget();
+        // Khi object vừa spawn, đảm bảo indicator tắt
+        if (HasInputAuthority)
+        {
+            SetLocalIndicator(null);
+        }
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        // Cleanup indicator khi object bị despawn
+        if (HasInputAuthority && _localCurrentTarget != null)
+        {
+            _localCurrentTarget.SetActiveIndicator(false);
+            _localCurrentTarget = null;
+        }
     }
 
     private void Update()
     {
-        searchTimer -= Time.deltaTime;
+        // Chỉ người có InputAuthority mới detect + nhận input
+        if (!HasInputAuthority) return;
 
-        if (searchTimer <= 0f)
+        _searchTimer -= Time.deltaTime;
+
+        if (_searchTimer <= 0f)
         {
-            searchTimer = searchInterval;
+            _searchTimer = searchInterval;
             RefreshTargets();
             ValidateCurrentTarget();
         }
 
-        // Nhấn Tab để chuyển sang target tiếp theo.
+        // Tab để cycle target
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             CycleTarget();
         }
     }
 
+    // ======================== Detection ========================
+
     private void RefreshTargets()
-    {        
-        targets.Clear();
-        uniqueTargets.Clear();
+    {
+        _targets.Clear();
+        _uniqueTargets.Clear();
 
         Collider[] colliders = Physics.OverlapSphere(
             transform.position,
@@ -59,43 +75,41 @@ public class SuggestTarget : NetworkBehaviour
             QueryTriggerInteraction.Collide
         );
 
-        foreach (Collider col in colliders)
+        foreach (var col in colliders)
         {
-            Targetable target =
-                col.GetComponentInParent<Targetable>();
+            Targetable target = col.GetComponentInParent<Targetable>();
 
             if (target == null ||
                 !target.CanBeTargeted ||
                 !target.gameObject.activeInHierarchy ||
                 target.transform == transform ||
-                !uniqueTargets.Add(target))
+                !_uniqueTargets.Add(target))
             {
                 continue;
             }
 
-            targets.Add(target);
+            // Chỉ lấy những object có NetworkObject (để sync được)
+            if (target.GetComponentInParent<NetworkObject>() == null)
+                continue;
+
+            _targets.Add(target);
         }
 
-        // Sắp xếp target gần nhất lên đầu danh sách.
-        targets.Sort((a, b) =>
+        // Sort theo khoảng cách gần → xa
+        _targets.Sort((a, b) =>
         {
-            float distanceA = (
-                a.TargetTransform.position - transform.position
-            ).sqrMagnitude;
-
-            float distanceB = (
-                b.TargetTransform.position - transform.position
-            ).sqrMagnitude;
-
-            return distanceA.CompareTo(distanceB);
+            float distA = (a.TargetTransform.position - transform.position).sqrMagnitude;
+            float distB = (b.TargetTransform.position - transform.position).sqrMagnitude;
+            return distA.CompareTo(distB);
         });
     }
 
     private void ValidateCurrentTarget()
     {
-        if (currentTarget == null ||
-            !currentTarget.CanBeTargeted ||
-            !targets.Contains(currentTarget))
+        // Nếu target hiện tại không còn hợp lệ → chọn lại target gần nhất
+        if (_localCurrentTarget == null ||
+            !_localCurrentTarget.CanBeTargeted ||
+            !_targets.Contains(_localCurrentTarget))
         {
             SelectNearestTarget();
         }
@@ -103,55 +117,124 @@ public class SuggestTarget : NetworkBehaviour
 
     private void SelectNearestTarget()
     {
-        SetTarget(targets.Count > 0 ? targets[0] : null);
+        if (_targets.Count > 0)
+        {
+            RequestSetTarget(_targets[0]);
+        }
+        else
+        {
+            RequestSetTarget(null);
+        }
     }
 
     private void CycleTarget()
     {
-        // Cập nhật ngay để tránh dùng danh sách cũ.
+        // Luôn refresh trước khi cycle để danh sách mới nhất
         RefreshTargets();
 
-        if (targets.Count == 0)
+        if (_targets.Count == 0)
         {
-            SetTarget(null);
+            RequestSetTarget(null);
             return;
         }
 
-        int currentIndex = targets.IndexOf(currentTarget);
+        int currentIndex = _localCurrentTarget != null
+            ? _targets.IndexOf(_localCurrentTarget)
+            : -1;
 
-        // Chưa có target hoặc target cũ đã ra khỏi range.
+        // Không tìm thấy hoặc chưa có target → lấy cái gần nhất
         if (currentIndex < 0)
         {
-            SelectNearestTarget();
+            RequestSetTarget(_targets[0]);
             return;
         }
 
-        // Chuyển sang đối tượng tiếp theo, quay vòng về đầu.
-        int nextIndex = (currentIndex + 1) % targets.Count;
-        SetTarget(targets[nextIndex]);
+        // Cycle sang target tiếp theo (quay vòng)
+        int nextIndex = (currentIndex + 1) % _targets.Count;
+        RequestSetTarget(_targets[nextIndex]);
     }
 
-    private void SetTarget(Targetable target)
+    // ======================== Network Request ========================
+
+    private void RequestSetTarget(Targetable target)
     {
-        //Clear curTarget       
-        if (currentTarget && HasInputAuthority)
-        {
-            currentTarget.SetActiveIndicator(false);
-        }
-        //Set newTarget
-        currentTarget = target;
+        NetworkId id = default;
 
-        if(target != null && HasInputAuthority)
+        if (target != null)
         {
-            target.SetActiveIndicator(true);
+            NetworkObject netObj = target.GetComponentInParent<NetworkObject>();
+            if (netObj != null && netObj.Id.IsValid)
+            {
+                id = netObj.Id;
+            }
+        }
+
+        // Nếu đang là StateAuthority thì set luôn, không cần RPC
+        if (HasStateAuthority)
+        {
+            SetTarget(id);
+        }
+        else
+        {
+            RPC_RequestSetTarget(id);
         }
     }
 
-   
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestSetTarget(NetworkId targetId)
+    {
+        SetTarget(targetId);
+    }
 
+    // Chỉ StateAuthority mới gọi hàm này
+    private void SetTarget(NetworkId targetId)
+    {
+        // Tránh set lại cùng giá trị (giảm bandwidth + tránh trigger OnChangedRender thừa)
+        if (CurrentTargetId == targetId) return;
+
+        CurrentTargetId = targetId;
+    }
+
+    // ======================== Visual / Local ========================
+
+    private void OnTargetChanged()
+    {
+        // Chỉ InputAuthority cần update visual indicator
+        if (!HasInputAuthority) return;
+
+        Targetable newTarget = null;
+
+        if (CurrentTargetId.IsValid &&
+            Runner.TryFindObject(CurrentTargetId, out NetworkObject netObj))
+        {
+            newTarget = netObj.GetComponentInChildren<Targetable>();
+        }
+
+        SetLocalIndicator(newTarget);
+    }
+
+    private void SetLocalIndicator(Targetable newTarget)
+    {
+        // Tắt indicator cũ
+        if (_localCurrentTarget != null)
+        {
+            _localCurrentTarget.SetActiveIndicator(false);
+        }
+
+        _localCurrentTarget = newTarget;
+
+        // Bật indicator mới
+        if (_localCurrentTarget != null)
+        {
+            _localCurrentTarget.SetActiveIndicator(true);
+        }
+    }
+
+#if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, searchRadius);
     }
+#endif
 }

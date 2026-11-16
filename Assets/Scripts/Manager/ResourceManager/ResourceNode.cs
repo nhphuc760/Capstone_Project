@@ -40,7 +40,6 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
 
     [Header("InteractConfig")]
     [SerializeField] InteractionData interaction;
-    [SerializeField] float ratioFrameTarget;
     [Networked] TickTimer InteractionInterval { get; set; }
 
     public ResourceType ResourceType => resourceType;
@@ -151,7 +150,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
     void HandlePress(InteractionContext ctx)
     {       
         float durationAttack = Mathf.Max(0.5f, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
-        float delayEnter = durationAttack * ratioFrameTarget;
+        float delayEnter = durationAttack * interaction.InteractorAnimation.ratioFrameTarget;
         InteractionInterval = TickTimer.CreateFromSeconds(Runner, delayEnter);
     }
 
@@ -162,6 +161,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
             if(animator) animator.SetTrigger("Trigger");
             int extractedAmount = Extract();
             ctx.Interactor.AddResource(extractedAmount, resourceType);
+            ctx.Interactor.Stamina.TryConsume(staminaCostPerGather);
             if (Runner.LocalPlayer == ctx.Interactor.Object.InputAuthority)
             {
                 var iconTmp = NotificationManager.Ins?.IconTMP;

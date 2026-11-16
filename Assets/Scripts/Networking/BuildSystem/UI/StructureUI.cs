@@ -1,4 +1,5 @@
 using System.Threading;
+using Gamelogic.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,17 +29,18 @@ public class StructureUI : MonoBehaviour
     {
         this.m_Structure = structure;
         gameObject.SetActive(true);
-        if (m_Structure.IsUpgradeable && m_Structure.StructureDataSO.structureType != StructureType.Door)
-        {
+        if (m_Structure.IsUpgradeable)
+        {          
             UpgradePanel.SetActive(true);
-            DestroyPanel.SetActive(true);
-            //upgradeText.text = structure._currentUpgradeData.Information();
-            (this.transform as RectTransform).sizeDelta = new Vector2(300 , 200);
+            DestroyPanel.SetActive(m_Structure.StructureDataSO.structureType != StructureType.Door ? true : false);
+            upgradeText.text = structure.GetInforUpgrade();
+            destroyText.text = structure.GetResourceDestroy().info;
+            (this.transform as RectTransform).sizeDelta = DestroyPanel.activeSelf ? new Vector2(300 , 200) : new Vector2(300, 100);
         }
         else
         {
             UpgradePanel.SetActive(false);
-
+            destroyText.text = structure.GetResourceDestroy().info;
             (this.transform as RectTransform).sizeDelta = new Vector2(300, 100);
         }
         if(cts != null && !cts.IsCancellationRequested)

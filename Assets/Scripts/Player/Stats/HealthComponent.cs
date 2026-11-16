@@ -46,6 +46,8 @@ public class HealthComponent : NetworkBehaviour
         {
             CurrentHealth = MaxHealth;  
         }
+        if(HasInputAuthority)
+           Util.Core.Utils.DelayCall(1f, () => OnHealthChanged?.Invoke(CurrentHealth, MaxHealth)).Forget();
     }
 
 
@@ -54,8 +56,8 @@ public class HealthComponent : NetworkBehaviour
         if (HasStateAuthority && CurrentHealth <= 0 && MaxHealth > 0)
         {
             CurrentHealth = MaxHealth;
-
         }
+
     }
 
 
@@ -114,8 +116,7 @@ public class HealthComponent : NetworkBehaviour
     void OnChangeRender()
     {
         if (Runner.IsResimulation) return;
-        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-       
+        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);       
     }
 
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using Fusion;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class StaminaComponent : NetworkBehaviour
 {
@@ -36,6 +35,8 @@ public class StaminaComponent : NetworkBehaviour
         {
             CurrentStamina = MaxStamina;
         }
+        if (HasInputAuthority)
+            Util.Core.Utils.DelayCall(1f, () => OnStaminaChange?.Invoke(CurrentStamina, MaxStamina)).Forget();
     }
 
     public override void Spawned()

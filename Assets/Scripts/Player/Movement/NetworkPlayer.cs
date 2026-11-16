@@ -1,13 +1,11 @@
 ﻿using System;
+using FischlWorks_FogWar;
 using Fusion;
-using System.Collections.Generic;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Text;
-using Newtonsoft.Json;
-using FischlWorks_FogWar;
 
+[Serializable]
 public struct NetworkResourcePlayer : INetworkStruct
 {
     public int Wood;
@@ -47,6 +45,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
     }
     public static NetworkPlayer Local { get; private set; }
+
+    [Networked] public NetworkString<_32> Name { get; private set; } = default;
+
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
     private csRevealerSpawner fogSpawner;//Fog of war
@@ -54,14 +55,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     [SerializeField] GameObject CanvasOverlay;
     [SerializeField] TooltipUI TooltipUI;
     [SerializeField] StructureUI StructureUI;
+    [Header("Interactions")]
     [SerializeField] InteractionSystem interactionSystem;
-    [SerializeField] InteractionData InteractionData;
+    [SerializeField] InteractionData axeInteraction;
+    [SerializeField] InteractionData pickAxeInteraction;
     [SerializeField] GameObject Axe;
-    [SerializeField] GameObject PickAxe;    
+    [SerializeField] GameObject PickAxe;
     [SerializeField] GameObject Screwdriver;
     [SerializeField] Animator animator;
+    [Networked] TickTimer InteractionInterval { get; set; }
+
     public Stats _stats { get; private set; }
-    
+
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
@@ -77,10 +82,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
     public event Action<NetworkResourcePlayer> OnResouceChange;
-
-    EventBinding<ReliableReceiveData> relialeEvent;
-
-
     private void OnResourceChanged()
     {
         OnResouceChange?.Invoke(resourcePlayer);
@@ -92,11 +93,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
     Door doorPlayer;
     public Door Door => doorPlayer;
-
-    public Transform InteractTransform => transform;
-
-    public Action OnCompleted { get; set ; }
-
 
     public override void Spawned()
     {
@@ -134,11 +130,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
 
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
-            Debug.Log(inventoryUI.gameObject.name);
-            Debug.Log("InventoryUI: " + inventoryUI == null);
             if (inventoryUI != null)
             {
-                Debug.Log("Register event InventoryChanged");
                 inventoryUI.SetInventory(inventory);
                 inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
             }
@@ -149,8 +142,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             {
                 radialmenu.onSelectIndex += OnRadialMenuSelected;
             }
-            relialeEvent = new EventBinding<ReliableReceiveData>(OnReliableReceiveData);
-            EventBus<ReliableReceiveData>.Register(relialeEvent);
         }
 
         if (HasStateAuthority)
@@ -177,11 +168,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
-    {
-        if (HasInputAuthority)
-        {
-            EventBus<ReliableReceiveData>.Deregister(relialeEvent);
-        }
+    {       
         if (fogSpawner != null)
         {
             fogSpawner.UnregisterPlayer();
@@ -216,8 +203,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.collider.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
+                if (hit.transform.root.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
                 {
+                    Debug.Log(hit.transform.root.name);
                     StructureUI.Show(context);
                 }
                 else
@@ -250,7 +238,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 if (Object.HasStateAuthority)
                 {
                     equipTool = ToolType.Axe;
-                }               
+                }
             }
 
             if (data.button.WasPressed(previousInput.button, ButtonType.Interact))
@@ -267,7 +255,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             {
                 interactionSystem.Released();
             }
-            
+
             if (data.button.WasPressed(previousInput.button, ButtonType.TestAddModify))
             {
                 if (!HasStateAuthority) return;
@@ -283,11 +271,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data;           
+            previousInput = data;
             lastInputDir = inputDirection;
             animator.SetBool("IsWalking", inputDirection.sqrMagnitude > 0);
-            controller.Move(moveDirection, jumpImpluse);   
-            
+            controller.Move(moveDirection, jumpImpluse);
+
         }
 
         if (transform.position.y <= -10f)
@@ -329,18 +317,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
         }
     }   
-    void OnReliableReceiveData(ReliableReceiveData data)
-    {
-        if (data.key == ConstReliableKey.GatherResult)
-        {
-            string json = Encoding.UTF8.GetString(data.data);
-            GatherResult result = JsonConvert.DeserializeObject<GatherResult>(json);
-            if (result != null)
-            {
-                NotificationManager.Ins.ShowNotification(result.Message, result.Success ? 1 : 2);
-            }
-        }
-    }
 
 
     public void AddResource(int amount, ResourceType type)
@@ -363,6 +339,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 break;
         }
 
+    }
+    public void AddResource(NetworkResourcePlayer resouces)
+    {
+        if (!HasStateAuthority) return;
+        resourcePlayer.Wood += resouces.Wood;
+        resourcePlayer.Stone += resouces.Stone;
+        resourcePlayer.GoldOre += resouces.GoldOre;
+        resourcePlayer.Electric += resouces.Electric;
     }
 
     public void ComsumpResource(NetworkResourcePlayer resource)
@@ -397,6 +381,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
     public void TakeDamage(float amount, NetworkObject attacker)
     {
+
         Health?.TakeDamage(amount, attacker);
     }
 
@@ -452,10 +437,20 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     void RPC_RequestUseTool(ToolType toolUse)
     {
         equipTool = toolUse;
-    }  
+    }
     //IInteractable implementation
+    #region Interactions
+    public Transform InteractTransform => transform;
 
-    public InteractionData Data(NetworkPlayer interactor) => InteractionData;
+    public Action OnCompleted { get; set; }
+    public InteractionData Data(NetworkPlayer interactor)
+    {
+        if (interactor.equipTool == ToolType.Axe)
+            return axeInteraction;
+        if(interactor.equipTool == ToolType.PickAxe)
+            return pickAxeInteraction;
+        return null;
+    }
 
     public InteractionResult CanInteract(NetworkPlayer interactor)
     {
@@ -476,6 +471,26 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
     public void OnInteract(InteractionContext ctx)
     {
-        TakeDamage(ctx.Interactor._stats.Get(StatsType.Damage), ctx.Interactor.Object);
-    }
+        if (ctx.Phase == InteractPhase.Press)
+        {
+            float durationAttack = Mathf.Max(0.5f, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
+            float delayEnter = durationAttack * Data(ctx.Interactor).InteractorAnimation.ratioFrameTarget;
+            InteractionInterval = TickTimer.CreateFromSeconds(Runner, delayEnter);
+        }
+        if(ctx.Phase == InteractPhase.Hold)
+        {
+            if (InteractionInterval.ExpiredOrNotRunning(Runner))
+            {
+                TakeDamage(ctx.Interactor._stats.Get(StatsType.Damage), ctx.Interactor.Object);
+                ctx.Interactor.Stamina.TryConsume(10);              
+                InteractionInterval = TickTimer.CreateFromSeconds(Runner, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
+            }
+        }
+        
+
+       
+    }        
+
+    #endregion
+
 }

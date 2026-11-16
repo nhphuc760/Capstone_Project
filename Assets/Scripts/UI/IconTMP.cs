@@ -39,7 +39,6 @@ public class IconTMP : ScriptableObject
             ToolType.PickAxe => pickAxe,
             _ => null
         };
-    }
-
+    }   
 
 }

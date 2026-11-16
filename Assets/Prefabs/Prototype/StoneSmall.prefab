@@ -59,7 +59,7 @@ MonoBehaviour:
   staminaCostPerGather: 10
   holdDuration: 3
   animator: {fileID: 6288159903265333758}
-  iconTMP: {fileID: 0}
+  iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   regenRatePerWave: 1
   interaction:
     Mode: 1

@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class Wall : StructureBase
 {
+
+    public override void Spawned()
+    {
+        
+    }
     public override string GetInfor()
     {
         return null;
