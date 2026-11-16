@@ -2,46 +2,46 @@
 using Fusion;
 using UnityEngine;
 
-public class SnowmanNPC : MonoBehaviour, IInteractable
+public class SnowmanNPC : MonoBehaviour
 {
     [SerializeField] ShopManager Shop;
     [SerializeField] GameObject ShopUI;
-    [SerializeField] NetworkObject networkObj;
-    public Transform InteractTransform =>transform;
-    public Action OnCompleted { get; set; }
-
+    [SerializeField] NetworkObject networkObj;   
+    NetworkPlayer player;
+    //quick test
 
     private void Start()
     {
+      
+    }
+
+    void MakesureHasPlayer()
+    {
+        player = player != null ? player : networkObj.Runner.GetPlayerObject(networkObj.Runner.LocalPlayer).GetBehaviour<NetworkPlayer>();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            MakesureHasPlayer();
+            if (player.Object.HasInputAuthority)
+            {
+               
+            }
+        }
 
     }
 
+
+
+    
 
 
     private void OnDestroy()
     {
         
-    }
-
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-        if (!Shop.IsValid(interactor.Object.InputAuthority))
-        {
-            Debug.Log("Bị cấm giao thương", this);
-            return new InteractionResult(false, "Bạn bị cấm giao thương cho tới round sau");
-        }
-        return new InteractionResult(true);
-    }
-
-    public InteractionData Data(NetworkPlayer interactor) => null;    
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        if (networkObj.Runner.LocalPlayer != ctx.Interactor.Object.InputAuthority) return;
-        if (ctx.Phase != InteractPhase.Press) return;
-        ShowUI(true);
-        OnCompleted?.Invoke();
-    }
+    }  
 
     public void ShowUI(bool value)
     {

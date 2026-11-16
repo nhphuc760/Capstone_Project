@@ -3,10 +3,9 @@ using Fusion;
 using TMPro;
 using UnityEngine;
 
-public class Electric : StructureBase, IInteractable
+public class Electric : StructureBase
 {
     [Networked] TickTimer SpawnElectricSpeed { get; set; }
-    [SerializeField] InteractionData interactionData;
     [SerializeField] ElectricMesh[] electricMeshes;
     [SerializeField] Transform[] spawnPoints;
     public override void Spawned()
@@ -61,30 +60,6 @@ public class Electric : StructureBase, IInteractable
     {
 
     }
-    public Transform InteractTransform => transform;
 
-    public System.Action OnCompleted { get; set; }
-
-
-    public InteractionData Data(NetworkPlayer interactor) => interactionData;
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-        if (interactor.equipTool != ToolType.Screwdriver)
-        {
-            return new InteractionResult(false);
-        }
-        return new InteractionResult(true);
-    }
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        if (ctx.Phase == InteractPhase.Hold)
-        {
-            if (ctx.HoldTime >= interactionData.HoldTime)
-            {
-                StructureManager.Ins?.DestroyStructure(Object);
-            }
-        }
-    }
 
 }

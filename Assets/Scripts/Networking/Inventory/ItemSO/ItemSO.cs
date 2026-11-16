@@ -49,9 +49,12 @@ public class ItemSO : ScriptableObject
             maxStack = 1;
     }    
 
-    public void Use(NetworkPlayer player)
+    public void Use(NetworkRunner runner, PlayerRef user)
     {
-
+        if (runner.LocalPlayer == user)
+        {
+            runner.GetPlayerObject(user).GetBehaviour<BuildSystem>().PickStruct(objectPrefab.GetComponent<StructureBase>().StructureDataSO._id.Value);
+        }        
     }
 
 }

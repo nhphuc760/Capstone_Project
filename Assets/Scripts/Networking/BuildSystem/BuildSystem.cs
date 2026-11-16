@@ -5,6 +5,7 @@ using Fusion;
 using UnityEngine;
 using Util.Core;
 using System.Linq;
+using Ookii.Dialogs;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -20,11 +21,12 @@ public class BuildSystem : NetworkBehaviour
     [SerializeField] LayerMask _layerObstacleBuild;
     [SerializeField] LayerMask _groundMask;
     [SerializeField] GameObject gridLine;
+    [SerializeField] NetworkInventory _inventory;
 
+    
+    [Networked, OnChangedRender(nameof(OnIdStructChange))] NetworkString<_8> idStruct { get; set; }
 
-    [OnChangedRender(nameof(OnWallAmountChange))]
-    [Networked] public int wallAmount { get; set; }
-
+    [SerializeField] int wallAmount = 30;
     Dictionary<StructureDataSO, IRequirement[]> structureBuildRequirement = new();
 
 
@@ -74,42 +76,20 @@ public class BuildSystem : NetworkBehaviour
         if (!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
         if (Object.HasInputAuthority)
         {
-            Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();
-            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-            if (radialmenu != null)
-            {
-                radialmenu.onSelectIndex += OnRadialMenuSelected;
-            }
-            GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
+            Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();           
         }
         if (HasStateAuthority)
         {
-            wallAmount = 30;
+            _inventory.TryAddItem(6, wallAmount);
         }
         InitBuildRequirement();
     }
-    private void OnWallAmountChange()
-    {
-        GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
-    }
 
-    private void OnRadialMenuSelected(int obj)
-    {
-        if (obj == 2)
-        {
-            var wallID = GetComponentInChildren<RadialMenuItem>(includeInactive: true).wallSO._id;
-            PickStruct(wallID.Value);
-        }
-    }
+  
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        base.Despawned(runner, hasState);
-        var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-        if (radialmenu != null)
-        {
-            radialmenu.onSelectIndex -= OnRadialMenuSelected;
-        }
+        base.Despawned(runner, hasState);       
     }
 
     private void Update()
@@ -218,10 +198,11 @@ public class BuildSystem : NetworkBehaviour
         return default;       
     }
 
-    public void PickStruct(string _idStruct)
+    private void OnIdStructChange()
     {
         Debug.Log("PickStructure");
-        StructureDataSO _structSO = _structDatabase.GetStructSO(_idStruct);
+        if (string.IsNullOrEmpty(idStruct.Value)) return;
+        StructureDataSO _structSO = _structDatabase.GetStructSO(this.idStruct.Value);
         if (_structSO == null) return;
         meshFilters = _structSO.prefabs.GetComponentsInChildren<MeshFilter>();
         if (meshFilters.Length == 0)
@@ -231,6 +212,27 @@ public class BuildSystem : NetworkBehaviour
         }
         _curStructureSO = _structSO;
         EnableLine();
+    }
+
+
+    public void PickStruct(string _idStruct)
+    {
+        if (Object.HasStateAuthority)
+        {
+            this.idStruct = _idStruct;  
+        }
+        else
+        {
+            RPC_RequestPickStructure(_idStruct);
+        }        
+    }
+
+    
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestPickStructure(NetworkString<_8> idStruct)
+    {
+        this.idStruct  = idStruct;
     }
 
     void RenderPreview()
@@ -288,5 +290,8 @@ public class BuildSystem : NetworkBehaviour
     {           
         gridLine?.SetActive(false);
     }
+
+
+
 }
 

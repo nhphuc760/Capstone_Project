@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Fusion;
-using TriInspector;
+﻿using Fusion;
+using Game.Interaction;
 using UnityEngine;
 
-public class Door : StructureBase, ITakedamageable, IInteractable
+public class Door : StructureBase, ITakedamageable, IOwnable
 {
 
     [HideInInspector]
@@ -14,20 +12,6 @@ public class Door : StructureBase, ITakedamageable, IInteractable
 
     [Networked]
     public NetworkBool IsOpen { get; set; }
-
-    [SerializeField] InteractionData NormalInteractionData;
-    [SerializeField] InteractionData DismantleInteractionData;
-    [SerializeField] InteractProcess processor;
-
-    List<IInteractable> _interactables = new List<IInteractable>();
-    IInteractable _currentInteractStategy;
-
-
-    public Transform InteractTransform => transform;
-
-    public Action OnCompleted { get; set; }
-
-    public IProcessor Processor => processor;
 
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
@@ -43,29 +27,8 @@ public class Door : StructureBase, ITakedamageable, IInteractable
 
     private void Awake()
     {
-        InitializeInteractables();
     }
-
-
-    void InitializeInteractables()
-    {
-        // Normal interaction strategy
-        _interactables.Add(new NormalInteract(transform, NormalInteractionData, this));
-        var dismantle = new DismantleInteract(transform, DismantleInteractionData, this);
-        dismantle.OnCompleted += () => OnCompleted?.Invoke();
-        _interactables.Add(dismantle);
-    }
-    IInteractable GetInteractStategy(NetworkPlayer interactor)
-    {
-        if (interactor.equipTool == ToolType.Screwdriver)
-        {
-            return _interactables.Find(i => i is DismantleInteract);
-        }
-        else
-        {
-            return _interactables.Find(i => i is NormalInteract);
-        }
-    }
+      
 
 
 
@@ -149,100 +112,19 @@ public class Door : StructureBase, ITakedamageable, IInteractable
 
     }
 
-    public InteractionData Data(NetworkPlayer interactor) => _currentInteractStategy.Data(interactor);
 
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-        _currentInteractStategy = GetInteractStategy(interactor);
-        return _currentInteractStategy.CanInteract(interactor);
-        //return new InteractionResult (true);
-    }
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        _currentInteractStategy.OnInteract(ctx);        
-    }
+   
+  
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(OutideOppositeDoor, Vector3.one);
     }
 
-    public class NormalInteract : IInteractable
+    public bool IsOwnedBy(PlayerRef player)
     {
-
-        Transform Transform;
-        InteractionData InteractData;
-        Door door;
-
-
-        public NormalInteract(Transform transform, InteractionData data, Door door)
-        {
-            this.Transform = transform;
-            this.InteractData = data;
-            this.door = door;
-        }
-
-        public Transform InteractTransform => Transform;
-
-        public Action OnCompleted { get; set; }
-
-
-        public InteractionResult CanInteract(NetworkPlayer interactor)
-        {
-
-            return new InteractionResult(success: interactor.Object.InputAuthority == door.Object.InputAuthority);            
-        }
-
-        public InteractionData Data(NetworkPlayer interactor) => InteractData;
-        public void OnInteract(InteractionContext ctx)
-        {
-           if(ctx.Phase == InteractPhase.Press)
-            {
-                door.RPC_RequestTriggerDoor(!door.IsOpen);
-            }
-        }
-    }
-
-
-    public class DismantleInteract : IInteractable
-    {
-        Transform Transform;
-        InteractionData InteractData;
-        Door door;
-
-        public DismantleInteract(Transform transform, InteractionData data, Door door)
-        {
-            this.Transform = transform;
-            this.InteractData = data;
-            this.door = door;
-        }
-        public Transform InteractTransform => Transform;
-
-        public Action OnCompleted { get; set; }
-
-
-        public InteractionResult CanInteract(NetworkPlayer interactor)
-        {
-            return new InteractionResult(!door.IsOpen);
-        }
-        public InteractionData Data(NetworkPlayer interactor) => InteractData;
-        public void OnInteract(InteractionContext ctx)
-        {
-            if (ctx.Phase == InteractPhase.Hold)
-            {
-                door.processor.UpdateProcess(ctx.HoldTime / InteractData.HoldTime);
-                if (ctx.HoldTime >= InteractData.HoldTime)
-                {
-                    door.RPC_RequestTriggerDoor(true);
-                    OnCompleted?.Invoke();
-                }
-            }
-        }
-    }
-
-
-
+        return player == Object.InputAuthority;
+    }      
 
 }
 

@@ -30,7 +30,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         slotIndex = index;
         this.inventoryUI = inventoryUI;
         if (hoverHighlight) hoverHighlight.enabled = false;
-        if(selectedHighlight) selectedHighlight.enabled = false;
+        if (selectedHighlight) selectedHighlight.enabled = false;
         Clear();
     }
 
@@ -47,7 +47,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
 
         // Icon
         if (iconImage != null)
-        {            
+        {
             iconImage.sprite = data.Icon;
             iconImage.enabled = true;
             iconImage.color = Color.white;
@@ -67,7 +67,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
                 amountText.enabled = false;
             }
         }
-       
+
     }
 
     public void Clear()
@@ -85,23 +85,23 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         {
             amountText.text = "";
             amountText.enabled = false;
-        }        
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if(!isSelected && hoverHighlight != null)
+        if (!isSelected && hoverHighlight != null)
         {
             hoverHighlight.enabled = true;
         }
-      
+
         if (inventoryUI != null)
         {
             inventoryUI.ShowTooltip(this);
         }
-        
 
-        
+
+
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -110,7 +110,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             inventoryUI.OnSlotClicked(this);
-        }else if (eventData.button == PointerEventData.InputButton.Right)
+        }
+        else if (eventData.button == PointerEventData.InputButton.Right)
         {
             inventoryUI.DeselectSlot();
         }
@@ -118,7 +119,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if(hoverHighlight != null)
+        if (hoverHighlight != null)
         {
             hoverHighlight.enabled = false;
         }

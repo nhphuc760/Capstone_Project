@@ -4,8 +4,9 @@ using UnityEngine;
 
 public enum ButtonType
 {
-    Jump,
     Interact,
+    Jump,
+    //CancelInteract,
     EquipTool,
     TestAddModify,
 }
