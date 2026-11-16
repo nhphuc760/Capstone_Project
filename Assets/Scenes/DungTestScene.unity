@@ -24993,6 +24993,7 @@ MonoBehaviour:
   Components:
   - {fileID: 915408402}
   _guid: 0704a0cd-9aa8-4910-
+<<<<<<< Updated upstream
 --- !u!1 &932860230
 GameObject:
   m_ObjectHideFlags: 0
@@ -34142,6 +34143,9 @@ CanvasRenderer:
   m_GameObject: {fileID: 1285022979}
   m_CullTransparentMesh: 1
 --- !u!1 &1286250749
+=======
+--- !u!1 &1000617584
+>>>>>>> Stashed changes
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -34149,22 +34153,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1286250752}
-  - component: {fileID: 1286250751}
-  - component: {fileID: 1286250750}
-  m_Layer: 0
-  m_Name: Fog
+  - component: {fileID: 1000617586}
+  - component: {fileID: 1000617585}
+  m_Layer: 11
+  m_Name: FogWar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1286250750
+--- !u!114 &1000617585
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< Updated upstream
   m_GameObject: {fileID: 1286250749}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -34182,53 +34186,57 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1286250749}
+=======
+  m_GameObject: {fileID: 1000617584}
+>>>>>>> Stashed changes
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5de54c084f472845b61ee9a97cb8a48, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FischlWorks_FogWar.csFogWar
+  m_EditorClassIdentifier: 
   fogRevealers: []
-  levelMidPoint: {fileID: 1352846706}
+  levelMidPoint: {fileID: 1292781265}
   FogRefreshRate: 10
-  fogPlaneHeight: 1
+  fogPlaneHeight: 0
   fogPlaneMaterial: {fileID: 2100000, guid: 36b93ac6fcf129c449491654e397fe4a, type: 2}
   fogColor: {r: 0.019607844, g: 0.05882353, b: 0.09803922, a: 1}
   fogPlaneAlpha: 1
   fogLerpSpeed: 2.5
   keepRevealedTiles: 1
-  revealedTileOpacity: 0.48
+  revealedTileOpacity: 0.5
   fogPlaneTextureLerpTarget: {fileID: 0}
   fogPlaneTextureLerpBuffer: {fileID: 0}
   LevelDataToLoad: {fileID: 0}
   saveDataOnScan: 1
   levelNameToSave: Default
-  levelDimensionX: 11
-  levelDimensionY: 11
-  unitScale: 1
+  levelDimensionX: 128
+  levelDimensionY: 128
+  unitScale: 2
   scanSpacingPerUnit: 0.25
-  rayStartHeight: 5
-  rayMaxDistance: 10
+  rayStartHeight: 3
+  rayMaxDistance: 5
   obstacleLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16
   ignoreTriggers: 1
   drawGizmos: 0
   LogOutOfRange: 0
---- !u!4 &1286250752
+--- !u!4 &1000617586
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1286250749}
+  m_GameObject: {fileID: 1000617584}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< Updated upstream
 --- !u!1 &1286280186
 GameObject:
   m_ObjectHideFlags: 0
@@ -34267,11 +34275,25 @@ RectTransform:
   m_SizeDelta: {x: 123.396, y: 25.3177}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1286280188
+=======
+--- !u!1 &1016451949 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1121900881606221113, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
+  m_PrefabInstance: {fileID: 8097662851742081706}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &1016451952 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 1773271208246478139, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
+  m_PrefabInstance: {fileID: 8097662851742081706}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1016451953
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< Updated upstream
   m_GameObject: {fileID: 1286280186}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -34503,6 +34525,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1287469964}
   m_CullTransparentMesh: 1
+=======
+  m_GameObject: {fileID: 1016451949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45af2e202d842b6468f1e0096131abf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinimapFogVisibility
+  fogWar: {fileID: 1000617585}
+  additionalRadius: 0
+  iconRenderers:
+  - {fileID: 1016451952}
+>>>>>>> Stashed changes
 --- !u!1 &1292781261
 GameObject:
   m_ObjectHideFlags: 0
@@ -45998,7 +46032,11 @@ MonoBehaviour:
   - key: BULLET
     prefab: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
     maxSize: 100
+<<<<<<< Updated upstream
 --- !u!1 &1815622936
+=======
+--- !u!1 &1825907576
+>>>>>>> Stashed changes
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46006,16 +46044,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+<<<<<<< Updated upstream
   - component: {fileID: 1815622937}
   - component: {fileID: 1815622939}
   - component: {fileID: 1815622938}
   m_Layer: 0
   m_Name: Avatar
+=======
+  - component: {fileID: 1825907578}
+  - component: {fileID: 1825907577}
+  m_Layer: 0
+  m_Name: reviewFogTest
+>>>>>>> Stashed changes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< Updated upstream
 --- !u!224 &1815622937
 RectTransform:
   m_ObjectHideFlags: 0
@@ -46037,11 +46083,15 @@ RectTransform:
   m_SizeDelta: {x: 56.7641, y: 56.7641}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1815622938
+=======
+--- !u!114 &1825907577
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< Updated upstream
   m_GameObject: {fileID: 1815622936}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -46068,10 +46118,25 @@ MonoBehaviour:
   m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1815622939
 CanvasRenderer:
+=======
+  m_GameObject: {fileID: 1825907576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e53e7a9b1c387884195b44a214333a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FischlWorks_FogWar.csRevealerSpawner
+  fogWar: {fileID: 1000617585}
+  exampleRevealer: {fileID: 0}
+  sightRange: 3
+  updateOnlyOnMove: 1
+--- !u!4 &1825907578
+Transform:
+>>>>>>> Stashed changes
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< Updated upstream
   m_GameObject: {fileID: 1815622936}
   m_CullTransparentMesh: 1
 --- !u!1 &1820095182
@@ -55499,6 +55564,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145666186}
   m_CullTransparentMesh: 1
+=======
+  m_GameObject: {fileID: 1825907576}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 99.99999, y: 0, z: 100.00002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+>>>>>>> Stashed changes
 --- !u!4 &10647409397088172
 Transform:
   m_ObjectHideFlags: 0
@@ -59790,7 +59866,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1121900881606221113, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1016451953}
   m_SourcePrefab: {fileID: 100100000, guid: b4d41c31897dc304e8fda6420b575e1c, type: 3}
 --- !u!23 &8098963637435091552
 MeshRenderer:
@@ -60504,5 +60583,10 @@ SceneRoots:
   - {fileID: 6038087280373174631}
   - {fileID: 5142568654339975527}
   - {fileID: 7571162777317074569}
+<<<<<<< Updated upstream
   - {fileID: 1286250752}
   - {fileID: 1082307642}
+=======
+  - {fileID: 1000617586}
+  - {fileID: 1825907578}
+>>>>>>> Stashed changes
