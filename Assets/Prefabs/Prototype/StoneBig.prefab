@@ -203,7 +203,6 @@ GameObject:
   - component: {fileID: 9211086963339919852}
   - component: {fileID: 3941771425784559004}
   - component: {fileID: 7994869183283627002}
-  - component: {fileID: 5454615230367083863}
   m_Layer: 11
   m_Name: MinimapIcon
   m_TagString: Untagged
@@ -298,22 +297,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IconOnMap
   updateRealTime: 0
---- !u!114 &5454615230367083863
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4209796886174219749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45af2e202d842b6468f1e0096131abf1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MinimapFogVisibility
-  fogWar: {fileID: 0}
-  additionalRadius: 0
-  iconRenderers:
-  - {fileID: 3941771425784559004}
 --- !u!1 &4678223333668896102
 GameObject:
   m_ObjectHideFlags: 0
