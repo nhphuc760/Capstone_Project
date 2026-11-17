@@ -29294,6 +29294,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 1082307646}
   - {fileID: 1082307648}
+  - {fileID: 9008310634097149514}
+  - {fileID: 1938163269}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &1082307646
 MonoBehaviour:
@@ -52237,6 +52239,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1936897671}
   m_CullTransparentMesh: 1
+--- !u!1 &1938163267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1938163268}
+  - component: {fileID: 1938163269}
+  m_Layer: 8
+  m_Name: ToggleShop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1938163268
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938163267}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9008310634097149511}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1938163269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1938163267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ed056813c2ebeb4aaeb7c95d993aca4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ToggleShopAction
+  _slot: 0
+  _priority: 0
+  _mode: 0
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 0
+  _moveTolerance: 0.3
+  _conditions: []
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginTrigger: 
+    LoopBool: 
+    PerformTrigger: 
 --- !u!1 &1941594648
 GameObject:
   m_ObjectHideFlags: 0
@@ -62928,6 +62991,7 @@ GameObject:
   - component: {fileID: 2160445929452234769}
   - component: {fileID: 9008310634097149512}
   - component: {fileID: 9008310634097149513}
+  - component: {fileID: 9008310634097149514}
   m_Layer: 8
   m_Name: SnowmanNPC
   m_TagString: Untagged
@@ -63265,6 +63329,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 448189311}
+  - {fileID: 1938163268}
   m_Father: {fileID: 1082307642}
   m_LocalEulerAnglesHint: {x: 0, y: 14.77, z: 0}
 --- !u!114 &9008310634097149512
@@ -63299,6 +63364,20 @@ MonoBehaviour:
   Shop: {fileID: 1082307646}
   ShopUI: {fileID: 1923787477}
   networkObj: {fileID: 1082307645}
+--- !u!114 &9008310634097149514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8523100123546017021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 9008310634097149511}
+  _defaultRange: 2.5
 --- !u!4 &9042846876152887043
 Transform:
   m_ObjectHideFlags: 0

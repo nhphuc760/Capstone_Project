@@ -4,9 +4,10 @@ using UnityEngine;
 
 public enum ButtonType
 {
-    Interact,
+    InteractMain,
+    InteractSecondary,
+    CancelInteract,
     Jump,
-    //CancelInteract,
     EquipTool,
     TestAddModify,
 }

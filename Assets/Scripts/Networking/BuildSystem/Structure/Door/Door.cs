@@ -8,38 +8,49 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     [HideInInspector]
     [Networked]
     public Vector3 OutideOppositeDoor { get; private set; }
+
+    [Networked]
+    public NetworkBool HasInitialized { get; set; }
+
     public HealthComponent HealthDoor { get; private set; }
 
     [Networked]
     public NetworkBool IsOpen { get; set; }
+
+    public int MaxSecurity = 10;
+    [Networked] public int Security { get; set; } = 1;
 
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
         if (HasStateAuthority)
         {
             OutideOppositeDoor = pos;
-            Vector3 directionDoor = (OutideOppositeDoor - transform.position).normalized;        
-            GetBehaviour<NetworkTransform>().Teleport(rotation: Quaternion.LookRotation(directionDoor));
-        }      
-        //Quaternion.L
+            Vector3 directionDoor = (OutideOppositeDoor - transform.position).normalized;
+            RPC_SetDoorRotation(Quaternion.LookRotation(directionDoor));
+        }
     }
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_SetDoorRotation(Quaternion rotation)
+    {
+        GetBehaviour<NetworkTransform>().Teleport(rotation: rotation);
+    }
 
     private void Awake()
     {
     }
-      
-
 
 
     public override void Spawned()
     {
         base.Spawned();
         _structureStats ??= GetComponent<Stats>();
-         HealthDoor ??= GetComponent<HealthComponent>();
+        HealthDoor ??= GetComponent<HealthComponent>();
         HealthDoor.Initialize(_structureStats);
         HealthDoor.OnDeath += HealthDoor_OnDeath;
+        HasInitialized = false;
     }
+
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         base.Despawned(runner, hasState);
@@ -50,20 +61,17 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     {
         Debug.Log("Destroy Door");
         StructureManager.Ins?.DestroyStructure(Object);
-    }   
+    }
 
     public override void UpgradeLogic()
     {
-        Debug.Log("Door upgrade");
+        if (HasStateAuthority)
+            Security++;
     }
-
-    
-
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_RequestUpgrade()
     {
-
         var canUpgrade = CanUpgrade();
 
         if (canUpgrade.Success)
@@ -78,15 +86,18 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-
     public void RPC_SetActiveNetworked(bool value)
-    {        
-       gameObject.SetActive(value);
+    {
+        gameObject.SetActive(value);
+        if (value)
+        {
+            HasInitialized = true;
+        }
     }
 
     public void TakeDamage(float amount, NetworkObject attacker)
     {
-       HealthDoor?.TakeDamage(amount, attacker);
+        HealthDoor?.TakeDamage(amount, attacker);
     }
 
     public override string GetInfor()
@@ -109,12 +120,8 @@ public class Door : StructureBase, ITakedamageable, IOwnable
         }
 
         IsOpen = open;
-
     }
 
-
-   
-  
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -124,8 +131,7 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     public bool IsOwnedBy(PlayerRef player)
     {
         return player == Object.InputAuthority;
-    }      
-
+    }
 }
 
 

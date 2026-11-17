@@ -39,8 +39,6 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
 
 
     [Header("InteractConfig")]
-    [Networked] TickTimer InteractionInterval { get; set; }
-
     public ResourceType ResourceType => resourceType;
     public ToolType RequiredTool => requiredTool;
     public int MaxAmount => maxAmount;  

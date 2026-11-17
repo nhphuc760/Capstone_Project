@@ -8,15 +8,18 @@ using UnityEngine.EventSystems;
 /// Hotbar 5 slot (phím 1 → 5).
 /// Dữ liệu lấy trực tiếp từ NetworkInventory.Hotbar — luôn đồng bộ với Player.
 /// </summary>
-public class ToolKit : MonoBehaviour, IItemHoldProvider
+public class ToolKit : MonoBehaviour
 {
     public const int SLOT_COUNT = NetworkInventory.HotbarCapacity;
 
     [Header("References")]
     [SerializeField] private NetworkInventory inventory;
+    [SerializeField] ItemToolKitUse useItemHandler;
     [SerializeField] private Transform slotsParent;
     [SerializeField] private InventorySlotUI slotPrefab;
     [SerializeField] private ItemTooltip tooltip;
+
+
 
     [Header("Drag Visual (optional)")]
     [SerializeField] private Canvas dragCanvas;
@@ -38,7 +41,7 @@ public class ToolKit : MonoBehaviour, IItemHoldProvider
     public NetworkInventory Inventory => inventory;
     public ItemTooltip Tooltip => tooltip;
 
-    public ItemSO CurrentHold => inventory.GetHotbarItemData(selectedHotbarIndex);
+ 
 
     private void Start()
     {
@@ -151,8 +154,7 @@ public class ToolKit : MonoBehaviour, IItemHoldProvider
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i) || Input.GetKeyDown(KeyCode.Keypad1 + i))
             {
-                SelectHotbarSlot(i);
-                UseHotbarSlot(i);
+                SelectHotbarSlot(i);               
             }
         }
     }
@@ -167,19 +169,7 @@ public class ToolKit : MonoBehaviour, IItemHoldProvider
         selectedHotbarIndex = index;
         slots[index].SetSelected(true);
         OnLocalSelectedChanged?.Invoke(selectedHotbarIndex);
-    }
-
-    public void UseHotbarSlot(int index)
-    {
-        if (inventory == null || index < 0 || index >= SLOT_COUNT) return;
-
-        var item = inventory.GetHotbarSlot(index);
-        if (item.IsEmpty) return;
-        var data = inventory.GetHotbarItemData(index);
-
-        Debug.Log($"[ToolKit] Use hotbar {index + 1}: {data?.ItemName} x{item.amount}");
-        // TODO: gọi logic sử dụng item (RPC_UseItem ...)
-    }
+    }  
 
     #endregion
 
@@ -311,11 +301,11 @@ public class ToolKit : MonoBehaviour, IItemHoldProvider
     {
         if (inventory.Object.HasStateAuthority)
         {
-            inventory.UseItemSlot(selectedHotbarIndex);
+            useItemHandler.ServerUse(selectedIndex);
         }
         else
         {
-            inventory.RPC_UseItemSlot(selectedHotbarIndex);
+            useItemHandler.RPC_RequestUse(selectedIndex);
         }
     }
 

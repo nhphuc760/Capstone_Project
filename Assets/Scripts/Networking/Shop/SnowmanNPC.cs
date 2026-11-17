@@ -1,5 +1,4 @@
-﻿using System;
-using Fusion;
+﻿using Fusion;
 using UnityEngine;
 
 public class SnowmanNPC : MonoBehaviour
@@ -19,24 +18,7 @@ public class SnowmanNPC : MonoBehaviour
     {
         player = player != null ? player : networkObj.Runner.GetPlayerObject(networkObj.Runner.LocalPlayer).GetBehaviour<NetworkPlayer>();
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            MakesureHasPlayer();
-            if (player.Object.HasInputAuthority)
-            {
-               
-            }
-        }
-
-    }
-
-
-
     
-
 
     private void OnDestroy()
     {
@@ -46,6 +28,11 @@ public class SnowmanNPC : MonoBehaviour
     public void ShowUI(bool value)
     {
         ShopUI?.SetActive(value);
+    }
+
+    public void ToggleShopUI()
+    {       
+        ShopUI?.SetActive(!ShopUI.activeSelf);
     }
 
 }

@@ -66,6 +66,9 @@ public class NetworkInventory : NetworkBehaviour
         }
     }
 
+
+
+
     #region ===== Inventory Get / Set =====
 
     public InventoryItem GetSlot(int index)
@@ -264,15 +267,7 @@ public class NetworkInventory : NetworkBehaviour
         Hotbar.Set(hotbarIndex, invItem);
         Items.Set(invIndex, hotItem);
         return true;
-    }
-    public void UseItemSlot(int hotbarIndex)
-    {
-        if (!HasStateAuthority) return;
-        if (hotbarIndex < 0 || hotbarIndex >= HotbarCapacity) return;
-        var hotItemSO = GetHotbarItemData(hotbarIndex);
-        if(hotItemSO != null)
-            hotItemSO.Use(Runner, Object.InputAuthority);
-    }
+    }   
 
     /// <summary>
     /// Swap 2 slot trong Hotbar.
@@ -331,12 +326,5 @@ public class NetworkInventory : NetworkBehaviour
     {
         SwapInventorySlots(a, b);
     }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_UseItemSlot(int hotBarIndex)
-    {
-        UseItemSlot(hotBarIndex);
-    }
-
     #endregion
 }

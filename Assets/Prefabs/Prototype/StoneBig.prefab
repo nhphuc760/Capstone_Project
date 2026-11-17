@@ -105,7 +105,7 @@ Animator:
   m_GameObject: {fileID: 3457075801975648962}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 99bdcf5e9a6a2354bbc9eeb8f3adfc40, type: 2}
+  m_Controller: {fileID: 9100000, guid: 3a05f799c89ebc347af88ad336779474, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -297,6 +297,73 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IconOnMap
   updateRealTime: 0
+--- !u!1 &4449850420253610914
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7594210684349618791}
+  - component: {fileID: 1731529874492364197}
+  m_Layer: 0
+  m_Name: MiningAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7594210684349618791
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4449850420253610914}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.18447113, y: 0.65506935, z: -0.016320229}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4939144099969570483}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1731529874492364197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4449850420253610914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e840de1ed519646b529d7ba69804a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.OreMineAction
+  _slot: 0
+  _priority: 0
+  _mode: 2
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 0
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 97315ac4fd3f21d42abf87ae097c6e59, type: 2}
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Mining
+    EndState: 
+  _clip:
+    ClipLength: 0.967
+    TotalFrames: 29
+    HitFrame: 13
+  animator: {fileID: 4170588415995821147}
 --- !u!1 &4678223333668896102
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,6 +468,7 @@ GameObject:
   - component: {fileID: 2510891296007052898}
   - component: {fileID: 5552949276574436851}
   - component: {fileID: 6633972412127093484}
+  - component: {fileID: -535880916643087165}
   m_Layer: 9
   m_Name: StoneBig
   m_TagString: Untagged
@@ -425,6 +493,7 @@ Transform:
   - {fileID: 7531361419788645188}
   - {fileID: 4387958906267984604}
   - {fileID: 9211086963339919852}
+  - {fileID: 7594210684349618791}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7457639854409077937
@@ -448,14 +517,6 @@ MonoBehaviour:
   animator: {fileID: 4170588415995821147}
   iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   regenRatePerWave: 1
-  interaction:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: Mining
-      hzState: 1.0344827
-  ratioFrameTarget: 0.4827586
 --- !u!114 &7937453108398423669
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -475,6 +536,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 7457639854409077937}
   - {fileID: 2510891296007052898}
+  - {fileID: -535880916643087165}
+  - {fileID: 1731529874492364197}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &2510891296007052898
 MonoBehaviour:
@@ -531,6 +594,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 6123884709864356243}
   sinA: 0.05
   freq: 3
+--- !u!114 &-535880916643087165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4794110883865834258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5
 --- !u!1 &6123884709864356243
 GameObject:
   m_ObjectHideFlags: 0

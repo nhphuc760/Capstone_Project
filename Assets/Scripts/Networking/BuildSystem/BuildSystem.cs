@@ -23,17 +23,11 @@ public class BuildSystem : NetworkBehaviour
     [SerializeField] GameObject gridLine;
     [SerializeField] NetworkInventory _inventory;
 
-    
-    [Networked, OnChangedRender(nameof(OnIdStructChange))] NetworkString<_8> idStruct { get; set; }
+
+    [Networked, OnChangedRender(nameof(OnIdStructChange))] public NetworkString<_8> idStruct { get; private set; }
 
     [SerializeField] int wallAmount = 30;
     Dictionary<StructureDataSO, IRequirement[]> structureBuildRequirement = new();
-
-
-
-
-
-
     Vector3Int _cellPos;
     BuildValidationResult buildValidationResult = default;
 
@@ -76,7 +70,7 @@ public class BuildSystem : NetworkBehaviour
         if (!Object.HasInputAuthority) _playerCam.gameObject.SetActive(false);
         if (Object.HasInputAuthority)
         {
-            Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();           
+            Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();
         }
         if (HasStateAuthority)
         {
@@ -85,11 +79,11 @@ public class BuildSystem : NetworkBehaviour
         InitBuildRequirement();
     }
 
-  
+
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        base.Despawned(runner, hasState);       
+        base.Despawned(runner, hasState);
     }
 
     private void Update()
@@ -112,9 +106,7 @@ public class BuildSystem : NetworkBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            //Hủy hành động build
-            _curStructureSO = null;
-            DisableLine();
+            ClearStructure();           
         }
     }
 
@@ -166,7 +158,7 @@ public class BuildSystem : NetworkBehaviour
                     {
                         item.Effect();
                     }
-                }                
+                }
             }
             else
             {
@@ -186,7 +178,7 @@ public class BuildSystem : NetworkBehaviour
 
     public CheckMetResult CheckBuildRequirement(StructureDataSO structureDataSO)
     {
-        if(structureBuildRequirement.TryGetValue(structureDataSO, out var requirements))
+        if (structureBuildRequirement.TryGetValue(structureDataSO, out var requirements))
         {
             foreach (var i in structureBuildRequirement[structureDataSO])
             {
@@ -195,13 +187,18 @@ public class BuildSystem : NetworkBehaviour
                     return result;
             }
         }
-        return default;       
+        return default;
     }
 
     private void OnIdStructChange()
     {
         Debug.Log("PickStructure");
-        if (string.IsNullOrEmpty(idStruct.Value)) return;
+        if (string.IsNullOrEmpty(idStruct.Value)) 
+        {
+            _curStructureSO = null;
+            DisableLine();
+            return;
+        }
         StructureDataSO _structSO = _structDatabase.GetStructSO(this.idStruct.Value);
         if (_structSO == null) return;
         meshFilters = _structSO.prefabs.GetComponentsInChildren<MeshFilter>();
@@ -219,20 +216,40 @@ public class BuildSystem : NetworkBehaviour
     {
         if (Object.HasStateAuthority)
         {
-            this.idStruct = _idStruct;  
+            this.idStruct = _idStruct;
         }
         else
         {
             RPC_RequestPickStructure(_idStruct);
-        }        
+        }
     }
 
-    
+    public void ClearStructure()
+    {        
+        if (HasStateAuthority)
+        {
+            this.idStruct = null;
+        }else
+        {
+            _curStructureSO = null;
+            DisableLine();
+            RPC_RequestClearStructure();
+        }
+    }
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestClearStructure()
+    {
+        this.idStruct = null;
+    }
+
+
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestPickStructure(NetworkString<_8> idStruct)
     {
-        this.idStruct  = idStruct;
+        this.idStruct = idStruct;
     }
 
     void RenderPreview()
@@ -278,20 +295,20 @@ public class BuildSystem : NetworkBehaviour
 
     void EnableLine()
     {
+        if (!Object.HasInputAuthority) return;
         gridLine?.SetActive(true);
-    }    
+    }
 
     void UpdateLine(Vector3 pos)
     {
+        if (!Object.HasInputAuthority) return;
         gridLine.transform.position = pos;
     }
 
     void DisableLine()
-    {           
+    {
+        if (!Object.HasInputAuthority) return;
         gridLine?.SetActive(false);
     }
-
-
-
 }
 

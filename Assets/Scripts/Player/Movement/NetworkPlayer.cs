@@ -197,6 +197,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
+            if (!string.IsNullOrEmpty(GetComponent<BuildSystem>().idStruct.Value)) return;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))

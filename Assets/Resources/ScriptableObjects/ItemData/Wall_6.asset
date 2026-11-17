@@ -20,10 +20,12 @@ MonoBehaviour:
   objectPrefab: {fileID: 1835964164062538361, guid: ec104651423ce9242a4b9902a1200d48, type: 3}
   stackable: 1
   maxStack: 99
-  itemLogic:
-    rid: -2
+  Components:
+  - rid: 2672765821221863521
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    - rid: 2672765821221863521
+      type: {class: BuildComponent, ns: , asm: Assembly-CSharp}
+      data:
+        StructSO: {fileID: 11400000, guid: dde95cba76ec23b4483d6ba1e0b6bf9d, type: 2}

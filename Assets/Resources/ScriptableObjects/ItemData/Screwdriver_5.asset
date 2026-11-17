@@ -15,15 +15,12 @@ MonoBehaviour:
   itemId: 5
   itemName: "Tua v\xEDt"
   description: "D\xF9ng \u0111\u1EC3 ph\xE1 h\u1EE7y c\xF4ng tr\xECnh"
-  itemType: 0
+  itemType: 3
   icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 0
   maxStack: 1
-  itemLogic:
-    rid: -2
+  Components: []
   references:
     version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    RefIds: []

@@ -1048,37 +1048,6 @@ Transform:
   - {fileID: 6116189356579695853}
   m_Father: {fileID: 4325515239083428777}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &543635209790556909
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7886390049629080338}
-  m_Layer: 3
-  m_Name: PickAxeAttack
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7886390049629080338
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 543635209790556909}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1084784179086757711}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &755759456857145087
 GameObject:
   m_ObjectHideFlags: 0
@@ -2438,6 +2407,73 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8826476791093242212}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1443440899451774491
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5999436297796184810}
+  - component: {fileID: 6912120905335120596}
+  m_Layer: 3
+  m_Name: PickAxeAttack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5999436297796184810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443440899451774491}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1084784179086757711}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6912120905335120596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443440899451774491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0bd3e8056448384783dfd47f894e3ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickAxeAttackAction
+  _slot: 0
+  _priority: 0
+  _mode: 2
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 97315ac4fd3f21d42abf87ae097c6e59, type: 2}
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Mining
+    EndState: 
+  staminaPerUse: 10
+  _clip:
+    ClipLength: 1
+    TotalFrames: 29
+    HitFrame: 13
 --- !u!1 &1461222037253859221
 GameObject:
   m_ObjectHideFlags: 0
@@ -3549,6 +3585,7 @@ GameObject:
   - component: {fileID: 1943368405509535366}
   - component: {fileID: 645725365916528908}
   - component: {fileID: 5550687586956063432}
+  - component: {fileID: 4076327860458310933}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3578,7 +3615,7 @@ Transform:
   - {fileID: 3139337920614676328}
   - {fileID: 7483691084072435924}
   - {fileID: 3726486112367298016}
-  - {fileID: 7886390049629080338}
+  - {fileID: 5999436297796184810}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5131017292646362623
@@ -3660,7 +3697,9 @@ MonoBehaviour:
   - {fileID: 2901054209406831814}
   - {fileID: 1943368405509535366}
   - {fileID: 5550687586956063432}
-  - {fileID: 109776932238843315}
+  - {fileID: 4076327860458310933}
+  - {fileID: 3210318161609772509}
+  - {fileID: 6912120905335120596}
   ForceRemoteRenderTimeframe: 0
 --- !u!54 &-7849153057991330858
 Rigidbody:
@@ -3815,6 +3854,10 @@ MonoBehaviour:
     m_Bits: 1024
   gridLine: {fileID: 3597685379088037456}
   _inventory: {fileID: 8000677038320043257}
+  _idStruct:
+    _length: 0
+    _data:
+      Data: 0000000000000000000000000000000000000000000000000000000000000000
   wallAmount: 30
 --- !u!114 &8000677038320043257
 MonoBehaviour:
@@ -3888,25 +3931,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.InteractionController
   _slotBits: 0000000001000000
   _cancelBit: 2
-  _origin: {fileID: 0}
-  _mask:
-    serializedVersion: 2
-    m_Bits: 9161
-  _searchRadius: 3.5
-  _minFacingDot: -0.2
-  _facingWeight: 1.5
+  _origin: {fileID: 1084784179086757711}
   _allowSelf: 0
-  _rangeLeeway: 1.2
+  _rangeLeeway: 0.2
+  suggestTarget: {fileID: -4642978615242726096}
   _State: 0
   _ActiveTarget:
     Raw: 0
   _ActiveActionIndex: 0
   _ActiveSlot: 0
   _StartTick: 0
+  _RepeatCarry: 0
   _NextRepeatTick: 0
   _ActiveDuration: 0
   _StartPosition: {x: 0, y: 0, z: 0}
   _PerformCounter: 0
+  _focusInterval: 0.1
 --- !u!114 &1943368405509535366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3935,6 +3975,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.InteractorAnimator
   _controller: {fileID: 2901054209406831814}
   _animator: {fileID: 6721125320261425079}
+  _layer: 0
+  _speedParam: ActionSpeed
+  _endBlend: 0.1
 --- !u!114 &5550687586956063432
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3957,6 +4000,19 @@ MonoBehaviour:
   - ItemSO: {fileID: 11400000, guid: fc9d2bcf2f0abec459f137e51397e183, type: 2}
     visualObject: {fileID: 6707211205469294620}
   hideAllWhenEmpty: 1
+--- !u!114 &4076327860458310933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0b1178218a74224a8b6818fbe0efa0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemToolKitUse
+  inventory: {fileID: 8000677038320043257}
 --- !u!1 &2053835999602277458
 GameObject:
   m_ObjectHideFlags: 0
@@ -5363,7 +5419,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3726486112367298016}
-  - component: {fileID: 109776932238843315}
+  - component: {fileID: 3210318161609772509}
   m_Layer: 3
   m_Name: AxeAttack
   m_TagString: Untagged
@@ -5386,7 +5442,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1084784179086757711}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &109776932238843315
+--- !u!114 &3210318161609772509
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5395,9 +5451,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3244147921112124029}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34bfbbac23807334a92ae72004a34bee, type: 3}
+  m_Script: {fileID: 11500000, guid: 5827cd30e6062384aab9a12b0ee5dd68, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerAxeAction
+  m_EditorClassIdentifier: Assembly-CSharp::AxeAttackAction
   _slot: 0
   _priority: 0
   _mode: 2
@@ -5406,17 +5462,21 @@ MonoBehaviour:
   _minHoldTime: 0.1
   _maxRange: -1
   _moveSpeedMultiplier: 1
-  _cancelOnMove: 0
+  _cancelOnMove: 1
   _moveTolerance: 0.3
   _conditions:
-  - {fileID: 11400000, guid: 86f93a073b7aca54f9b5bfcb04498836, type: 2}
+  - {fileID: 11400000, guid: 6b62539cc6753524eaef91753e19de51, type: 2}
   _presentation:
     Prompt: Interact
     Icon: {fileID: 0}
-    BeginTrigger: 
-    LoopBool: 
-    PerformTrigger: 
-  player: {fileID: 5131017292646362623}
+    BeginState: 
+    LoopState: Chopping
+    EndState: 
+  staminaPerUse: 10
+  _clip:
+    ClipLength: 0.967
+    TotalFrames: 29
+    HitFrame: 16
 --- !u!1 &3270482314263433324
 GameObject:
   m_ObjectHideFlags: 0
@@ -8462,6 +8522,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToolKit
   inventory: {fileID: 8000677038320043257}
+  useItemHandler: {fileID: 4076327860458310933}
   slotsParent: {fileID: 6942636481424170907}
   slotPrefab: {fileID: 589805847143875887, guid: a0814c682af8810428fd8c6ed85743e2, type: 3}
   tooltip: {fileID: 7189767228769342443}
@@ -15114,7 +15175,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  - {fileID: 2100000, guid: a83ca22e7fb9940419ecb4e86cb87720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

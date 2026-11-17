@@ -115,6 +115,12 @@ public class WallBuildStrategy : IBuildStategy
             if (doorObj != null)
             {
                 doorObj.RPC_SetActiveNetworked(true);
+                doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
+
+                // ... rest of swapping logic ...
+
+                Vector3 posOutSide = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);
+                doorObj.SetOutSideOppositeDoor(posOutSide);
             }
             doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
             if (doorPos != cell)

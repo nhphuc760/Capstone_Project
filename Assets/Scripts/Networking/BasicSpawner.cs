@@ -79,7 +79,7 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
                 dirMove.x += 1;
             accumulatedInput.moveDirection = dirMove.normalized;
             button.Set(ButtonType.Jump, curBoard.spaceKey.isPressed);
-            button.Set(ButtonType.Interact, curBoard.eKey.isPressed);
+            button.Set(ButtonType.InteractMain, curBoard.eKey.isPressed);
             button.Set(ButtonType.EquipTool, curBoard.digit1Key.isPressed);
             button.Set(ButtonType.TestAddModify, curBoard.digit2Key.isPressed);
         }

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public struct Modifier: INetworkStruct
 {
-    public int ModID;
+    [Tooltip("Server tạo bằng mã ID unique trong runtime")]
+    public int ModID; // 
     public NetworkId Source; // Cho biết nguồn tạo ra Modifier này. Ví dụ Player tạo debuff cho quái thì source là Player    
     public float Value;
     public StatsType StatType;
