@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
   m_Name: AccelerationTower
   m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
-  icon: {fileID: 0}
+  icon: {fileID: -1215096004, guid: ade698ff82d52b8418a1375f4340fef5, type: 3}
   _id:
     _length: 4
     _data:
       Data: 3800000031000000320000003400000000000000000000000000000000000000
-  _name: May Gia toc
-  _description: "Buff t\u1ED1c \u0111\u1ED9 \u0111\xE1nh cho Turret"
+  _name: "M\xE1y gia t\u1ED1c"
+  _description: "T\u0103ng t\u1ED1c \u0111\u1ED9 \u0111\xE1nh cho s\xFAng"
   structureType: 5
   structureCategory: 3
   buildRequirement:
@@ -36,7 +36,7 @@ MonoBehaviour:
         Wood: 0
         Stone: 0
         Gold: 0
-        Electric: 0
+        Electric: 2048
     - rid: 2680167812576575564
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
       data:
@@ -45,5 +45,5 @@ MonoBehaviour:
           stats:
             _serializedList:
             - Key: 11
-              Value: 50
+              Value: 75
         upgradeRequirement: []

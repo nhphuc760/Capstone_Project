@@ -97,9 +97,15 @@ namespace Game.Interaction
         /// <summary>Animation/VFX/SFX/UI. isLocal = máy của người tương tác (dùng để mở UI radar/pháo).</summary>
         public virtual void OnPresentation(InteractionEventType type, in InteractionContext ctx, bool isLocal) { }
 
+        public virtual void OnProgress(in InteractionContext ctx, bool isLocal)
+        {
+
+        }
+
+
         // ---------- Hook: chỉ StateAuthority ----------
         public virtual void OnBegin(in InteractionContext ctx) { }
-        public virtual void OnProgress(in InteractionContext ctx) { }
+        public virtual void OnServerProgress(in InteractionContext ctx) { }
         public virtual void OnPerform(in InteractionContext ctx) { }
         public virtual void OnEnd(in InteractionContext ctx, InteractionEndReason reason) { }
         /// <summary>Session: trả false để tự kết thúc phiên.</summary>

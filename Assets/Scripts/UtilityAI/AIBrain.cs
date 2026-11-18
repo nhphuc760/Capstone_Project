@@ -10,6 +10,8 @@ using UtilityAI.Considerations;
 
 namespace UtilityAI.Core
 {
+    
+
     public class AIBrain : NetworkBehaviour
     {
         [SerializeField]
@@ -19,8 +21,14 @@ namespace UtilityAI.Core
         [SerializeField]
         ConsiderationCollection healEscapeThreshold;
 
+        [SerializeField] Stats _enemyStats;
+
         [SerializeField] int baseExp = 30;
         [SerializeField] int modFactorExp = 20;
+
+        [SerializeField, Tooltip("Bắt đầu từ lv2")]
+        StatsBase[] LvUp;
+
 
         public int MaxLevel = 10;
         [Networked]
@@ -36,6 +44,7 @@ namespace UtilityAI.Core
         public override void Spawned()
         {
             controller ??= GetComponent<AIController>();
+            _enemyStats ??= GetComponent<Stats>();
             Level = 1;
             CurrentExp = 0;
             if (controller)
@@ -61,7 +70,13 @@ namespace UtilityAI.Core
         {
             Level++;
             CurrentExp = 0;
+            HandleLevelUp();
             OnLevelUp?.Invoke();
+        }
+        void HandleLevelUp()
+        {
+            if (!HasStateAuthority) return;
+            _enemyStats.SetStatsBase(LvUp[Level - 1]);
         }
 
         public int ExpToUpLevel(int level) => baseExp + modFactorExp * (level - 1);

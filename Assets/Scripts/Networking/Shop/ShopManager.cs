@@ -169,6 +169,13 @@ public class ShopManager : NetworkBehaviour
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     void RPC_RequestBuyItem(int index, PlayerRef player)
     {
+        if (!IsValid(player))
+        {
+            string s = "Bạn đang bị cấm mua bán";
+            Runner.SendReliableDataToPlayer(player, ConstReliableKey.BuyResult, Encoding.UTF8.GetBytes(s));
+            return;
+        }
+
         if(index >= shopItemDatabase.itemShops.Count)
         {
             //false

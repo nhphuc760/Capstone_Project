@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46b207ec5bd0fe54cb362d9644b15b4e, type: 3}
+  m_Name: BuffSpeed_8
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSO
+  itemId: 8
+  itemName: "Gi\xE0y t\u1ED1c h\xE0nh"
+  description: "T\u0103ng 1 t\u1ED1c \u0111\u1ED9 ch\u1EA1y trong 10s"
+  itemType: 1
+  icon: {fileID: -1839036181, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
+  objectPrefab: {fileID: 0}
+  stackable: 1
+  maxStack: 10
+  Components:
+  - rid: 2672765847051698307
+  references:
+    version: 2
+    RefIds:
+    - rid: 2672765847051698307
+      type: {class: ConsumableComponent, ns: , asm: Assembly-CSharp}
+      data:
+        ConsumePerUse: 1
+        Effects:
+        - rid: 2672765847051698308
+    - rid: 2672765847051698308
+      type: {class: ModifyStats, ns: , asm: Assembly-CSharp}
+      data:
+        StatType: 0
+        ModeApply: 0
+        Priority: 0
+        Duration: 10
+        Value: 1

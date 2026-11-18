@@ -40,8 +40,9 @@ public class DoorFortifyAction : InteractionAction
         }       
     }
 
-    public override void OnProgress(in InteractionContext ctx)
+
+    public override void OnProgress(in InteractionContext ctx, bool isLocal)
     {
         ProgressUI.UpdateProgress(ctx.Progress01);
-    }
+    }    
 }

@@ -779,7 +779,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceNode
   resourceType: 2
   requiredTool: 2
-  maxAmount: 100
+  maxAmount: 120
   amountPerGather: 5
   staminaCostPerGather: 15
   holdDuration: 3

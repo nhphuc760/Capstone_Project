@@ -79,6 +79,8 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
         CurrentAmount -= actual;
         if (CurrentAmount <= 0)
         {
+            if (HasStateAuthority)
+                Runner.Despawn(Object);
             OnDepleted?.Invoke(this);
         }
         return actual;

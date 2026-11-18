@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
   m_Name: EnergySO
   m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
-  icon: {fileID: -91816320, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
+  icon: {fileID: 21300000, guid: dfd50611fd108e540b01a883619fa51c, type: 3}
   _id:
     _length: 4
     _data:

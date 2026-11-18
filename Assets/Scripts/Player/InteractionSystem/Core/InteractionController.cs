@@ -253,7 +253,7 @@ namespace Game.Interaction
 
             if (!ValidateOngoing(target, action, ctx, out var failReason)) { End(action, ctx, failReason); return; }
 
-            action.OnProgress(ctx);
+            action.OnServerProgress(ctx);
 
             if (action.Mode == InteractionMode.Hold && elapsed >= ActiveDuration)
             {
@@ -389,6 +389,13 @@ namespace Game.Interaction
             if (PerformCounter != _seenPerform) { _seenPerform = PerformCounter; Raise(InteractionEventType.Perform); }
             if (_seenState != InteractionState.Idle && st == InteractionState.Idle) Raise(InteractionEventType.End);
             _seenState = st;
+
+            if (st == InteractionState.Holding && TryGetActive(out var t, out var a))
+            {
+                float e = Elapsed();
+                var ctx = MakeContext(t, e, ActiveDuration > 0f ? Mathf.Clamp01(e / ActiveDuration) : 0f);
+                a.OnProgress(ctx, Object.HasInputAuthority);
+            }
 
             if (Object.HasInputAuthority) UpdateFocus();
         }
