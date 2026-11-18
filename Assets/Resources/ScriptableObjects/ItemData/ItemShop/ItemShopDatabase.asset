@@ -13,15 +13,21 @@ MonoBehaviour:
   m_Name: ItemShopDatabase
   m_EditorClassIdentifier: Assembly-CSharp::ItemShopDatabase
   itemShops:
-  - itemSO: {fileID: 0}
+  - itemSO: {fileID: 11400000, guid: aee773e1e5d6950498a7e9a42a500682, type: 2}
     price:
-      Wood: 0
+      Wood: 10
+      Stone: 14
+      GoldOre: 2
+      Electric: 3
+  - itemSO: {fileID: 11400000, guid: c3c4639cd64053e4baf5abff25c0ec43, type: 2}
+    price:
+      Wood: 1
       Stone: 0
       GoldOre: 0
       Electric: 0
-  - itemSO: {fileID: 0}
+  - itemSO: {fileID: 11400000, guid: 786beb12a994d8b43b2a995666978fb1, type: 2}
     price:
-      Wood: 0
+      Wood: 1
       Stone: 0
       GoldOre: 0
       Electric: 0

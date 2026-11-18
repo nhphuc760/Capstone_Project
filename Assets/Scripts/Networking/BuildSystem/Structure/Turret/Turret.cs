@@ -2,13 +2,12 @@ using System.Linq;
 using Fusion;
 using UnityEngine;
 
-public class Turret : StructAttackBase, IInteractable
+public class Turret : StructAttackBase
 {
     [Networked] TickTimer AttackSpeedTimer { get; set; }
     [SerializeField] Transform bulletSpawnPoint;
     [SerializeField] Transform gun;
     [SerializeField] Bullet bulletPrefab;
-    [SerializeField] InteractionData interactionData;
     [SerializeField] LayerMask EnemyMask;
     [SerializeField] float angularSpeed = 10f;
     Transform Target;
@@ -65,30 +64,6 @@ public class Turret : StructAttackBase, IInteractable
 
 
 
-    public Transform InteractTransform => transform;
 
-    public System.Action OnCompleted { get; set ; }
-
-
-    public InteractionData Data(NetworkPlayer interactor) => interactionData;
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-        if (interactor.equipTool != ToolType.Screwdriver)
-        {
-            return new InteractionResult(false);
-        }
-        return new InteractionResult(true);
-    }
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        if (ctx.Phase == InteractPhase.Hold)
-        {
-            if (ctx.HoldTime >= interactionData.HoldTime)
-            {
-                StructureManager.Ins?.DestroyStructure(Object);
-            }
-        }
-    }
 
 }

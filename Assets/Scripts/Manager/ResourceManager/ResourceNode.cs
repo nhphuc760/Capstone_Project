@@ -22,7 +22,7 @@ public enum ToolType
 
 
 
-public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
+public class ResourceNode : NetworkBehaviour, ITooltipContext
 {   
 
     [SerializeField] ResourceType resourceType;
@@ -39,9 +39,6 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
 
 
     [Header("InteractConfig")]
-    [SerializeField] InteractionData interaction;
-    [Networked] TickTimer InteractionInterval { get; set; }
-
     public ResourceType ResourceType => resourceType;
     public ToolType RequiredTool => requiredTool;
     public int MaxAmount => maxAmount;  
@@ -50,11 +47,8 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
     [Networked, OnChangedRender(nameof(OnAmountChange))] int CurrentAmount { get; set; }
     public bool IsDepleted => CurrentAmount <= 0;
 
-    public Transform InteractTransform => transform;
 
-    public Action OnCompleted { get; set; }
 
-    public IProcessor Processor => null;
 
     public event Action<ResourceNode> OnDepleted;
     public event Action<ResourceNode> OnRegenerated;
@@ -114,66 +108,4 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext, IInteractable
         return $"{ResourceType.ToString()}\n" +
             $"{CurrentAmount}/{MaxAmount}";
     }   
-
-    public InteractionData Data(NetworkPlayer interactor) => interaction;
-
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-       if(interactor.Stamina.CurrentStamina < staminaCostPerGather)
-            return new InteractionResult(false, "Không đủ thể lực!");
-        if (requiredTool != ToolType.None && interactor.equipTool != requiredTool)
-            return new InteractionResult(false, $"Cần {iconTMP.GetToolCode(requiredTool)} để khai thác");
-        if (IsDepleted)
-            return new InteractionResult(false, "Tài nguyên đã cạn kiệt");
-        return new InteractionResult(true);
-    }
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        switch (ctx.Phase)
-        {
-            case InteractPhase.Press:
-               HandlePress(ctx);
-                break;
-            case InteractPhase.Hold:                
-                HandleHold(ctx);
-                break;
-            case InteractPhase.Release:
-                HandleRelease(ctx);
-                break;
-            case InteractPhase.Cancel:
-                break;
-            default:
-                break;
-        }            
-    }
-    void HandlePress(InteractionContext ctx)
-    {       
-        float durationAttack = Mathf.Max(0.5f, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
-        float delayEnter = durationAttack * interaction.InteractorAnimation.ratioFrameTarget;
-        InteractionInterval = TickTimer.CreateFromSeconds(Runner, delayEnter);
-    }
-
-    void HandleHold(InteractionContext ctx)
-    {
-        if (InteractionInterval.ExpiredOrNotRunning(Runner))
-        {
-            if(animator) animator.SetTrigger("Trigger");
-            int extractedAmount = Extract();
-            ctx.Interactor.AddResource(extractedAmount, resourceType);
-            ctx.Interactor.Stamina.TryConsume(staminaCostPerGather);
-            if (Runner.LocalPlayer == ctx.Interactor.Object.InputAuthority)
-            {
-                var iconTmp = NotificationManager.Ins?.IconTMP;
-                NotificationManager.Ins?.ShowNotification($"Đã thu thập {iconTmp.GetResourceCode(ResourceType)} x{extractedAmount}");
-            }
-            InteractionInterval = TickTimer.CreateFromSeconds(Runner, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
-        }
-    }
-
-    void HandleRelease(InteractionContext ctx)
-    {
-
-    }
-
 }

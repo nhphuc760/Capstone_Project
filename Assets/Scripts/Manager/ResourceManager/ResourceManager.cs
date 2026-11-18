@@ -31,30 +31,24 @@ public class ResourceManager : NetworkBehaviour
     /// <summary>Danh sách NetworkObject resource đã spawn (runtime).</summary>
     public List<NetworkObject> SpawnedResources { get; private set; } = new List<NetworkObject>();
 
-
-    [Networked]
-    private NetworkBool resourcesInitialized { get; set; }
-
     private void Awake()
     {
         if (Ins == null) Ins = this;
         else if (Ins != this) Destroy(gameObject);
     }
 
-    public async override void Spawned()
+    public override void Spawned()
     {
         if (mapManager == null)
             mapManager = MapManager.Ins;
 
         // Nếu MapManager đã sẵn sàng trước (thứ tự spawn khác nhau)
-        if (Object.HasStateAuthority && mapManager != null && mapManager.IsMapReady && !resourcesInitialized)
+        if (Object.HasStateAuthority)
         {
             InitializeResources();
-
         }
         if (!HasStateAuthority)
         {
-            await UniTask.WaitUntil(() => resourcesInitialized);
             NavMeshBakeManager.Ins.BakeAll();
         }
     }
@@ -67,16 +61,8 @@ public class ResourceManager : NetworkBehaviour
     public void InitializeResources()
     {
         if (!Object.HasStateAuthority) return;
-        if (resourcesInitialized) return;
-
         if (mapManager == null)
-            mapManager = MapManager.Ins;
-
-        if (mapManager == null || !mapManager.IsMapReady)
-        {
-            Debug.LogWarning("[ResourceManager] MapManager chưa sẵn sàng, bỏ qua InitializeResources.");
-            return;
-        }
+            mapManager = MapManager.Ins;       
 
         ClearResources();
 
@@ -100,8 +86,6 @@ public class ResourceManager : NetworkBehaviour
             if (spawned != null)
                 SpawnedResources.Add(spawned);
         }
-
-        resourcesInitialized = true;
         if(NavMeshBakeManager.Ins != null)
         {
             NavMeshBakeManager.Ins.BakeAll();
@@ -119,7 +103,6 @@ public class ResourceManager : NetworkBehaviour
         }
 
         SpawnedResources.Clear();
-        resourcesInitialized = false;
     }
 
     // ===================== Poisson Disk Sampling (logic gốc) =====================

@@ -14,7 +14,7 @@ public enum StatsType: byte
     StaminaRegen,//Amount
     AttackSpeed, //Số đòn đánh trong 1s
     Value,
-    Speed
+    Speed,
 }
 
 [Serializable]

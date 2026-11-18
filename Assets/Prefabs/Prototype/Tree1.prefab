@@ -24,6 +24,18 @@ PrefabInstance:
       propertyPath: NestedObjects.Array.size
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[2]'
+      value: 
+      objectReference: {fileID: 6529788999921705391}
+    - target: {fileID: 2165563400329243187, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2811663585620577885}
     - target: {fileID: 2895810692737046183, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -177,3 +189,25 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+--- !u!114 &2811663585620577885 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4009003524866365266, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+  m_PrefabInstance: {fileID: 1200172284420167951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e8395b0a4251d64c845000ac505653d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TreeChopAction
+--- !u!114 &6529788999921705391 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5348488734963939488, guid: 189024a26a3cf7148a2a245a6ecf92ee, type: 3}
+  m_PrefabInstance: {fileID: 1200172284420167951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable

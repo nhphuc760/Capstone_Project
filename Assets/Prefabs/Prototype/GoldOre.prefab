@@ -315,6 +315,73 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!1 &5756169986966616668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5340010144659707894}
+  - component: {fileID: 5107530707209007236}
+  m_Layer: 0
+  m_Name: MiningAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5340010144659707894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5756169986966616668}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7.61553, y: 0.65507, z: -4.7363195}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3550587154139744074}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5107530707209007236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5756169986966616668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e840de1ed519646b529d7ba69804a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.OreMineAction
+  _slot: 0
+  _priority: 0
+  _mode: 2
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 0
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 97315ac4fd3f21d42abf87ae097c6e59, type: 2}
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Mining
+    EndState: 
+  _clip:
+    ClipLength: 0.967
+    TotalFrames: 29
+    HitFrame: 13
+  animator: {fileID: 8253090002474416259}
 --- !u!1 &6236837207868623922
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,6 +396,7 @@ GameObject:
   - component: {fileID: 3470248287080873063}
   - component: {fileID: 598185067409193448}
   - component: {fileID: 3666992918623304542}
+  - component: {fileID: 6007809777393495049}
   m_Layer: 9
   m_Name: GoldOre
   m_TagString: Untagged
@@ -353,6 +421,7 @@ Transform:
   - {fileID: 3929503108805768561}
   - {fileID: 312366021272963056}
   - {fileID: 4586530360623934075}
+  - {fileID: 5340010144659707894}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5275137824982096815
@@ -376,14 +445,6 @@ MonoBehaviour:
   animator: {fileID: 8253090002474416259}
   iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   regenRatePerWave: 1
-  interaction:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: Mining
-      hzState: 1.0344827
-  ratioFrameTarget: 0.4827586
 --- !u!114 &2832694803254454686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -403,6 +464,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 5275137824982096815}
   - {fileID: 3470248287080873063}
+  - {fileID: 6007809777393495049}
+  - {fileID: 5107530707209007236}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &3470248287080873063
 MonoBehaviour:
@@ -459,6 +522,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 8472017210460261291}
   sinA: 0.05
   freq: 3
+--- !u!114 &6007809777393495049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6236837207868623922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 3550587154139744074}
+  _defaultRange: 2.5
 --- !u!1 &6927031108999867372
 GameObject:
   m_ObjectHideFlags: 0

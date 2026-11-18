@@ -30,6 +30,14 @@ public class MapManager : NetworkBehaviour
     public ZoneSpawnConfig yellowZoneConfig;
     public ZoneSpawnConfig redZoneConfig;
 
+
+    [Header("Spawns Shop")]
+    [SerializeField] LayerMask obstacleMask;
+
+
+
+
+
     [Header("Zone Group Settings")]
     [Tooltip("Kích thước mỗi ô khi phân tích nhóm vùng (càng nhỏ càng chính xác nhưng chậm hơn)")]
     public float zoneCellSize = 1.0f;
@@ -41,7 +49,6 @@ public class MapManager : NetworkBehaviour
         = new Dictionary<ZoneType, List<ZoneGroup>>();
 
     /// <summary>True sau khi GenerateMap đã chạy xong.</summary>
-    public bool IsMapReady { get; private set; }
 
     private ZoneType[,] zoneGrid;
     private int gridWidth;
@@ -66,25 +73,17 @@ public class MapManager : NetworkBehaviour
 
     public override void Spawned()
     {
-        if (Object.HasStateAuthority)
-        {
-            Debug.Log("[MapManager] Create map");
-            GenerateMap();            
-            // Báo cho ResourceManager khởi tạo resource nodes
-            if (ResourceManager.Ins != null)
-                ResourceManager.Ins.InitializeResources();
-        }
-        else
-        {
+        if (!HasStateAuthority)
+        {            
             BuildZoneGroups();
-        } 
-    }
+        }        
+    }    
+
 
     [ContextMenu("Generate Map")]
     public void GenerateMap()
     {
         if(!HasStateAuthority) return;
-        IsMapReady = false;
         ClearZoneData();
 
         // Random noise offset mỗi lần generate
@@ -95,7 +94,6 @@ public class MapManager : NetworkBehaviour
         Debug.Log($"[MapManager] Noise Offset randomized: {noiseOffset}");
 
         BuildZoneGroups();
-        IsMapReady = true;
     }
 
     [ContextMenu("Clear Zone Data")]
@@ -104,7 +102,6 @@ public class MapManager : NetworkBehaviour
         AllZoneGroups.Clear();
         ZoneGroupsByType.Clear();
         zoneGrid = null;
-        IsMapReady = false;
     }
 
     // ===================== Zone Classification =====================
@@ -259,10 +256,111 @@ public class MapManager : NetworkBehaviour
         if (ZoneGroupsByType.TryGetValue(type, out var list))
             return list;
         return new List<ZoneGroup>();
-    }   
-   
+    }
 
-   // ===================== Debug Gizmos =====================
+
+    #region Helper
+
+    public Vector3? FindValidSpawnPositionInGreen(
+    Bounds objectBounds,
+    LayerMask checkLayers,
+    int maxAttempts = 80,
+    float yOffset = 0f)
+    {       
+
+        var greenGroups = GetZoneGroups(ZoneType.Green);
+        if (greenGroups == null || greenGroups.Count == 0)
+        {
+            Debug.LogWarning("[MapManager] Không có vùng Green nào!");
+            return null;
+        }
+
+        // Tổng diện tích để weighted random (ưu tiên group lớn hơn)
+        float totalArea = 0f;
+        foreach (var g in greenGroups) totalArea += g.area;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            // 1. Chọn ngẫu nhiên 1 ZoneGroup (weighted theo area)
+            ZoneGroup chosenGroup = null;
+            float r = UnityEngine.Random.Range(0f, totalArea);
+            float acc = 0f;
+            foreach (var g in greenGroups)
+            {
+                acc += g.area;
+                if (r <= acc)
+                {
+                    chosenGroup = g;
+                    break;
+                }
+            }
+            if (chosenGroup == null) chosenGroup = greenGroups[UnityEngine.Random.Range(0, greenGroups.Count)];
+
+            // 2. Random vị trí trong group
+            Vector3 candidate;
+            if (chosenGroup.cells.Count > 0)
+            {
+                // Cách tốt: lấy random 1 cell rồi jitter nhẹ
+                Vector2Int cellPos = chosenGroup.cells.RandomElement();
+                Vector3 worldPos = new Vector3(cellPos.x, 0, cellPos.y) + Vector3.one * 0.5f;
+                float jitter = zoneCellSize * 0.4f;
+                candidate = worldPos + new Vector3(
+                    UnityEngine.Random.Range(-jitter, jitter),
+                    yOffset,
+                    UnityEngine.Random.Range(-jitter, jitter)
+                );
+            }
+            else
+            {
+                // Fallback dùng bounds
+                Bounds b = chosenGroup.bounds;
+                candidate = new Vector3(
+                    UnityEngine.Random.Range(b.min.x, b.max.x),
+                    yOffset,
+                    UnityEngine.Random.Range(b.min.z, b.max.z)
+                );
+            }
+
+            // 3. Kiểm tra vẫn còn nằm trong Green (tránh jitter ra ngoài)
+            if (GetZoneTypeAt(candidate.x, candidate.z) != ZoneType.Green)
+                continue;
+
+            // 4. Kiểm tra va chạm với bounds
+            if (IsPositionValid(candidate, objectBounds, checkLayers))
+            {
+                return candidate;
+            }
+        }
+
+        Debug.LogWarning($"[MapManager] Không tìm được vị trí spawn hợp lệ sau {maxAttempts} lần thử.");
+        return null;
+    }
+
+    /// <summary>
+    /// Kiểm tra vị trí có bị chồng lên object khác không.
+    /// </summary>
+    private bool IsPositionValid(Vector3 worldPos, Bounds objectBounds, LayerMask checkLayers)
+    {
+        // Đưa bounds về đúng vị trí thế giới
+        Vector3 halfExtents = objectBounds.extents;
+        // Có thể thêm padding nếu muốn an toàn hơn
+        // halfExtents += Vector3.one * 0.3f;
+
+        Collider[] hits = Physics.OverlapBox(
+            worldPos + objectBounds.center,   // nếu bounds.center không phải (0,0,0)
+            halfExtents,
+            Quaternion.identity,
+            checkLayers
+        );
+
+        return hits.Length == 0;
+    }
+
+    #endregion
+
+
+
+    // ===================== Debug Gizmos =====================
 
     private void OnDrawGizmosSelected()
     {

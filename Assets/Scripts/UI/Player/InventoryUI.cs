@@ -1,29 +1,41 @@
 ﻿using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class InventoryUI : MonoBehaviour, IPlayerUI
 {
     [Header("References")]
     [SerializeField] private NetworkInventory inventory;
-    [SerializeField] private Transform slotsParent;          // Parent chứa các InventorySlotUI
-    [SerializeField] private InventorySlotUI slotPrefab;    // Prefab của 1 slot (nếu muốn generate runtime)
+    [SerializeField] private Transform slotsParent;
+    [SerializeField] private InventorySlotUI slotPrefab;
+    [SerializeField] private ToolKit toolKit;
 
     [Header("Selected")]
-    InventorySlotUI selectedSlot;
-    InventoryItem selectedItem;
+    private InventorySlotUI selectedSlot;
+    private InventoryItem selectedItem;
 
-    [Header("ToolTip")]
-    public GameObject tooltipPanel;
-    public TextMeshProUGUI tooltipText;
+    [Header("Tooltip")]
+    [SerializeField] private ItemTooltip tooltip;
+
+    [Header("Drag Visual (optional)")]
+    [SerializeField] private Canvas dragCanvas;
+    [SerializeField] private GameObject dragIconPrefab;
 
     private readonly List<InventorySlotUI> slots = new();
     private bool isInitialized;
 
+    // Drag state
+    private bool isDragging;
+    private int dragSourceIndex = -1;
+    private GameObject dragIconInstance;
+
+    public ItemTooltip Tooltip => tooltip;
+    public ToolKit ToolKit => toolKit;
+    public NetworkInventory Inventory => inventory;
+
     private void Awake()
     {
-        // Đăng ký với hệ thống UI của Player
         var playerUI = GetComponentInParent<PlayerUIComponent>();
         if (playerUI != null)
             playerUI.RegisterPlayerUI(PlayerUIComponent.OpenUI.Inventory, this);
@@ -31,121 +43,41 @@ public class InventoryUI : MonoBehaviour, IPlayerUI
         gameObject.SetActive(false);
     }
 
-    private void OnEnable()
-    {
-        // Khi mở inventory thì refresh ngay
-        if (inventory != null)
-            RefreshUI();
-        
-
-
-    }
-
-
-    public void OnSlotClicked(InventorySlotUI slot)
-    {
-        // Bỏ chọn slot cũ
-        if (selectedSlot != null)
-        {
-            selectedSlot.SetSelected(false);
-        }
-
-        // Chọn slot mới
-        selectedSlot = slot;
-        selectedItem = slot.CurrentItem;
-
-        selectedSlot.SetSelected(true);       
-
-        Debug.Log($"Đã chọn slot {slot.SlotIndex} | Item: {selectedItem.itemID}");
-    }
-
-    public void DeselectSlot()
-    {
-        if(selectedSlot != null)
-        {
-            selectedSlot.SetSelected(false);
-            selectedSlot = null;
-            selectedItem = default;
-
-            Debug.Log("Hủy chọn");
-        }
-    }
-
-    public void ShowTooltip(InventorySlotUI slot)
-    {
-        if (tooltipPanel == null) return;
-
-        if (slot.CurrentItem.IsEmpty)
-        {
-            HideTooltip();
-            return;
-        }
-
-        tooltipPanel.SetActive(true);
-
-        var itemSO = slot.CurrentData;
-
-        string name = itemSO.ItemName;
-        string desc = itemSO.Description;
-
-        if (string.IsNullOrEmpty(desc))
-        {
-            tooltipText.text = $"<b><size=110%>{name}</size></b>";
-        }
-        else
-        {
-            tooltipText.text = $"<b><size=110%>{name}</size></b>\n{desc}";
-        }
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
-
-        Vector3 offset = new Vector3(130f, -50f, 0f);
-        tooltipPanel.transform.position = Input.mousePosition + offset;
-
-    }
-    public void HideTooltip()
-    {
-        if (tooltipPanel != null)
-            tooltipPanel.SetActive(false);
-    }
-
-    public void UseSelectedItem()
-    {
-        if (selectedItem.IsEmpty)
-        {
-            Debug.Log("Chưa chọn item nào!");
-            return;
-        }
-
-        Debug.Log($"Sử dụng: {selectedItem.itemID}");
-        // Viết logic sử dụng của bạn ở đây
-    }
     private void Start()
     {
         InitializeSlots();
-        HideTooltip();
+        if (tooltip != null) tooltip.Hide();
     }
 
+    private void OnEnable()
+    {
+        if (inventory != null)
+        {
+            inventory.OnInventoryChanged += OnInventoryChanged;
+            RefreshUI();
+        }
+    }
 
+    private void OnDisable()
+    {
+        if (inventory != null)
+            inventory.OnInventoryChanged -= OnInventoryChanged;
+
+        CleanupDrag();
+        tooltip?.Hide();
+    }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            
-            //remove 1
-        }
-        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Q))
-        {
-            //remove stack
-        }
+        UpdateDragVisual();
     }
+
+    #region Slot Init & Refresh
 
     private void InitializeSlots()
     {
         if (isInitialized) return;
 
-        // Cách 1: Lấy các slot đã có sẵn trong hierarchy
         if (slotsParent != null && slotsParent.childCount != 0)
         {
             slots.Clear();
@@ -156,10 +88,14 @@ public class InventoryUI : MonoBehaviour, IPlayerUI
                 {
                     slot.Initialize(i, this);
                     slots.Add(slot);
+
+                    var handler = slot.GetComponent<InventorySlotDragHandler>();
+                    if (handler == null)
+                        handler = slot.gameObject.AddComponent<InventorySlotDragHandler>();
+                    handler.Setup(this, slot);
                 }
             }
         }
-        // Cách 2: Generate runtime từ prefab (nếu bạn muốn)
         else if (slotPrefab != null && inventory != null)
         {
             for (int i = 0; i < inventory.Capacity; i++)
@@ -167,6 +103,11 @@ public class InventoryUI : MonoBehaviour, IPlayerUI
                 var slot = Instantiate(slotPrefab, slotsParent);
                 slot.Initialize(i, this);
                 slots.Add(slot);
+
+                var handler = slot.GetComponent<InventorySlotDragHandler>();
+                if (handler == null)
+                    handler = slot.gameObject.AddComponent<InventorySlotDragHandler>();
+                handler.Setup(this, slot);
             }
         }
 
@@ -177,34 +118,81 @@ public class InventoryUI : MonoBehaviour, IPlayerUI
     public void RefreshUI()
     {
         if (inventory == null) return;
-
-        // Đảm bảo slots đã được init
-        if (!isInitialized)
-            InitializeSlots();
+        if (!isInitialized) InitializeSlots();
 
         int count = Mathf.Min(slots.Count, inventory.Capacity);
-
         for (int i = 0; i < count; i++)
         {
-            InventoryItem item = inventory.GetSlot(i);
-            ItemSO data = inventory.GetItemData(i);
-
-            slots[i].SetItem(item, data);
+            slots[i].SetItem(inventory.GetSlot(i), inventory.GetItemData(i));
         }
-
-        // Clear các slot thừa (nếu có)
         for (int i = count; i < slots.Count; i++)
-        {
             slots[i].Clear();
-        }
     }
 
-    // Gọi từ bên ngoài khi inventory thay đổi (ví dụ sau khi Add/Remove)
     public void OnInventoryChanged()
     {
-        Debug.Log("OnInventoryChanged called in InventoryUI");
         if (gameObject.activeInHierarchy)
             RefreshUI();
+    }
+
+    public void SetInventory(NetworkInventory inv)
+    {
+        if (inventory != null)
+            inventory.OnInventoryChanged -= OnInventoryChanged;
+
+        inventory = inv;
+
+        if (inventory != null && isActiveAndEnabled)
+            inventory.OnInventoryChanged += OnInventoryChanged;
+
+        RefreshUI();
+    }
+
+    #endregion
+
+    #region Click / Select / Tooltip
+
+    public void OnSlotClicked(InventorySlotUI slot)
+    {
+        if (selectedSlot != null)
+            selectedSlot.SetSelected(false);
+
+        selectedSlot = slot;
+        selectedItem = slot.CurrentItem;
+        selectedSlot.SetSelected(true);
+
+        Debug.Log($"Đã chọn slot {slot.SlotIndex} | Item: {selectedItem.itemID}");
+    }
+
+    public void DeselectSlot()
+    {
+        if (selectedSlot == null) return;
+        selectedSlot.SetSelected(false);
+        selectedSlot = null;
+        selectedItem = default;
+    }
+
+    public void ShowTooltip(InventorySlotUI slot)
+    {
+        if (tooltip == null) return;
+        if (slot == null || slot.CurrentItem.IsEmpty)
+        {
+            tooltip.Hide();
+            return;
+        }
+        tooltip.Show(slot.CurrentItem, slot.CurrentData);
+    }
+
+    public void HideTooltip() => tooltip?.Hide();
+
+    public void UseSelectedItem()
+    {
+        if (selectedItem.IsEmpty)
+        {
+            Debug.Log("Chưa chọn item nào!");
+            return;
+        }
+        Debug.Log($"Sử dụng: {selectedItem.itemID}");
     }
 
     public void Open()
@@ -216,12 +204,172 @@ public class InventoryUI : MonoBehaviour, IPlayerUI
     public void Close()
     {
         gameObject.SetActive(false);
+        DeselectSlot();
+        CleanupDrag();
+        tooltip?.Hide();
     }
 
-    // Optional: dùng nếu bạn muốn gán inventory runtime
-    public void SetInventory(NetworkInventory inv)
+    #endregion
+
+    #region Drag & Drop
+
+    public void BeginDrag(InventorySlotUI source)
     {
-        inventory = inv;
-        RefreshUI();
+        if (source == null || source.IsEmpty || inventory == null) return;
+
+        isDragging = true;
+        dragSourceIndex = source.SlotIndex;
+
+        CreateDragIcon(source.CurrentData);
+
+        // Báo cho ToolKit biết đang kéo từ Inventory
+        toolKit?.BeginDragFromInventory(source.SlotIndex, source.CurrentData);
+    }
+
+    public void EndDragOnSlot(InventorySlotUI target)
+    {
+        if (!isDragging || inventory == null)
+        {
+            CleanupDrag();
+            return;
+        }
+
+        if (target == null)
+        {
+            CleanupDrag();
+            return;
+        }
+
+        // Thả lên slot của ToolKit?
+        if (target.GetComponent<ToolKitSlotDragHandler>() != null)
+        {
+            toolKit?.EndDragOnToolKitSlot(target);
+            CleanupDrag();
+            return;
+        }
+
+        // Thả lên slot Inventory khác → swap trong inventory
+        if (target.GetComponent<InventorySlotDragHandler>() != null)
+        {
+            int targetIndex = target.SlotIndex;
+            if (dragSourceIndex != targetIndex)
+            {
+                if (inventory.Object.HasStateAuthority)
+                    inventory.SwapInventorySlots(dragSourceIndex, targetIndex);
+                else
+                    inventory.RPC_SwapInventorySlots(dragSourceIndex, targetIndex);
+            }
+        }
+
+        CleanupDrag();
+    }
+
+    public void CancelDrag()
+    {
+        CleanupDrag();
+    }
+
+    /// <summary>
+    /// Luôn dọn cả InventoryUI và ToolKit để icon kéo không bị kẹt trên chuột.
+    /// </summary>
+    private void CleanupDrag()
+    {
+        EndDrag();
+        toolKit?.CancelDrag();
+    }
+
+    private void EndDrag()
+    {
+        isDragging = false;
+        dragSourceIndex = -1;
+
+        if (dragIconInstance != null)
+        {
+            Destroy(dragIconInstance);
+            dragIconInstance = null;
+        }
+    }
+
+    private void CreateDragIcon(ItemSO data)
+    {
+        if (dragCanvas == null || data == null) return;
+
+        if (dragIconPrefab != null)
+        {
+            dragIconInstance = Instantiate(dragIconPrefab, dragCanvas.transform);
+            var img = dragIconInstance.GetComponent<Image>();
+            if (img != null)
+            {
+                img.sprite = data.Icon;
+                img.raycastTarget = false;
+            }
+        }
+        else
+        {
+            dragIconInstance = new GameObject("DragIcon");
+            dragIconInstance.transform.SetParent(dragCanvas.transform, false);
+            var img = dragIconInstance.AddComponent<Image>();
+            img.sprite = data.Icon;
+            img.raycastTarget = false;
+            img.rectTransform.sizeDelta = new Vector2(64, 64);
+        }
+    }
+
+    private void UpdateDragVisual()
+    {
+        if (!isDragging || dragIconInstance == null) return;
+        dragIconInstance.transform.position = Input.mousePosition;
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Drag handler gắn trên slot của Inventory.
+/// </summary>
+public class InventorySlotDragHandler : MonoBehaviour,
+    IBeginDragHandler, IDragHandler, IEndDragHandler
+{
+    private InventoryUI inventoryUI;
+    private InventorySlotUI slot;
+
+    public void Setup(InventoryUI ui, InventorySlotUI slot)
+    {
+        this.inventoryUI = ui;
+        this.slot = slot;
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (inventoryUI == null || slot == null || slot.IsEmpty) return;
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+        inventoryUI.BeginDrag(slot);
+    }
+
+    public void OnDrag(PointerEventData eventData) { }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (inventoryUI == null) return;
+
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        InventorySlotUI target = null;
+        foreach (var r in results)
+        {
+            var s = r.gameObject.GetComponent<InventorySlotUI>()
+                    ?? r.gameObject.GetComponentInParent<InventorySlotUI>();
+            if (s != null)
+            {
+                target = s;
+                break;
+            }
+        }
+
+        if (target != null)
+            inventoryUI.EndDragOnSlot(target);
+        else
+            inventoryUI.CancelDrag();
     }
 }

@@ -5,6 +5,7 @@ using Fusion;
 using UnityEngine;
 using Util.Core;
 using System.Linq;
+using Ookii.Dialogs;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -20,18 +21,13 @@ public class BuildSystem : NetworkBehaviour
     [SerializeField] LayerMask _layerObstacleBuild;
     [SerializeField] LayerMask _groundMask;
     [SerializeField] GameObject gridLine;
+    [SerializeField] NetworkInventory _inventory;
 
 
-    [OnChangedRender(nameof(OnWallAmountChange))]
-    [Networked] public int wallAmount { get; set; }
+    [Networked, OnChangedRender(nameof(OnIdStructChange))] public NetworkString<_8> idStruct { get; private set; }
 
+    [SerializeField] int wallAmount = 30;
     Dictionary<StructureDataSO, IRequirement[]> structureBuildRequirement = new();
-
-
-
-
-
-
     Vector3Int _cellPos;
     BuildValidationResult buildValidationResult = default;
 
@@ -75,41 +71,19 @@ public class BuildSystem : NetworkBehaviour
         if (Object.HasInputAuthority)
         {
             Utils.IntervalLoop(IntervalPhysicsCast, 100, token: Object.GetCancellationTokenOnDestroy()).Forget();
-            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-            if (radialmenu != null)
-            {
-                radialmenu.onSelectIndex += OnRadialMenuSelected;
-            }
-            GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
         }
         if (HasStateAuthority)
         {
-            wallAmount = 30;
+            _inventory.TryAddItem(6, wallAmount);
         }
         InitBuildRequirement();
     }
-    private void OnWallAmountChange()
-    {
-        GetComponentInChildren<RadialMenuItem>(includeInactive: true)?.UpdateAmount(wallAmount);
-    }
 
-    private void OnRadialMenuSelected(int obj)
-    {
-        if (obj == 2)
-        {
-            var wallID = GetComponentInChildren<RadialMenuItem>(includeInactive: true).wallSO._id;
-            PickStruct(wallID.Value);
-        }
-    }
+
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         base.Despawned(runner, hasState);
-        var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-        if (radialmenu != null)
-        {
-            radialmenu.onSelectIndex -= OnRadialMenuSelected;
-        }
     }
 
     private void Update()
@@ -132,9 +106,7 @@ public class BuildSystem : NetworkBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            //Hủy hành động build
-            _curStructureSO = null;
-            DisableLine();
+            ClearStructure();           
         }
     }
 
@@ -186,7 +158,7 @@ public class BuildSystem : NetworkBehaviour
                     {
                         item.Effect();
                     }
-                }                
+                }
             }
             else
             {
@@ -206,7 +178,7 @@ public class BuildSystem : NetworkBehaviour
 
     public CheckMetResult CheckBuildRequirement(StructureDataSO structureDataSO)
     {
-        if(structureBuildRequirement.TryGetValue(structureDataSO, out var requirements))
+        if (structureBuildRequirement.TryGetValue(structureDataSO, out var requirements))
         {
             foreach (var i in structureBuildRequirement[structureDataSO])
             {
@@ -215,13 +187,19 @@ public class BuildSystem : NetworkBehaviour
                     return result;
             }
         }
-        return default;       
+        return default;
     }
 
-    public void PickStruct(string _idStruct)
+    private void OnIdStructChange()
     {
         Debug.Log("PickStructure");
-        StructureDataSO _structSO = _structDatabase.GetStructSO(_idStruct);
+        if (string.IsNullOrEmpty(idStruct.Value)) 
+        {
+            _curStructureSO = null;
+            DisableLine();
+            return;
+        }
+        StructureDataSO _structSO = _structDatabase.GetStructSO(this.idStruct.Value);
         if (_structSO == null) return;
         meshFilters = _structSO.prefabs.GetComponentsInChildren<MeshFilter>();
         if (meshFilters.Length == 0)
@@ -231,6 +209,47 @@ public class BuildSystem : NetworkBehaviour
         }
         _curStructureSO = _structSO;
         EnableLine();
+    }
+
+
+    public void PickStruct(string _idStruct)
+    {
+        if (Object.HasStateAuthority)
+        {
+            this.idStruct = _idStruct;
+        }
+        else
+        {
+            RPC_RequestPickStructure(_idStruct);
+        }
+    }
+
+    public void ClearStructure()
+    {        
+        if (HasStateAuthority)
+        {
+            this.idStruct = null;
+        }else
+        {
+            _curStructureSO = null;
+            DisableLine();
+            RPC_RequestClearStructure();
+        }
+    }
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestClearStructure()
+    {
+        this.idStruct = null;
+    }
+
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestPickStructure(NetworkString<_8> idStruct)
+    {
+        this.idStruct = idStruct;
     }
 
     void RenderPreview()
@@ -276,16 +295,19 @@ public class BuildSystem : NetworkBehaviour
 
     void EnableLine()
     {
+        if (!Object.HasInputAuthority) return;
         gridLine?.SetActive(true);
-    }    
+    }
 
     void UpdateLine(Vector3 pos)
     {
+        if (!Object.HasInputAuthority) return;
         gridLine.transform.position = pos;
     }
 
     void DisableLine()
-    {           
+    {
+        if (!Object.HasInputAuthority) return;
         gridLine?.SetActive(false);
     }
 }

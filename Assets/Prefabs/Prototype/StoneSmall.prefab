@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2423083218788837733}
   - component: {fileID: 5820894745144438250}
   - component: {fileID: 210101375612844655}
+  - component: {fileID: -8153759099238241379}
   m_Layer: 9
   m_Name: StoneSmall
   m_TagString: Untagged
@@ -38,6 +39,7 @@ Transform:
   - {fileID: 2378041030456213185}
   - {fileID: 4235516943398793405}
   - {fileID: 7078666129768991328}
+  - {fileID: 3846295297319640643}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4029638976216912394
@@ -61,14 +63,6 @@ MonoBehaviour:
   animator: {fileID: 6288159903265333758}
   iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   regenRatePerWave: 1
-  interaction:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: Mining
-      hzState: 1.0344827
-  ratioFrameTarget: 0.4827586
 --- !u!114 &1451913125180742326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,6 +82,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 4029638976216912394}
   - {fileID: 2423083218788837733}
+  - {fileID: -8153759099238241379}
+  - {fileID: 7424571907916732362}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &2423083218788837733
 MonoBehaviour:
@@ -144,6 +140,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 5728840343645609181}
   sinA: 0.05
   freq: 3
+--- !u!114 &-8153759099238241379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408571881010769135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5
 --- !u!1 &1646317685008962632
 GameObject:
   m_ObjectHideFlags: 0
@@ -685,7 +695,7 @@ Animator:
   m_GameObject: {fileID: 5887366509152686465}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 99bdcf5e9a6a2354bbc9eeb8f3adfc40, type: 2}
+  m_Controller: {fileID: 9100000, guid: 3a05f799c89ebc347af88ad336779474, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -697,6 +707,73 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &7901969184118129002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3846295297319640643}
+  - component: {fileID: 7424571907916732362}
+  m_Layer: 0
+  m_Name: MiningAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3846295297319640643
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7901969184118129002}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.4073639, y: 0.65506935, z: 3.0487423}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2969982365395631679}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7424571907916732362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7901969184118129002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e840de1ed519646b529d7ba69804a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.OreMineAction
+  _slot: 0
+  _priority: 0
+  _mode: 2
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 0
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 97315ac4fd3f21d42abf87ae097c6e59, type: 2}
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Mining
+    EndState: 
+  _clip:
+    ClipLength: 0.967
+    TotalFrames: 29
+    HitFrame: 13
+  animator: {fileID: 6288159903265333758}
 --- !u!1 &7934550085192298740
 GameObject:
   m_ObjectHideFlags: 0

@@ -333,6 +333,73 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &3538175156414839730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 147909942335338270}
+  - component: {fileID: 4009003524866365266}
+  m_Layer: 0
+  m_Name: ChoppingAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &147909942335338270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538175156414839730}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.01131, y: 1.69245, z: 0.01589}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6007682004136614036}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4009003524866365266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538175156414839730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e8395b0a4251d64c845000ac505653d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TreeChopAction
+  _slot: 0
+  _priority: 0
+  _mode: 2
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 6b62539cc6753524eaef91753e19de51, type: 2}
+  _presentation:
+    Prompt: Interact
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Chopping
+    EndState: 
+  _clip:
+    ClipLength: 0.967
+    TotalFrames: 29
+    HitFrame: 16
+  animator: {fileID: 6703749943848583857}
 --- !u!1 &3954084552676730140
 GameObject:
   m_ObjectHideFlags: 0
@@ -672,6 +739,7 @@ GameObject:
   - component: {fileID: 8241440449774646680}
   - component: {fileID: -2011430016449691489}
   - component: {fileID: 3763639309676167532}
+  - component: {fileID: 5348488734963939488}
   m_Layer: 9
   m_Name: Tree
   m_TagString: Untagged
@@ -696,6 +764,7 @@ Transform:
   - {fileID: 4576063040804300453}
   - {fileID: 6995303229936781210}
   - {fileID: 4187427072435770557}
+  - {fileID: 147909942335338270}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &883818043004291980
@@ -719,15 +788,6 @@ MonoBehaviour:
   animator: {fileID: 6703749943848583857}
   iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
   regenRatePerWave: 1
-  interaction:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: Chopping
-      hzState: 1.0344827
-      ratioFrameTarget: 0.5517241
-  ratioFrameTarget: 0.55172414
 --- !u!114 &2165563400329243187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -747,6 +807,8 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 883818043004291980}
   - {fileID: -8701603475819565025}
+  - {fileID: 5348488734963939488}
+  - {fileID: 4009003524866365266}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &-8701603475819565025
 MonoBehaviour:
@@ -828,3 +890,17 @@ CapsuleCollider:
   m_Height: 2.909686
   m_Direction: 1
   m_Center: {x: -0.1152564, y: 2.0164895, z: 0.024264634}
+--- !u!114 &5348488734963939488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8828526485439760935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 6007682004136614036}
+  _defaultRange: 2.5

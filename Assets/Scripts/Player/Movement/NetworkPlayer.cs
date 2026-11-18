@@ -12,6 +12,20 @@ public struct NetworkResourcePlayer : INetworkStruct
     public int Stone;
     public int GoldOre;
     public int Electric;
+    public static bool operator >=(NetworkResourcePlayer left, NetworkResourcePlayer right)
+    {
+        return left.Wood >= right.Wood
+            && left.Stone >= right.Stone
+            && left.GoldOre >= right.GoldOre
+            && left.Electric >= right.Electric;
+    }
+    public static bool operator <=(NetworkResourcePlayer left, NetworkResourcePlayer right)
+    {
+        return left.Wood <= right.Wood
+            && left.Stone <= right.Stone
+            && left.GoldOre <= right.GoldOre
+            && left.Electric <= right.Electric;
+    }
 }
 
 [Serializable]
@@ -34,7 +48,7 @@ public class GatherResult
 }
 
 
-public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInteractable
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 {
     [Flags]
     public enum PlayerState : byte
@@ -56,28 +70,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     [SerializeField] TooltipUI TooltipUI;
     [SerializeField] StructureUI StructureUI;
     [Header("Interactions")]
-    [SerializeField] InteractionSystem interactionSystem;
-    [SerializeField] InteractionData axeInteraction;
-    [SerializeField] InteractionData pickAxeInteraction;
-    [SerializeField] GameObject Axe;
-    [SerializeField] GameObject PickAxe;
-    [SerializeField] GameObject Screwdriver;
     [SerializeField] Animator animator;
-    [Networked] TickTimer InteractionInterval { get; set; }
-
     public Stats _stats { get; private set; }
 
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
-    [SerializeField] float jumpForce = 8f;
 
     [Networked] NetworkInputData previousInput { get; set; }
     Vector3 lastInputDir;
     public NetworkInventory inventory { get; private set; }
 
     //Resource Exploitation
-    [Networked, OnChangedRender(nameof(OnEquipTool))] public ToolType equipTool { get; set; }
     [SerializeField] SuggestTarget suggestTarget;
     [Networked, OnChangedRender(nameof(OnResourceChanged))]
     public ref NetworkResourcePlayer resourcePlayer => ref MakeRef<NetworkResourcePlayer>();
@@ -136,12 +140,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
             }
 
-            //Subcribe RadialMenu event
-            var radialmenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-            if (radialmenu != null)
-            {
-                radialmenu.onSelectIndex += OnRadialMenuSelected;
-            }
         }
 
         if (HasStateAuthority)
@@ -212,6 +210,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
 
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
+            if (!string.IsNullOrEmpty(GetComponent<BuildSystem>().idStruct.Value)) return;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
@@ -244,30 +243,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
             float jumpImpluse = 0f;
             if (data.button.WasPressed(previousInput.button, ButtonType.Jump) && controller.IsGrounded)
             {
-                jumpImpluse = jumpForce;
-            }
-            if (data.button.WasPressed(previousInput.button, ButtonType.EquipTool))
-            {
-                if (Object.HasStateAuthority)
-                {
-                    equipTool = ToolType.Axe;
-                }
-            }
-
-            if (data.button.WasPressed(previousInput.button, ButtonType.Interact))
-            {
-                interactionSystem.Pressed();
-            }
-
-            if (data.button.IsSet(ButtonType.Interact))
-            {
-                interactionSystem.Hold(Runner.DeltaTime);
-            }
-
-            if (data.button.WasReleased(previousInput.button, ButtonType.Interact))
-            {
-                interactionSystem.Released();
-            }
+                jumpImpluse = _stats.Get(StatsType.Force);
+            }                    
 
             if (data.button.WasPressed(previousInput.button, ButtonType.TestAddModify))
             {
@@ -321,13 +298,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
                 {
                     inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
                 }
-            }
-            var radialMenu = GetComponentInChildren<RadialMenu>(includeInactive: true);
-            if (radialMenu != null)
-            {
-                radialMenu.onSelectIndex -= OnRadialMenuSelected;
-            }
-
+            }         
         }
     }   
 
@@ -370,27 +341,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
         this.resourcePlayer.GoldOre -= resource.GoldOre;
         this.resourcePlayer.Electric -= resource.Electric;
     }
-
-
-
-    void OnRadialMenuSelected(int index)
-    {
-        switch (index)
-        {
-            case 0:
-                RPC_RequestUseTool(ToolType.Screwdriver);
-                break;
-            case 1:
-                RPC_RequestUseTool(ToolType.PickAxe);
-                break;
-            case 2:
-                RPC_RequestUseTool(ToolType.None);
-                break;
-            case 3:
-                RPC_RequestUseTool(ToolType.Axe);
-                break;
-        }
-    }
+  
 
     public void TakeDamage(float amount, NetworkObject attacker)
     {
@@ -410,100 +361,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IInte
     {
         if (HasStateAuthority)
             _stats.RemoveModifierByID(_id);
-    }
-
-
-    void OnEquipTool()
-    {
-        switch (equipTool)
-        {
-            case ToolType.None:
-                Axe.SetActive(false);
-                PickAxe.SetActive(false);
-                Screwdriver.SetActive(false);
-                break;
-            case ToolType.Axe:
-                Axe.SetActive(true);
-                PickAxe.SetActive(false);
-                Screwdriver.SetActive(false);
-                break;
-            case ToolType.PickAxe:
-                Axe.SetActive(false);
-                PickAxe.SetActive(true);
-                Screwdriver.SetActive(false);
-                break;
-            case ToolType.Screwdriver:
-                Axe.SetActive(false);
-                PickAxe.SetActive(false);
-                Screwdriver.SetActive(true);
-                break;
-            default:
-                break;
-        }
-
-    }
+    }   
 
     //RPC calls
-
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_RequestUseTool(ToolType toolUse)
-    {
-        equipTool = toolUse;
-    }
     //IInteractable implementation
     #region Interactions
-    public Transform InteractTransform => transform;
-
-    public Action OnCompleted { get; set; }
-    public InteractionData Data(NetworkPlayer interactor)
-    {
-        if (interactor.equipTool == ToolType.Axe)
-            return axeInteraction;
-        if(interactor.equipTool == ToolType.PickAxe)
-            return pickAxeInteraction;
-        return null;
-    }
-
-    public InteractionResult CanInteract(NetworkPlayer interactor)
-    {
-        if (!interactor.Health.IsAlive)
-        {
-            return new InteractionResult(false, "Ngỏm củ tỏi rồi!");
-        }
-        if (interactor.Stamina.CurrentStamina < 10)
-        {
-            return new InteractionResult(false, "Không đủ thể lực!");
-        }
-        if (interactor.equipTool != ToolType.Axe && interactor.equipTool != ToolType.PickAxe)
-        {
-            return new InteractionResult(false);
-        }
-        return new InteractionResult(true);
-    }
-
-    public void OnInteract(InteractionContext ctx)
-    {
-        if (ctx.Phase == InteractPhase.Press)
-        {
-            float durationAttack = Mathf.Max(0.5f, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
-            float delayEnter = durationAttack * Data(ctx.Interactor).InteractorAnimation.ratioFrameTarget;
-            InteractionInterval = TickTimer.CreateFromSeconds(Runner, delayEnter);
-        }
-        if(ctx.Phase == InteractPhase.Hold)
-        {
-            if (InteractionInterval.ExpiredOrNotRunning(Runner))
-            {
-                TakeDamage(ctx.Interactor._stats.Get(StatsType.Damage), ctx.Interactor.Object);
-                ctx.Interactor.Stamina.TryConsume(10);              
-                InteractionInterval = TickTimer.CreateFromSeconds(Runner, 1f / ctx.Interactor._stats.Get(StatsType.AttackSpeed));
-            }
-        }
-        
-
-       
-    }        
+   
 
     #endregion
 
 }
+
+

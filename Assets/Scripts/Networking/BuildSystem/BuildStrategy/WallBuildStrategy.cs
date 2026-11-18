@@ -115,6 +115,12 @@ public class WallBuildStrategy : IBuildStategy
             if (doorObj != null)
             {
                 doorObj.RPC_SetActiveNetworked(true);
+                doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
+
+                // ... rest of swapping logic ...
+
+                Vector3 posOutSide = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);
+                doorObj.SetOutSideOppositeDoor(posOutSide);
             }
             doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
             if (doorPos != cell)
@@ -159,7 +165,8 @@ public class WallBuildStrategy : IBuildStategy
             }
         }
         MakeSureBuildSystemValid(runner, playerRef);
-        buildSystem.wallAmount -= 1;
+        int idWall = 6;
+        runner.GetPlayerObject(playerRef).GetBehaviour<NetworkInventory>().RemoveItem(idWall, 1);
     }
 
     void MakeSureBuildSystemValid(NetworkRunner runner, PlayerRef playerRef)
@@ -237,7 +244,8 @@ public class WallBuildStrategy : IBuildStategy
         }
 
         MakeSureBuildSystemValid(runner, playerRef);
-        if (buildSystem.wallAmount < 1)
+        int idWall = 6;
+        if(!runner.GetPlayerObject(playerRef).GetBehaviour<NetworkInventory>().HasItem(idWall, 1))       
         {
             return BuildValidationResult.Fail(reason: BuildFailReason.NotEnoughResource, message: "Đã hết Wall");
         }
@@ -304,7 +312,8 @@ public class WallBuildStrategy : IBuildStategy
         }
         PlayerRef playerRefObj = obj.InputAuthority;
         MakeSureBuildSystemValid(runner, playerRefObj);
-        buildSystem.wallAmount += 1;
+        int idWall = 6;
+        runner.GetPlayerObject(playerRefObj).GetBehaviour<NetworkInventory>().TryAddItem(idWall, 1);
         wall.DestroyLogic();
         structureManager.DestroyStructure(obj);
     }

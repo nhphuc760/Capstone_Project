@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -96,6 +97,6 @@ public class BuildUI : MonoBehaviour, IPlayerUI
     public void CancelButton()
     {
         GetComponentInParent<PlayerUIComponent>().Toggle(PlayerUIComponent.OpenUI.BuildMenu);
-    }
+    }  
 
 }
