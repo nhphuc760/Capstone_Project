@@ -1,6 +1,11 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+public enum QuestCategory
+{
+    Fixed,
+    Random
+}
 
 [CreateAssetMenu(fileName = "NewQuest", menuName = "Quest/Quest Data")]
 public class QuestSO : ScriptableObject
@@ -10,6 +15,9 @@ public class QuestSO : ScriptableObject
     public string questName;
     [TextArea(2, 5)]
     public string description;
+
+    [Header("Quest Category")]
+    public QuestCategory questCategory;
 
     [Header("Objectives")]
     public List<QuestObjective> objectives = new();
