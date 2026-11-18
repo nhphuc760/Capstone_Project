@@ -22,7 +22,13 @@ namespace Game.Interaction
     {
         Completed, Released, Cancelled, TargetLost, OutOfRange, Moved, ConditionFailed
     }
-
+    public readonly struct InteractionFail
+    {
+        public readonly string Message;
+        public readonly int Code;      // tuỳ chọn: dùng để localize / icon
+        public InteractionFail(string message, int code = 0) { Message = message; Code = code; }
+        public bool IsEmpty => string.IsNullOrEmpty(Message);
+    }
 
     public enum InteractionEventType : byte { Begin, Perform, End }    
     /// <summary>Inventory / Equipment của nhân vật implement interface này (đọc từ networked state).</summary>
