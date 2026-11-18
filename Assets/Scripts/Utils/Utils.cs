@@ -101,6 +101,17 @@ namespace Util.Core
 
 
 
+        public static Vector3 RandomAround(this Vector3 center, float radius)
+        {
+            Vector2 random = UnityEngine.Random.insideUnitCircle * radius;
+
+            return new Vector3(
+                center.x + random.x,
+                center.y,
+                center.z + random.y
+            );
+        }
+
         public static int RandomWeight(float[] weight)
         {
             float totalWeight = weight.Sum();

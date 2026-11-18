@@ -59,6 +59,9 @@ namespace Game.Interaction
         [Networked]
         public NetworkButtons PrevButtons { get; set; }
 
+
+        [Networked] public bool Lock { get; set; }
+
         // ---------- Events cho UI / Animator (client-side) ----------
         public event Action<InteractionEvent> Presented;
         public event Action<int, Interactable, InteractionAction> FocusChanged; // chỉ bắn trên máy local
@@ -96,6 +99,18 @@ namespace Game.Interaction
         {
             _seenState = State;
             _seenPerform = PerformCounter;
+            Lock = true;
+            GameManager.Instance.OnGameStateChanged += GameManager_StateChange;
+        }
+
+        private void GameManager_StateChange(GameState state)
+        {
+           if(state == GameState.Playing && HasStateAuthority) Lock = false;
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
         }
 
         // ================= Public API =================
@@ -149,6 +164,7 @@ namespace Game.Interaction
         public override void FixedUpdateNetwork()
         {
             if (!Object.HasStateAuthority) return;
+            if (Lock) return;
             TryReadButtons(out var buttons);
             var pressed = buttons.GetPressed(PrevButtons);
             PrevButtons = buttons;
