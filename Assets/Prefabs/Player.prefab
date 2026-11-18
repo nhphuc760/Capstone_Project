@@ -1000,6 +1000,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2467548794210181014}
   - component: {fileID: 6721125320261425079}
+  - component: {fileID: 7208355985915366184}
   m_Layer: 3
   m_Name: Boy0_Humanoid
   m_TagString: Untagged
@@ -1046,6 +1047,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7208355985915366184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435574804614269256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8515f799e3fd7284691b995853d33cd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationAudioPlayer
+  woodClips:
+  - {fileID: 8300000, guid: 485018e5033de174485b99dbe5a943ed, type: 3}
+  woodVolume: 0.6
+  stoneClips:
+  - {fileID: 8300000, guid: 9b8819fce98055c458fe1bdbc93c2242, type: 3}
+  stoneVolume: 0.226
+  pitchVariance: 0.08
 --- !u!1 &450627213925955129
 GameObject:
   m_ObjectHideFlags: 0

@@ -234,13 +234,13 @@ namespace FischlWorks_FogWar
         [SerializeField]
         [Range(1, 128)]
         [Tooltip("If you need more than 128 units, consider using raycasting-based fog modules instead.")]
-        private int levelDimensionX = 11;
+        private int levelDimensionX = 128;
         [SerializeField]
         [Range(1, 128)]
         [Tooltip("If you need more than 128 units, consider using raycasting-based fog modules instead.")]
-        private int levelDimensionY = 11;
+        private int levelDimensionY = 128;
         [SerializeField]
-        private float unitScale = 1;
+        private float unitScale = 2;
         public float _UnitScale => unitScale;
         [SerializeField]
         private float scanSpacingPerUnit = 0.25f;
