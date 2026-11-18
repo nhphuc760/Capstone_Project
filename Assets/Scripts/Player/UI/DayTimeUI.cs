@@ -49,7 +49,7 @@ public class DayTimeUI : MonoBehaviour
         timeBar.fillAmount = currentTime / 24f;
         timeBar.color = isDay ? dayColor : nightColor;
 
-        // Day/Night Icon
-        dayNightIcon.sprite = isDay ? sunSprite : moonSprite;
+        //// Day/Night Icon
+        //dayNightIcon.sprite = isDay ? sunSprite : moonSprite;
     }
 }

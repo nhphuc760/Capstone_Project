@@ -52,7 +52,7 @@ public class AuctionManager : NetworkBehaviour
         {
             if (HasStateAuthority)
             {
-                StartAuctionSession(auctionDatabaseItem.auctionDatabase.Except(historySession.Select(x => x.ItemAuctionInfo)).RandomElement(), 10);
+                StartAuctionSession(auctionDatabaseItem.auctionDatabase.Except(historySession.Select(x => x.ItemAuctionInfo)).RandomElement(), 60);
             }
         }
     }
