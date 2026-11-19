@@ -18,7 +18,11 @@ public class DoorFortifyAction : InteractionAction
         return HoldDuration + Door.Level;
     }
 
-    public override bool OnCanInteract(in InteractionContext ctx) => Door.Security < Door.MaxSecurity;
+    public override bool OnCanInteract(in InteractionContext ctx, out string failReason) 
+    {
+        failReason = "Cấp độ bảo mật tối đa";
+        return Door.Security < Door.MaxSecurity; 
+    }
     public override void OnPerform(in InteractionContext ctx) 
     {
         Door.Security++;

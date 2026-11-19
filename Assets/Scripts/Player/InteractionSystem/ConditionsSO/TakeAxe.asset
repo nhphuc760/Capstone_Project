@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad92d1efe61b04347aa9bf081670ec89, type: 3}
   m_Name: TakeAxe
   m_EditorClassIdentifier: Assembly-CSharp::TakeItemCondition
+  _failMessage: "C\u1EA7n d\xF9ng r\xECu"
   ItemSO: {fileID: 11400000, guid: 3dacfd1fe8b2f2643b2b69f8efc44fce, type: 2}
   Invert: 0

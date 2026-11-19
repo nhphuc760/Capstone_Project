@@ -78,17 +78,39 @@ namespace Game.Interaction
         public bool IsInRange(float flatDistance) => flatDistance <= EffectiveRange;
 
         /// <summary>Kiểm tra Condition (Inspector) rồi tới logic riêng.</summary>
-        public bool CanInteract(in InteractionContext ctx)
+
+        public bool CanInteract(in InteractionContext ctx) => CanInteract(ctx, out _);
+        public bool CanInteract(in InteractionContext ctx, out InteractionFail fail)
         {
+            fail = default;
             if (!isActiveAndEnabled) return false;
+
             if (_conditions != null)
+            {
                 for (int i = 0; i < _conditions.Length; i++)
-                    if (_conditions[i] != null && !_conditions[i].Evaluate(ctx)) return false;
-            return OnCanInteract(ctx);
+                {
+                    if (_conditions[i] != null && !_conditions[i].Evaluate(ctx))
+                    {
+                        fail = _conditions[i].GetFail(ctx);
+                        return false;
+                    }
+                }
+            }
+
+            if (!OnCanInteract(ctx, out string reason))
+            {
+                fail = new InteractionFail(reason);
+                return false;
+            }
+            return true;
         }
 
         // ---------- Hook: mọi peer ----------
-        public virtual bool OnCanInteract(in InteractionContext ctx) => true;
+        public virtual bool OnCanInteract(in InteractionContext ctx, out string FailReason)
+        {
+            FailReason = null;
+            return true;
+        }
         public virtual float GetHoldDuration(in InteractionContext ctx) => _holdDuration;
         public virtual float GetRepeatInterval(in InteractionContext ctx) => _repeatInterval;
         public virtual string GetPrompt(in InteractionContext ctx) => _presentation.Prompt;

@@ -22,11 +22,12 @@ namespace Game.Interaction
     {
         Completed, Released, Cancelled, TargetLost, OutOfRange, Moved, ConditionFailed
     }
+    [Serializable]
     public readonly struct InteractionFail
     {
         public readonly string Message;
         public readonly int Code;      // tuỳ chọn: dùng để localize / icon
-        public InteractionFail(string message, int code = 0) { Message = message; Code = code; }
+        public InteractionFail(string message, int code = 0) {Message = message; Code = code; }
         public bool IsEmpty => string.IsNullOrEmpty(Message);
     }
 

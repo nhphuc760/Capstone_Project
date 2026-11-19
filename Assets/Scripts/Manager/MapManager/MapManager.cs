@@ -481,7 +481,7 @@ private Vector3? GetRandomValidPositionInZoneGroup(
         // halfExtents += Vector3.one * 0.3f;
 
         Collider[] hits = Physics.OverlapBox(
-            worldPos + objectBounds.center,   // nếu bounds.center không phải (0,0,0)
+            worldPos,   // nếu bounds.center không phải (0,0,0)
             halfExtents,
             Quaternion.identity,
             checkLayers

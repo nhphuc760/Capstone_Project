@@ -22,6 +22,7 @@ public class ItemToolKitUse : NetworkBehaviour
         }
         if(ctx.ConsumeAmount > 0)
         {
+            Debug.Log( "Amount Use" + ctx.ConsumeAmount);
             inventory.RemoveItem(itemSO.ItemId, ctx.ConsumeAmount);
         }
         return true;

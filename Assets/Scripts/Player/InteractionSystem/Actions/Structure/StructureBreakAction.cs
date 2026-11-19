@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Game.Interaction;
 using UnityEngine;
 
@@ -14,12 +14,16 @@ public class StructureBreakAction : InteractionAction
         structureBase = GetComponentInParent<StructureBase>();
     }
 
-    public override bool OnCanInteract(in InteractionContext ctx)
+
+    public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
     {
-
-        if (ctx.Get<StaminaComponent>().CurrentStamina <= StaminaPerUse + structureBase.Level)
+        if (ctx.Get<StaminaComponent>().CurrentStamina < StaminaPerUse + structureBase.Level)
+        {
+            FailReason = "Không đủ thể lực";
             return false;
+        }
 
+        FailReason = null;
         return structureBase.Object.InputAuthority != ctx.Player;
     }
 

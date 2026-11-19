@@ -1,13 +1,18 @@
-using Game.Interaction;
+﻿using Game.Interaction;
 using UnityEngine;
 
 public class ToggleShopAction : InteractionAction
 {
-    public override bool OnCanInteract(in InteractionContext ctx)
+    public override bool OnCanInteract(in InteractionContext ctx, out string reason)
     {
         var shop = ctx.Target.GetComponentInParent<ShopManager>();
-        Debug.Log($"[Shop] CanInteract shop={shop} valid={(shop != null && shop.IsValid(ctx.Player))}");
-        return shop != null && shop.IsValid(ctx.Player);
+        if (shop != null && shop.IsValid(ctx.Player))
+        {
+            reason = null;
+            return true;
+        }
+        reason = "Bạn bị cấm giao thương, chờ ngày sau";
+        return false;
     }
 
     public override void OnPerform(in InteractionContext ctx)

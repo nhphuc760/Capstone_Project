@@ -56,7 +56,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         None,
         Interacting,
         Shopping,
-
     }
     public static NetworkPlayer Local { get; private set; }
 
@@ -245,16 +244,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data;
-            animator.SetBool("IsWalking", inputDirection.sqrMagnitude > 0);
+            previousInput = data;            
             controller.Move(moveDirection);
 
         }
 
-        if (transform.position.y <= -10f)
-        {
-            controller.SetPosition(Vector3.one);
-        }
+        //if (transform.position.y <= -10f)
+        //{
+        //    controller.SetPosition(Vector3.one);
+        //}
     }
 
 
@@ -265,10 +263,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         float angularSpeed = 720f;
         if (previousInput.moveDirection.sqrMagnitude > 0)
         {
+            animator.SetBool("IsWalking", true);
             Quaternion targetRotation = Quaternion.LookRotation(previousInput.moveDirection);
             model.localRotation = Quaternion.RotateTowards(model.localRotation, targetRotation , angularSpeed * Time.deltaTime);
         }
-        model.localPosition = Vector3.zero;
+        else
+        {
+            animator.SetBool("IsWalking", false);
+        }
+            model.localPosition = Vector3.zero;
+
+       
+
     }
     private void OnDestroy()
     {

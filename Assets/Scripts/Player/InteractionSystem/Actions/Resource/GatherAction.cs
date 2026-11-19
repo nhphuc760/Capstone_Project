@@ -33,16 +33,28 @@ namespace Game.Interaction
         public override float GetRepeatInterval(in InteractionContext ctx) => ClipTiming.Cycle(GetAttackSpeed(ctx));
         public override float GetAnimationSpeed(in InteractionContext ctx) => _clip.AnimSpeed(GetAttackSpeed(ctx));       
         // ---------- Logic ----------
-        public override bool OnCanInteract(in InteractionContext ctx)
-            => Node != null && !Node.IsDepleted && CanHarvest(ctx);
+        public override bool OnCanInteract(in InteractionContext ctx, out string reason)
+        {
+            if (Node == null && Node.IsDepleted)
+            {
+                reason = null;
+                return false;
+            }
+               return CanHarvest(ctx, out reason);
+        }
 
-        protected virtual bool CanHarvest(in InteractionContext ctx) => true;
+        protected virtual bool CanHarvest(in InteractionContext ctx, out string failReason)
+        {
+            failReason = null;
+            return true;
+        }
 
         public override void OnPerform(in InteractionContext ctx)
         {
             if (Node == null || Node.IsDepleted) return;
             int extract = Node.Extract();
             ctx.Get<NetworkPlayer>().AddResource(extract, Node.ResourceType);
+            ctx.Interactor.RPC_ShowNotification($"Đã thu thập {Node.iconTMP.GetResourceCode(Node.ResourceType)} " + $"x{extract}".ToColor(Color.green), 1);
             if(Node.IsDepleted)
                 OnDepleted(ctx);
         }
@@ -57,6 +69,7 @@ namespace Game.Interaction
 
         /// <summary>VFX/SFX/rung cây tại thời điểm trúng. Animation không biết gì về việc này.</summary>
         protected virtual void OnHitPresentation(in InteractionContext ctx, bool isLocal) { }
-        
+                        
+
     }
 }

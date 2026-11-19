@@ -34,7 +34,7 @@ public class ShopManager : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!HasStateAuthority) return;
-        Debug.Log("Collider with " + other.transform.root.name);
+        //Debug.Log("Collider with " + other.transform.root.name);
         if (other.transform.root.TryGetComponent<NetworkPlayer>(out var player))
         {
             if (playerInSide.Contains(player.Object.InputAuthority)) return;
@@ -78,7 +78,7 @@ public class ShopManager : NetworkBehaviour
 
     void OnPlayerInsidedChanged()
     {
-        Debug.Log(playerInSide.ToString());
+        //Debug.Log(playerInSide.ToString());
     }
 
     void TriggerDamage(NetworkObject attacker)
