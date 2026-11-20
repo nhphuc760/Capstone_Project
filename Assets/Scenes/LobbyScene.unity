@@ -669,6 +669,7 @@ GameObject:
   - component: {fileID: 126555771}
   - component: {fileID: 126555772}
   - component: {fileID: 126555773}
+  - component: {fileID: 126555774}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -737,6 +738,18 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 126555772}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &126555774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126555770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa74a83ab5c5fa4cb1636451b3ecd0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyUIManager
 --- !u!1 &182131097
 GameObject:
   m_ObjectHideFlags: 0

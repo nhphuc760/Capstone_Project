@@ -37,7 +37,35 @@ public class EmailLogin : MonoBehaviour
     [Header("Forgot Password")]
     [SerializeField] private GameObject forgotPasswordPanel;
     [SerializeField] private TMP_InputField forgotPasswordEmail;
+    private RectTransform notificationPanelRect;
+    private Camera uiCamera;
+    private int panelOpenedFrame = -1;
 
+    private void Awake()
+    {
+        if (emailPasswordNotificationPanel != null)
+        {
+            notificationPanelRect = emailPasswordNotificationPanel.GetComponent<RectTransform>();
+            Canvas parentCanvas = emailPasswordNotificationPanel.GetComponentInParent<Canvas>();
+            if (parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                uiCamera = parentCanvas.worldCamera;
+        }
+    }
+
+    private void Update()
+    {
+        if (emailPasswordNotificationPanel != null
+            && emailPasswordNotificationPanel.activeSelf
+            && Time.frameCount > panelOpenedFrame
+            && Input.GetMouseButtonDown(0))
+        {
+            if (notificationPanelRect != null &&
+                !RectTransformUtility.RectangleContainsScreenPoint(notificationPanelRect, Input.mousePosition, uiCamera))
+            {
+                closeEmailPasswordNotificationPanel();
+            }
+        }
+    }
     private void Start()
     {
         LoadRememberedEmail();
@@ -364,6 +392,7 @@ public class EmailLogin : MonoBehaviour
 
     private void openEmailPasswordNotificationPanel(string message)
     {
+        panelOpenedFrame = Time.frameCount;
         emailPasswordNotificationPanel.SetActive(true);
         showLogMsg(message);
     }

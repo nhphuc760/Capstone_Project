@@ -126,7 +126,9 @@ namespace Fusion {
     [InlineHelp]
     [ScenePath]
     public string InitialScenePath;
-    
+    [InlineHelp]
+    [ScenePath]
+    public string GameplayScenePath;
     // TODO: this is debt
     static string _initialScenePath;
     
@@ -279,7 +281,17 @@ namespace Fusion {
     }
     
     private bool TryGetSceneRef(out SceneRef sceneRef) {
-      var activeScene = SceneManager.GetActiveScene();
+      if (!string.IsNullOrEmpty(GameplayScenePath))
+      {
+        int buildIndex = SceneUtility.GetBuildIndexByScenePath(GameplayScenePath);
+        if (buildIndex >= 0)
+        {
+            sceneRef = SceneRef.FromIndex(buildIndex);
+            return true;
+        }
+        Debug.LogError($"[FusionBootstrap] Scene '{GameplayScenePath}' chưa có trong Build Profiles!");
+      }
+            var activeScene = SceneManager.GetActiveScene();
       if (activeScene.buildIndex < 0 || activeScene.buildIndex >= SceneManager.sceneCountInBuildSettings) {
         sceneRef = default;
         return false;
@@ -650,7 +662,7 @@ namespace Fusion {
 
       var sceneInfo = new NetworkSceneInfo();
       if (scene.IsValid) {
-        sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
+        sceneInfo.AddSceneRef(scene, LoadSceneMode.Single);
       }
 
       return runner.StartGame(new StartGameArgs {

@@ -45,7 +45,7 @@ public class Bootstrap : MonoBehaviour
             Debug.Log("Bootstrap-JsonUser: " + jsonUser);            
             await NetworkDataManager.Instance.Initialize(jsonUser);
             await SceneController.Instance.NewTransitionPlan()
-                                   .Load(new ParameterScene { Name = SceneDatabase.LOBBY }, true)
+                                   .Load(new ParameterScene { Name = SceneDatabase.MODE }, true)
                                    .UnLoad(new ParameterScene { Name = SceneDatabase.MAINMENU })
                                    .WithFadeOut()
                                    .Perform();

@@ -5,7 +5,16 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
+    path: "Assets/Scenes/MainMenuX\u1ECBn.unity"
+    guid: e85e88b4e88554c44936a80612800d90
+  - enabled: 1
+    path: Assets/Scenes/BootstrapPlayOnlineScene.unity
+    guid: 72c024fda2035b8439d5d177684236f2
+  - enabled: 1
+    path: Assets/Scenes/ChooseType.unity
+    guid: 28d465007067a9045a7daf1ab16b20b6
+  - enabled: 1
     path: Assets/Scenes/TestShop.unity
     guid: 060d9fb135d7d3d4b9d2d6a162828a6f
   - enabled: 0
@@ -14,13 +23,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/MainMenuScene.unity
     guid: d4eb484033a99ca4da3749522cb173f3
-  - enabled: 0
-    path: Assets/Scenes/BootstrapPlayOnlineScene.unity
-    guid: 72c024fda2035b8439d5d177684236f2
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/LobbyScene.unity
     guid: 77f7aa1271e4a5442bca136d4b2ccc09
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/SessionLoadingScene.unity
     guid: 133208d2319fe244aaa61612bdd2e999
   - enabled: 1

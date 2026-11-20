@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class SceneController : MonoBehaviour
 {
@@ -14,6 +11,9 @@ public class SceneController : MonoBehaviour
     public static SceneController Instance { get; private set; }
     public bool isBusy;
     public bool DontDestroy;
+
+    private Camera fallbackCam;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -22,9 +22,52 @@ public class SceneController : MonoBehaviour
             return;
         }
         Instance = this;
-        if(DontDestroy)
+        if (DontDestroy)
+        {
             DontDestroyOnLoad(gameObject);
+            CreateFallbackCamera();
+        }
         loadedSceneBySlot.Add(SceneManager.GetActiveScene().name);
+    }
+
+    private void CreateFallbackCamera()
+    {
+        GameObject camObj = new GameObject("FallbackBlackCamera");
+        camObj.transform.SetParent(transform);
+        fallbackCam = camObj.AddComponent<Camera>();
+        fallbackCam.clearFlags = CameraClearFlags.SolidColor;
+        fallbackCam.backgroundColor = Color.black;
+        fallbackCam.cullingMask = 0; // Chỉ giữ nền đen sạch, không render vật thể
+        fallbackCam.depth = -100;
+        fallbackCam.enabled = false;
+    }
+
+    private void LateUpdate()
+    {
+        if (fallbackCam == null) return;
+
+        // Tự bật camera nền đen nếu toàn bộ các scene hiện tại không có camera nào đang chạy
+        int otherActiveCameras = fallbackCam.enabled ? Camera.allCamerasCount - 1 : Camera.allCamerasCount;
+        fallbackCam.enabled = (otherActiveCameras <= 0);
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (mode == LoadSceneMode.Single)
+        {
+            loadedSceneBySlot.Clear();
+            loadedSceneBySlot.Add(scene.name);
+        }
     }
 
     public SceneTransitionPlan NewTransitionPlan()
@@ -35,7 +78,7 @@ public class SceneController : MonoBehaviour
     public async UniTask ExecutePlan(SceneTransitionPlan plan)
     {
         if (isBusy) return;
-        isBusy = true;       
+        isBusy = true;
         await ChangeSceneAsync(plan);
     }
 
@@ -45,14 +88,7 @@ public class SceneController : MonoBehaviour
         {
             await loadingOverlay.FadeInBlack(.5f);
         }
-        foreach (var scene in plan.SceneToUnload)
-        {
-            await UnloadSceneAsync(scene);
-        }
-        if (plan.ClearUnuseAssets)
-        {
-            await CleanUnusedAssetsAsync();
-        }
+        // Load new scenes cho mượt
         foreach (var scene in plan.SceneToLoad)
         {
             if (loadedSceneBySlot.Contains(scene.Name))
@@ -60,6 +96,15 @@ public class SceneController : MonoBehaviour
                 await UnloadSceneAsync(scene);
             }
             await LoadAdditiveAsync(scene, scene.Name == plan.ActiveSceneName);
+        }
+        foreach (var scene in plan.SceneToUnload)
+        {
+            await UnloadSceneAsync(scene);
+        }
+
+        if (plan.ClearUnuseAssets)
+        {
+            await CleanUnusedAssetsAsync();
         }
 
         if (plan.FadeOut)
@@ -69,10 +114,9 @@ public class SceneController : MonoBehaviour
         isBusy = false;
     }
 
-
     async UniTask LoadAdditiveAsync(ParameterScene param, bool setActive)
     {
-        if(param.onBeforeExecute != null)
+        if (param.onBeforeExecute != null)
             await param.onBeforeExecute();
         AsyncOperation loadOp = SceneManager.LoadSceneAsync(param.Name, LoadSceneMode.Additive);
         if (loadOp == null)
@@ -83,7 +127,7 @@ public class SceneController : MonoBehaviour
         while (loadOp.progress < 0.9f)
         {
             await UniTask.Yield();
-        }        
+        }
         loadOp.allowSceneActivation = true;
         await UniTask.WaitUntil(() => loadOp.isDone);
         if (setActive)
@@ -96,11 +140,12 @@ public class SceneController : MonoBehaviour
         }
         loadedSceneBySlot.Add(param.Name);
     }
+
     async UniTask UnloadSceneAsync(ParameterScene param)
     {
         if (!loadedSceneBySlot.Contains(param.Name)) return;
         if (string.IsNullOrEmpty(param.Name)) return;
-        if(param.onBeforeExecute != null)
+        if (param.onBeforeExecute != null)
             await param.onBeforeExecute();
         AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(param.Name);
         if (unloadOp != null)
@@ -109,12 +154,14 @@ public class SceneController : MonoBehaviour
         }
         loadedSceneBySlot.Remove(param.Name);
     }
+
     async UniTask CleanUnusedAssetsAsync()
     {
         var op = Resources.UnloadUnusedAssets();
         await UniTask.WaitUntil(() => op.isDone);
     }
 }
+
 public class SceneTransitionPlan
 {
     public List<ParameterScene> SceneToLoad = new();
@@ -124,6 +171,7 @@ public class SceneTransitionPlan
     public bool ClearUnuseAssets { get; private set; } = false;
     public bool FadeIn { get; private set; }
     public bool FadeOut { get; private set; }
+
     public SceneTransitionPlan Load(ParameterScene sceneParam, bool isActiveScene = false)
     {
         if (SceneToLoad.Contains(sceneParam)) return this;
@@ -132,32 +180,38 @@ public class SceneTransitionPlan
             ActiveSceneName = sceneParam.Name;
         return this;
     }
+
     public SceneTransitionPlan UnLoad(ParameterScene sceneParam)
     {
         if (SceneToUnload.Contains(sceneParam)) return this;
         SceneToUnload.Add(sceneParam);
         return this;
     }
+
     public SceneTransitionPlan WithClearUnuseAssets()
     {
         ClearUnuseAssets = true;
         return this;
     }
+
     public SceneTransitionPlan WithFadeIn()
     {
         FadeIn = true;
         return this;
     }
+
     public SceneTransitionPlan WithFadeOut()
     {
         FadeOut = true;
         return this;
     }
+
     public async UniTask Perform()
     {
         await SceneController.Instance.ExecutePlan(this);
     }
 }
+
 public struct ParameterScene : IEquatable<ParameterScene>
 {
     public string Name;
@@ -173,12 +227,14 @@ public struct ParameterScene : IEquatable<ParameterScene>
     {
         return obj is ParameterScene other && Equals(other);
     }
+
     public override int GetHashCode()
     {
         return HashCode.Combine(
             Name,
             onBeforeExecute);
     }
+
     public static bool operator ==(
        ParameterScene left,
        ParameterScene right)
@@ -193,7 +249,3 @@ public struct ParameterScene : IEquatable<ParameterScene>
         return !left.Equals(right);
     }
 }
-
-
-
-
