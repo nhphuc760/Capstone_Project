@@ -1,41 +1,39 @@
-﻿using UnityEngine;
-using System;
+
 using System.Collections.Generic;
-
-public enum ObjectiveType 
-{ 
-    Collect, 
-    Defeat 
-}
-
-[Serializable]
-public class QuestObjective
+using UnityEngine;
+public enum QuestCategory
 {
-    public string objectiveID;
-    public string targetID;
-    public string description;
-    public ObjectiveType type;
-    public int requiredAmount;
-    public int currentAmount;
-
-    public bool IsCompleted => currentAmount >= requiredAmount;
+    Fixed,
+    Random
 }
 
-[CreateAssetMenu(fileName = "QuestSO", menuName = "Quests/Quest")]
+[CreateAssetMenu(fileName = "NewQuest", menuName = "Quest/Quest Data")]
 public class QuestSO : ScriptableObject
 {
+    [Header("Quest Information")]
     public string questID;
     public string questName;
+    [TextArea(2, 5)]
     public string description;
-    public List<QuestObjective> objectives;
 
-    #region Auto Generate QuestID
+    [Header("Quest Category")]
+    public QuestCategory questCategory;
+
+    [Header("Objectives")]
+    public List<QuestObjective> objectives = new();
+
+    [Header("Random Valuable Rewards")]
+    public ItemSO[] rewardItems;
+
+    [Min(1)]
+    public int rewardAmount = 1;
+
     private void OnValidate()
     {
-        if (string.IsNullOrEmpty(questID))
-        {
-            questID = Guid.NewGuid().ToString("N");
-        }
+        if (objectives == null)
+            objectives = new List<QuestObjective>();
+
+        if (rewardItems == null)
+            rewardItems = new ItemSO[0];
     }
-    #endregion
 }

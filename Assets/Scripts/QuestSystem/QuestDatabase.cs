@@ -1,111 +1,88 @@
-using UnityEngine;
-using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "QuestDatabase", menuName = "Quests/Quest Database")]
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "QuestDatabase", menuName = "Quest/Quest Database")]
 public class QuestDatabase : ScriptableObject
 {
-    [Header("Quest Collection")]
-    [SerializeField]
-    private List<QuestSO> quests = new List<QuestSO>();
+    [Header("Quest List")]
+    [SerializeField] private List<QuestSO> quests = new();
 
-    private Dictionary<string, QuestSO> questLookup;
+    public IReadOnlyList<QuestSO> Quests => quests;
 
-    private void InitializeLookup()
-    {
-        questLookup = new Dictionary<string, QuestSO>();
-
-        foreach (QuestSO quest in quests)
-        {
-            if (quest == null || string.IsNullOrEmpty(quest.questID))
-                continue;
-
-            if (questLookup.ContainsKey(quest.questID))
-            {
-                Debug.LogWarning(
-                    $"[QuestDatabase] Duplicate Quest ID: {quest.questID}"
-                );
-
-                continue;
-            }
-
-            questLookup.Add(quest.questID, quest);
-        }
-    }
+    // =========================================
+    // GET QUEST
+    // =========================================
 
     public QuestSO GetQuest(string questID)
     {
-        if (string.IsNullOrEmpty(questID))
-            return null;
-
-        if (questLookup == null)
-            InitializeLookup();
-
-        questLookup.TryGetValue(questID, out QuestSO quest);
-
-        return quest;
+        return quests.Find(quest =>
+            quest != null &&
+            quest.questID == questID
+        );
     }
 
-    public QuestSO GetRandomQuest()
+    // =========================================
+    // GET FIXED QUEST
+    // =========================================
+
+    public QuestSO GetFixedQuest()
     {
-        List<QuestSO> availableQuests = new List<QuestSO>();
-
-        foreach (QuestSO quest in quests)
-        {
-            if (quest == null)
-                continue;
-
-            if (string.IsNullOrEmpty(quest.questID))
-                continue;
-
-            if (quest.objectives == null || quest.objectives.Count == 0)
-                continue;
-
-            if (quest.objectives.Count > 10)
-                continue;
-
-            bool valid = true;
-
-            foreach (QuestObjective objective in quest.objectives)
-            {
-                if (objective == null ||
-                    string.IsNullOrEmpty(objective.objectiveID) ||
-                    string.IsNullOrEmpty(objective.targetID) ||
-                    objective.requiredAmount <= 0 ||
-                    objective.objectiveID.Length > 32 ||
-                    objective.targetID.Length > 32)
-                {
-                    valid = false;
-                    break;
-                }
-            }
-
-            if (valid)
-                availableQuests.Add(quest);
-        }
-
-        if (availableQuests.Count == 0)
-        {
-            Debug.LogWarning("[QuestDatabase] No valid quests available!");
-            return null;
-        }
-
-        int randomIndex = Random.Range(0, availableQuests.Count);
-
-        return availableQuests[randomIndex];
+        return quests.Find(quest =>
+            IsValidQuest(quest) &&
+            quest.questCategory == QuestCategory.Fixed
+        );
     }
 
-    public IReadOnlyList<QuestSO> GetAllQuests()
+    // =========================================
+    // GET RANDOM QUEST
+    // =========================================
+
+    public QuestSO GetRandomQuest(
+        List<string> excludedQuestIDs)
     {
-        return quests;
+        List<QuestSO> validQuests = quests.FindAll(quest =>
+            IsValidQuest(quest) &&
+            quest.questCategory == QuestCategory.Random &&
+            !excludedQuestIDs.Contains(quest.questID)
+        );
+
+        if (validQuests.Count == 0)
+            return null;
+
+        int randomIndex = Random.Range(
+            0,
+            validQuests.Count
+        );
+
+        return validQuests[randomIndex];
+    }
+
+    // =========================================
+    // VALIDATE
+    // =========================================
+
+    private bool IsValidQuest(QuestSO quest)
+    {
+        return quest != null &&
+               !string.IsNullOrEmpty(quest.questID) &&
+               quest.questID.Length <= 32 &&
+               quest.objectives != null &&
+               quest.objectives.Count > 0 &&
+               quest.objectives.Count <= 10;
+    }
+
+    // =========================================
+    // OTHER METHODS
+    // =========================================
+
+    public List<QuestSO> GetAllQuests()
+    {
+        return new List<QuestSO>(quests);
     }
 
     public bool ContainsQuest(string questID)
     {
         return GetQuest(questID) != null;
-    }
-
-    private void OnValidate()
-    {
-        questLookup = null;
     }
 }

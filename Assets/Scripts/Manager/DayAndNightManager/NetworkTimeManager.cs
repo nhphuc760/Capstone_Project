@@ -1,11 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
 using Fusion;
-using System;
+using UnityEngine;
+using UtilityAI.Core;
 
 public class NetworkTimeManager : NetworkBehaviour
 {
-    public static event Action OnDayStart;
-    public static event Action OnNightStart;
+    [SerializeField] NetworkObject monster;
+    public static event System.Action OnDayStart;
+    public static event System.Action OnNightStart;
     [Header("Network Time Settings")]
     public float cycleDuration = 360f; // Duration of a full day-night cycle in seconds
     public float dayHour = 6f; //bắt đầu sáng vào lúc 6h
@@ -33,14 +35,67 @@ public class NetworkTimeManager : NetworkBehaviour
         if (IsDaytime && (CurrentTimeOfDay >= nightHour || CurrentTimeOfDay < dayHour))
         {
             IsDaytime = false;
+            HandleNight();
             OnNightStart?.Invoke(); // Gọi event spawn quái
             Debug.Log("Trời tối");
         }
         else if (!IsDaytime && (CurrentTimeOfDay >= dayHour && CurrentTimeOfDay < nightHour))
         {
             IsDaytime = true;
+            HandleDay();
             OnDayStart?.Invoke(); // Gọi event dọn dẹp quái
             Debug.Log("Sáng rồi");
+        }
+    }
+
+
+    void HandleNight()
+    {
+        if (HasStateAuthority)
+        {
+            var pos = MapManager.Ins.FindValidSpawnPositionInRed();
+            RPC_VisibleMonster(true);
+            monster.GetBehaviour<NetworkTransform>().Teleport(pos);
+            NavMeshBakeManager.Ins.RequestBake();
+        }
+    }
+
+    void HandleDay()
+    {
+        if (HasStateAuthority)
+        {
+            monster.GetBehaviour<AIController>().RPC_ResetState();
+            RPC_VisibleMonster(false);
+        }
+    }
+
+
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    void RPC_VisibleMonster(bool active)
+    {
+        if (active)
+            ActivateMonster();
+        else
+            DeactivateMonster();
+    }
+
+
+
+    void ActivateMonster()
+    {
+        if (monster != null)
+        {
+            monster.gameObject.SetActive(true);
+        }
+    }
+
+    void DeactivateMonster()
+    {
+        if (monster != null)
+        {
+            monster.gameObject.SetActive(false);
         }
     }
 }

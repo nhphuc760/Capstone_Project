@@ -107,15 +107,7 @@ namespace UtilityAI.Core
         public void WhenAttack()
         {
             OnAttack?.Invoke();
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.T))
-            {
-                TakeDamage(10, null);
-            }
-        }
+        }        
 
         public override void FixedUpdateNetwork()
         {
@@ -178,6 +170,15 @@ namespace UtilityAI.Core
         public void RPC_RequestResetPath()
         {
             worldInformation.Agent?.ResetPath();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RPC_ResetState()
+        {
+            worldInformation.Agent.ResetPath();
+            _currentState = EnemyState.Idle;
+            worldInformation.TargetPlayer = PlayerRef.None;
+            worldInformation.SetData(ContextKey.CandidatePlaceTarget, null);
         }
 
         public void TakeDamage(float amount, NetworkObject attacker)

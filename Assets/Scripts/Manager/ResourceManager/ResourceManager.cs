@@ -88,7 +88,7 @@ public class ResourceManager : NetworkBehaviour
         }
         if(NavMeshBakeManager.Ins != null)
         {
-            NavMeshBakeManager.Ins.BakeAll();
+            NavMeshBakeManager.Ins.RequestBake();
         }
     }
 

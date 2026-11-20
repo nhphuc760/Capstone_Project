@@ -53,3 +53,27 @@ public class ModifyStats : ItemEffect
     }
 }
 
+
+[Serializable] 
+public class RaiseHealth: ItemEffect
+{
+    public float Amount;
+
+    public override void Apply(ItemContext ctx)
+    {
+        if(!ctx.IsServer) return;
+        ctx.Get<HealthComponent>().Restore(Amount);
+    }
+}
+
+[Serializable] 
+public class RaiseStamina : ItemEffect
+{
+    public int Amount;
+    public override void Apply(ItemContext ctx)
+    {
+        if (!ctx.IsServer) return;
+        ctx.Get<StaminaComponent>().Restore(Amount);
+    }
+}
+

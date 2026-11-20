@@ -14,18 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
   itemId: 4
   itemName: Potion
-  description: "H\u1ED3i m\xE1u m\u1ED7i 1s"
+  description: "H\u1ED3i 10 \u0111\u01A1n v\u1ECB m\xE1u"
   itemType: 1
-  icon: {fileID: 21300000, guid: 8d77966d2d7d7a444ab9c0c432025cd8, type: 3}
+  icon: {fileID: -1456081115, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 1
   maxStack: 99
-  itemLogic:
-    rid: 2672765756765634644
+  Components:
+  - rid: 2672765847051698311
   references:
     version: 2
     RefIds:
-    - rid: 2672765756765634644
-      type: {class: PosionHealth, ns: , asm: Assembly-CSharp}
+    - rid: 2672765847051698311
+      type: {class: ConsumableComponent, ns: , asm: Assembly-CSharp}
       data:
-        HealthPosion: 120
+        ConsumePerUse: 1
+        Effects:
+        - rid: 2672765847051698313
+    - rid: 2672765847051698313
+      type: {class: RaiseHealth, ns: , asm: Assembly-CSharp}
+      data:
+        Amount: 10

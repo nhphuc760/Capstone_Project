@@ -56,7 +56,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         None,
         Interacting,
         Shopping,
-
     }
     public static NetworkPlayer Local { get; private set; }
 
@@ -73,12 +72,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     [SerializeField] Animator animator;
     public Stats _stats { get; private set; }
 
+    [Networked] int level { get; set; }
+
+    public int Level => level;
 
     [SerializeField] SimpleKCC controller;
     [SerializeField] Camera cameraView;
 
     [Networked] NetworkInputData previousInput { get; set; }
-    Vector3 lastInputDir;
     public NetworkInventory inventory { get; private set; }
 
     //Resource Exploitation
@@ -120,11 +121,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         suggestTarget.enabled = true;
         Health.Initialize(_stats);
         Stamina.Initialize(_stats);
+        level = 1;
         if (HasInputAuthority)
         {
-
             //Subcribe Inventory Event
-
             cameraView.tag = "MainCamera";
 
             // Disable Stats WorldSpace
@@ -142,47 +142,31 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
         }
 
+
         if (HasStateAuthority)
         {
             doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
             doorPlayer.RPC_SetActiveNetworked(false);
         }
-        // Fog of War
-        if (Object.HasInputAuthority)
+        //fog of war
+        fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
+
+        if (fogSpawner != null)
         {
-            fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
-
-            if (fogSpawner != null)
-            {
-                Debug.Log(
-                    $"[FogWar] Register Player: {Object.InputAuthority} | " +
-                    $"LocalPlayer: {Runner.LocalPlayer}"
-                );
-
-                fogSpawner.RegisterPlayer(transform);
-            }
-            else
-            {
-                Debug.LogError(
-                    $"[FogWar] Cannot find csRevealerSpawner on {Runner.LocalPlayer}!"
-                );
-            }
+            fogSpawner.RegisterPlayer(transform);
         }
-
-        //Cheats
-
-        resourcePlayer.Wood = 100;
-
+        else
+        {
+            Debug.LogError("[FogWar] Cannot find csRevealerSpawner!");
+        }
     }
+
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        if (Object.HasInputAuthority && fogSpawner != null)
+        if (fogSpawner != null)
         {
-            Debug.Log($"[FogWar] Unregister Player: {Object.InputAuthority}");
-
             fogSpawner.UnregisterPlayer();
-            fogSpawner = null;
         }
     }
 
@@ -228,8 +212,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         }
 
 
-
-
+        //Cheat
+       
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            RPC_CheatResource();
+        }
     }
 
     public override void FixedUpdateNetwork()
@@ -238,14 +226,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
         {
+            if (!Health.IsAlive) return;
             Vector3 inputDirection = data.moveDirection.normalized;
-            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);
-            float jumpImpluse = 0f;
-            if (data.button.WasPressed(previousInput.button, ButtonType.Jump) && controller.IsGrounded)
-            {
-                jumpImpluse = _stats.Get(StatsType.Force);
-            }                    
-
+            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);                       
             if (data.button.WasPressed(previousInput.button, ButtonType.TestAddModify))
             {
                 if (!HasStateAuthority) return;
@@ -261,17 +244,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data;
-            lastInputDir = inputDirection;
-            animator.SetBool("IsWalking", inputDirection.sqrMagnitude > 0);
-            controller.Move(moveDirection, jumpImpluse);
+            previousInput = data;            
+            controller.Move(moveDirection);
 
         }
 
-        if (transform.position.y <= -10f)
-        {
-            controller.SetPosition(Vector3.one);
-        }
+        //if (transform.position.y <= -10f)
+        //{
+        //    controller.SetPosition(Vector3.one);
+        //}
     }
 
 
@@ -279,12 +260,21 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     public override void Render()
     {
         Transform model = transform.GetChild(0);
-        float angularSpeed = 15f;
-        if (lastInputDir.sqrMagnitude > 0)
+        float angularSpeed = 720f;
+        if (previousInput.moveDirection.sqrMagnitude > 0)
         {
-            model.localRotation = Quaternion.Lerp(model.localRotation, Quaternion.LookRotation(lastInputDir), angularSpeed * Runner.DeltaTime);
+            animator.SetBool("IsWalking", true);
+            Quaternion targetRotation = Quaternion.LookRotation(previousInput.moveDirection);
+            model.localRotation = Quaternion.RotateTowards(model.localRotation, targetRotation , angularSpeed * Time.deltaTime);
         }
-        model.localPosition = Vector3.zero;
+        else
+        {
+            animator.SetBool("IsWalking", false);
+        }
+            model.localPosition = Vector3.zero;
+
+       
+
     }
     private void OnDestroy()
     {
@@ -333,6 +323,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         resourcePlayer.Electric += resouces.Electric;
     }
 
+
+    
+
     public void ComsumpResource(NetworkResourcePlayer resource)
     {
         if (!HasStateAuthority) return;
@@ -361,9 +354,21 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     {
         if (HasStateAuthority)
             _stats.RemoveModifierByID(_id);
-    }   
+    }
 
     //RPC calls
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_CheatResource()
+    {
+        AddResource(new NetworkResourcePlayer
+        {
+            Wood = 100,
+            Stone = 100,
+            GoldOre = 100,
+            Electric = 100,
+        });
+    }
     //IInteractable implementation
     #region Interactions
    

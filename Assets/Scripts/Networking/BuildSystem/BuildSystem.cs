@@ -99,7 +99,7 @@ public class BuildSystem : NetworkBehaviour
             }
             else
             {
-                Debug.Log(buildValidationResult.Message);
+                NotificationManager.Ins.ShowNotification(buildValidationResult.Message, 2);
                 buildFailReason?.Invoke(buildValidationResult);
             }
         }
@@ -162,13 +162,20 @@ public class BuildSystem : NetworkBehaviour
             }
             else
             {
-                Debug.Log(buildValidation.Message, this);
+                //Debug.Log("");
+                RPC_ShowNotification(buildValidation.Message, 2);
             }
 
 
         }
     }
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    void RPC_ShowNotification(string message, int code = 0)
+    {
+        Debug.Log("RPC_ShowNotification BuildSystem", this);
+        NotificationManager.Ins.ShowNotification(message, code);
+    }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_DestroyRequest()

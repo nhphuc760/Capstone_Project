@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
   m_Name: Turret
   m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
-  icon: {fileID: 21300000, guid: e4c3cd89e92c9564b9ec3241e642a3de, type: 3}
+  icon: {fileID: 1616138859, guid: c851be0776ddea64fabdf8c8bb3ff255, type: 3}
   _id:
     _length: 4
     _data:
       Data: 3100000037000000390000003900000000000000000000000000000000000000
-  _name: TurretBase
-  _description: "B\u1EAFn t\xF9m lum"
+  _name: "S\xFAng ph\xF2ng v\u1EC7"
+  _description: 
   structureType: 3
   structureCategory: 1
   buildRequirement:
@@ -27,19 +27,77 @@ MonoBehaviour:
   levels:
   - rid: 2680167778642559051
   - rid: 2680167813166923850
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
+  - rid: 2672765847051698265
+  - rid: 2672765847051698269
+  - rid: 2672765847051698270
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
+    - rid: 2672765847051698265
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 3
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 10
+              Value: 0.85
+            - Key: 1
+              Value: 12
+            - Key: 5
+              Value: 5.5
+        upgradeRequirement:
+        - rid: 2672765847051698268
+    - rid: 2672765847051698268
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 120
+        Stone: 50
+        Gold: 15
+        Electric: 128
+    - rid: 2672765847051698269
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 4
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 10
+              Value: 1
+            - Key: 5
+              Value: 6
+            - Key: 1
+              Value: 19
+        upgradeRequirement:
+        - rid: 2672765847051698274
+    - rid: 2672765847051698270
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 5
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 10
+              Value: 1.2
+            - Key: 1
+              Value: 28
+            - Key: 5
+              Value: 7
+        upgradeRequirement: []
+    - rid: 2672765847051698274
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 100
+        Stone: 150
+        Gold: 30
+        Electric: 512
+    - rid: 2672765847051698276
+      type: {class: LvStructRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 2
+        structureRequire: {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}
     - rid: 2680167778642559051
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
       data:
@@ -48,9 +106,9 @@ MonoBehaviour:
           stats:
             _serializedList:
             - Key: 10
-              Value: 0.9
+              Value: 0.7
             - Key: 1
-              Value: 8
+              Value: 4
             - Key: 5
               Value: 5
         upgradeRequirement:
@@ -58,16 +116,16 @@ MonoBehaviour:
     - rid: 2680167812576575566
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
-        iconTMP: {fileID: 0}
-        Wood: 1
-        Stone: 0
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 20
+        Stone: 5
         Gold: 0
         Electric: 0
     - rid: 2680167812576575576
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
         iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
-        Wood: 1
+        Wood: 10
         Stone: 0
         Gold: 0
         Electric: 0
@@ -79,18 +137,19 @@ MonoBehaviour:
           stats:
             _serializedList:
             - Key: 10
-              Value: 1.5
+              Value: 0.8
             - Key: 1
-              Value: 15
+              Value: 7
             - Key: 5
-              Value: 10
+              Value: 5
         upgradeRequirement:
         - rid: 2680167813166923851
+        - rid: 2672765847051698276
     - rid: 2680167813166923851
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
-        iconTMP: {fileID: 0}
-        Wood: 1
-        Stone: 0
-        Gold: 0
-        Electric: 0
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 85
+        Stone: 20
+        Gold: 5
+        Electric: 64

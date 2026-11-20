@@ -1020,7 +1020,7 @@ TextureImporter:
         width: 90
         height: 89
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1029,6 +1029,50 @@ TextureImporter:
       bones: []
       spriteID: 7483f097a20a49a4f9e01fb88dc5b7c3
       internalID: -812253662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: reSheet_3
+      rect:
+        serializedVersion: 2
+        x: 1229
+        y: 28
+        width: 69
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9cf1b06ec766a7f41af737aaca731a7c
+      internalID: -836268888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: reSheet_4
+      rect:
+        serializedVersion: 2
+        x: 1077
+        y: 26
+        width: 64
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6b23aa6d3ded17843b1a36126806db9f
+      internalID: -1925891724
       vertices: []
       indices: 
       edges: []
@@ -1050,6 +1094,8 @@ TextureImporter:
       reSheet_0: -953701420
       reSheet_1: 1424256954
       reSheet_2: -812253662
+      reSheet_3: -836268888
+      reSheet_4: -1925891724
       sheet_0: -1858169402
       sheet_1: 1037960720
       sheet_10: 911764319

@@ -35,13 +35,14 @@ public class StructureUI : MonoBehaviour
             DestroyPanel.SetActive(m_Structure.StructureDataSO.structureType != StructureType.Door ? true : false);
             upgradeText.text = structure.GetInforUpgrade();
             destroyText.text = structure.GetResourceDestroy().info;
-            (this.transform as RectTransform).sizeDelta = DestroyPanel.activeSelf ? new Vector2(300 , 200) : new Vector2(300, 100);
+            //(this.transform as RectTransform).sizeDelta = DestroyPanel.activeSelf ? new Vector2(300 , 200) : new Vector2(300, 100);
         }
         else
         {
+
             UpgradePanel.SetActive(false);
-            destroyText.text = structure.GetResourceDestroy().info;
-            (this.transform as RectTransform).sizeDelta = new Vector2(300, 100);
+            destroyText.text = structure.GetResourceDestroy().info;  
+            //(this.transform as RectTransform).sizeDelta = new Vector2(300, 100);
         }
         if(cts != null && !cts.IsCancellationRequested)
         {

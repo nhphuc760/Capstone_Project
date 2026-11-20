@@ -34,6 +34,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         Clear();
     }
 
+
+
     public void SetItem(InventoryItem item, ItemSO data)
     {
         currentItem = item;
@@ -54,20 +56,33 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerClic
         }
 
         // Amount
-        if (amountText != null)
+        UpdateAmount(item.amount);
+    }
+
+    /// <summary>
+    /// Cập nhật riêng số lượng (amount) trên slot.
+    /// Gọi mỗi khi inventory thay đổi để đảm bảo text amount luôn đúng.
+    /// </summary>
+    public void UpdateAmount(int amount)
+    {
+        if (amountText == null) return;
+
+        // Cập nhật currentItem.amount để giữ dữ liệu đồng bộ
+        if (!currentItem.IsEmpty)
         {
-            if (data.Stackable && item.amount > 1)
-            {
-                amountText.text = item.amount.ToString();
-                amountText.enabled = true;
-            }
-            else
-            {
-                amountText.text = "";
-                amountText.enabled = false;
-            }
+            currentItem.amount = amount;
         }
 
+        if (currentData != null && currentData.Stackable && amount > 1)
+        {
+            amountText.text = amount.ToString();
+            amountText.enabled = true;
+        }
+        else
+        {
+            amountText.text = "";
+            amountText.enabled = false;
+        }
     }
 
     public void Clear()

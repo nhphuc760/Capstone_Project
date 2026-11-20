@@ -1,16 +1,19 @@
-﻿using System;
+﻿
+using System;
 using UnityEngine;
 using Fusion;
+using UtilityAI.Core;
 
 public class DayNightManager : NetworkBehaviour
 {
-    public static event Action OnDayStart;
-    public static event Action OnNightStart;
+    public static event System.Action OnDayStart;
+    public static event System.Action OnNightStart;
 
     [Header("Day/Night Settings")]
-    public float dayDuration = 120f;
-    public float nightDuration = 60f;
+    [SerializeField, Min(1f)]
+    private float dayDuration = 120f;
 
+    private float NightDuration => dayDuration / 3f;   
     [Networked] public NetworkBool IsDaytime { get; set; }
     [Networked] public float Timer { get; set; }
 
@@ -21,6 +24,7 @@ public class DayNightManager : NetworkBehaviour
             IsDaytime = true;
             Timer = 0f;
         }
+
     }
 
     public override void FixedUpdateNetwork()
@@ -28,21 +32,18 @@ public class DayNightManager : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         Timer += Runner.DeltaTime;
-        if (IsDaytime)
+
+        float duration = IsDaytime ? dayDuration : NightDuration;
+
+        if (Timer >= duration)
         {
-            if (Timer >= dayDuration)
-            {
+            if (IsDaytime)
                 SwitchToNight();
-            }
-        }
-        else
-        {
-            if (Timer >= nightDuration)
-            {
+            else
                 SwitchToDay();
-            }
         }
     }
+
     private void SwitchToNight()
     {
         IsDaytime = false;
@@ -50,6 +51,7 @@ public class DayNightManager : NetworkBehaviour
         Debug.Log("Đêm");
         OnNightStart?.Invoke();
     }
+
     private void SwitchToDay()
     {
         IsDaytime = true;
@@ -57,4 +59,8 @@ public class DayNightManager : NetworkBehaviour
         Debug.Log("Ngày");
         OnDayStart?.Invoke();
     }
+
+
+    
+
 }
