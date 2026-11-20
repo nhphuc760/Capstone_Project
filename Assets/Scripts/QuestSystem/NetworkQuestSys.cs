@@ -42,13 +42,10 @@ public class NetworkQuestSys : NetworkBehaviour
     [Header("Quest Database")]
     [SerializeField] private QuestDatabase questDatabase;
 
-    [Header("Network Quest Data")]
     [Networked]
     private NetworkString<_32> _currentQuestID { get; set; }
-
     [Networked]
     private byte _status { get; set; }
-
     [Networked]
     private int _objectiveCount { get; set; }
 
@@ -59,63 +56,118 @@ public class NetworkQuestSys : NetworkBehaviour
     [Header("Completed Quest History")]
     [Networked]
     private int _completedQuestCount { get; set; }
-
     [Networked, Capacity(64)]
     private NetworkArray<NetworkString<_32>> CompletedQuestIDs => default;
-
     [Networked, Capacity(10)]
     public NetworkArray<NetworkObjective> Objectives => default;
 
-    // =========================================
-    // PUBLIC PROPERTIES
-    // =========================================
-
+    #region PUBLIC PROPERTIES
     public QuestDatabase Database => questDatabase;
-
     public string CurrentQuestID => _currentQuestID.ToString();
-
     public QuestStatus Status => (QuestStatus)_status;
-
     public int ObjectiveCount => _objectiveCount;
-
     public int CompletedQuestCount => _completedQuestCount;
-
     public bool IsCompleted =>
         Status == QuestStatus.Completed;
-
     public bool IsActive =>
         Status == QuestStatus.InProgress;
-
     public bool HasStarted =>
         Status != QuestStatus.NotStarted;
-
     public bool IsAllCompleted =>
         CurrentPhase == QuestPhase.AllCompleted;
+    #endregion
 
-    // =========================================
-    // SPAWNED
-    // =========================================
-
+    #region SPAWNED
     public override void Spawned()
     {
         if (!HasStateAuthority)
             return;
 
-        Debug.Log(
-            $"[Quest] Spawned Player: {Object.InputAuthority}"
-        );
-
-        // Tự động giao Fixed Quest khi Player vào game.
+        // Đặt giai đoạn ban đầu là Fixed Quest.
         if (Status == QuestStatus.NotStarted)
         {
-            StartFixedQuest();
+            CurrentPhase = QuestPhase.FixedQuest;
+        }
+
+        Debug.Log(
+            $"[Quest] Spawned Player: {Object.InputAuthority} | " +
+            $"Waiting for Interact..."
+        );
+    }
+    #endregion
+
+    #region ACCEPT FIXED QUEST
+    // Gọi hàm này khi Player nhấn Interact.
+    public void RequestAcceptFixedQuest()
+    {
+        // Host hoặc StateAuthority có thể xử lý trực tiếp.
+        if (HasStateAuthority)
+        {
+            AcceptFixedQuest();
+            return;
+        }
+
+        // Client chỉ gửi RPC nếu sở hữu InputAuthority.
+        if (Object != null && Object.HasInputAuthority)
+        {
+            RPC_RequestAcceptFixedQuest();
         }
     }
 
-    // =========================================
-    // PLAY BUTTON
-    // =========================================
+    // Gửi yêu cầu nhận Fixed Quest đến StateAuthority.
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_RequestAcceptFixedQuest()
+    {
+        AcceptFixedQuest();
+    }
 
+    // StateAuthority xử lý việc nhận Fixed Quest.
+    private void AcceptFixedQuest()
+    {
+        if (!HasStateAuthority)
+            return;
+
+        if (questDatabase == null)
+        {
+            Debug.LogWarning(
+                "[Quest] Quest Database is missing."
+            );
+            return;
+        }
+
+        // Không cho nhận nếu Player đã có Quest.
+        if (Status != QuestStatus.NotStarted)
+        {
+            Debug.Log(
+                "[Quest] Cannot accept Fixed Quest. " +
+                "Player already has a Quest."
+            );
+            return;
+        }
+
+        // Chỉ được nhận Fixed Quest ở giai đoạn đầu.
+        if (CurrentPhase != QuestPhase.FixedQuest)
+        {
+            Debug.LogWarning(
+                "[Quest] Fixed Quest is not available."
+            );
+            return;
+        }
+
+        bool accepted = StartFixedQuest();
+
+        if (accepted)
+        {
+            Debug.Log(
+                $"[Quest] Player Accepted Fixed Quest: {CurrentQuestID}"
+            );
+        }
+    }
+    #endregion
+
+    #region REQUEST START OR CONTINUE QUEST
+    // Dùng để tiếp tục Quest đang làm.
+    // Không tự động cấp Quest mới.
     public void RequestStartOrContinueQuest()
     {
         if (HasStateAuthority)
@@ -150,19 +202,22 @@ public class NetworkQuestSys : NetworkBehaviour
             return true;
         }
 
+        // Không tự nhận Quest khi chưa Interact.
         if (Status == QuestStatus.NotStarted)
         {
-            return StartFixedQuest();
+            Debug.Log(
+                "[Quest] Player has not accepted a Quest yet."
+            );
+
+            return false;
         }
 
         // Quest Completed sẽ do RewardManager xử lý.
         return false;
     }
+    #endregion
 
-    // =========================================
-    // START FIXED QUEST
-    // =========================================
-
+    #region START FIXED QUEST
     private bool StartFixedQuest()
     {
         if (!HasStateAuthority || questDatabase == null)
@@ -174,6 +229,15 @@ public class NetworkQuestSys : NetworkBehaviour
         {
             Debug.LogWarning(
                 "[Quest] No valid Fixed Quest found."
+            );
+
+            return false;
+        }
+
+        if (fixedQuest.questCategory != QuestCategory.Fixed)
+        {
+            Debug.LogWarning(
+                "[Quest] Selected Quest is not a Fixed Quest."
             );
 
             return false;
@@ -199,11 +263,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return true;
     }
+    #endregion
 
-    // =========================================
-    // START NEW QUEST
-    // =========================================
-
+    #region START NEW QUEST
     private bool StartNewQuest(QuestSO quest)
     {
         if (!HasStateAuthority || quest == null)
@@ -293,11 +355,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return true;
     }
+    #endregion
 
-    // =========================================
-    // TRY START NEXT QUEST AFTER REWARD
-    // =========================================
-
+    #region TRY START NEXT QUEST AFTER REWARD
     public bool TryStartNextQuestAfterReward()
     {
         if (!HasStateAuthority)
@@ -324,10 +384,7 @@ public class NetworkQuestSys : NetworkBehaviour
 
         QuestSO nextQuest = null;
 
-        // =====================================
         // FIXED -> RANDOM
-        // =====================================
-
         if (CurrentPhase == QuestPhase.FixedQuest)
         {
             Debug.Log(
@@ -343,25 +400,29 @@ public class NetworkQuestSys : NetworkBehaviour
             }
         }
 
-        // =====================================
         // RANDOM -> RANDOM
-        // =====================================
-
         else if (CurrentPhase == QuestPhase.RandomQuest)
         {
             nextQuest = GetNextRandomQuest();
         }
 
-        // =====================================
         // NO MORE QUEST
-        // =====================================
-
         if (nextQuest == null)
         {
             CurrentPhase = QuestPhase.AllCompleted;
 
             Debug.Log(
                 "[Quest] All Quests Completed!"
+            );
+
+            return false;
+        }
+
+        // Kiểm tra Quest tiếp theo phải là Random.
+        if (nextQuest.questCategory != QuestCategory.Random)
+        {
+            Debug.LogError(
+                $"[Quest] Invalid Random Quest: {nextQuest.questID}"
             );
 
             return false;
@@ -383,11 +444,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return true;
     }
+    #endregion
 
-    // =========================================
-    // GET NEXT RANDOM QUEST
-    // =========================================
-
+    #region GET NEXT RANDOM QUEST
     private QuestSO GetNextRandomQuest()
     {
         if (!HasStateAuthority || questDatabase == null)
@@ -408,11 +467,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return quest;
     }
+    #endregion
 
-    // =========================================
-    // COMPLETED QUEST HISTORY
-    // =========================================
-
+    #region COMPLETED QUEST HISTORY
     private bool HasCompletedQuest(string questID)
     {
         if (string.IsNullOrEmpty(questID))
@@ -472,11 +529,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return result;
     }
+    #endregion
 
-    // =========================================
-    // COLLECT PROGRESS
-    // =========================================
-
+    #region COLLECT PROGRESS
     public void AddCollectProgress(int itemID, int amount = 1)
     {
         if (!HasStateAuthority)
@@ -501,11 +556,9 @@ public class NetworkQuestSys : NetworkBehaviour
             ApplyProgress(i, amount);
         }
     }
+    #endregion
 
-    // =========================================
-    // DEFEAT PROGRESS
-    // =========================================
-
+    #region DEFEAT PROGRESS
     public void AddDefeatProgress(string targetID, int amount = 1)
     {
         if (!HasStateAuthority)
@@ -530,11 +583,9 @@ public class NetworkQuestSys : NetworkBehaviour
             ApplyProgress(i, amount);
         }
     }
+    #endregion
 
-    // =========================================
-    // APPLY PROGRESS
-    // =========================================
-
+    #region APPLY PROGRESS
     private void ApplyProgress(int index, int amount)
     {
         NetworkObjective objective = Objectives[index];
@@ -556,11 +607,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         CheckQuestCompleted();
     }
+    #endregion
 
-    // =========================================
-    // CHECK QUEST COMPLETED
-    // =========================================
-
+    #region CHECK QUEST COMPLETED
     private void CheckQuestCompleted()
     {
         if (!HasStateAuthority ||
@@ -579,11 +628,9 @@ public class NetworkQuestSys : NetworkBehaviour
             $"[Quest] Quest Completed: {CurrentQuestID}"
         );
     }
+    #endregion
 
-    // =========================================
-    // GET OBJECTIVE
-    // =========================================
-
+    #region GET OBJECTIVE
     public NetworkObjective GetObjective(int index)
     {
         if (index < 0 || index >= _objectiveCount)
@@ -591,11 +638,9 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return Objectives[index];
     }
+    #endregion
 
-    // =========================================
-    // GET COMPLETED QUEST ID
-    // =========================================
-
+    #region GET COMPLETED QUEST ID
     public string GetCompletedQuestID(int index)
     {
         if (index < 0 || index >= _completedQuestCount)
@@ -603,4 +648,5 @@ public class NetworkQuestSys : NetworkBehaviour
 
         return CompletedQuestIDs[index].ToString();
     }
+    #endregion
 }
