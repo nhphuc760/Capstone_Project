@@ -4,9 +4,15 @@ using UnityEngine;
 
 public class SpawnTest : NetworkBehaviour
 {
+    #region REFERENCES
+
     [Header("Quest Reference")]
     [SerializeField] private NetworkQuestSys questSystem;
     [SerializeField] private NetworkQuestRewardManager rewardManager;
+
+    #endregion
+
+    #region GUI SETTINGS
 
     [Header("GUI Settings")]
     [SerializeField] private Vector2 guiPosition = new Vector2(20, 20);
@@ -16,12 +22,17 @@ public class SpawnTest : NetworkBehaviour
     private GUIStyle titleStyle;
     private GUIStyle labelStyle;
     private GUIStyle statusStyle;
+    private GUIStyle buttonStyle;
+
+    #endregion
+
+    #region TEST SETTINGS
 
     private bool requestSent;
 
-    // =========================================
-    // SPAWNED
-    // =========================================
+    #endregion
+
+    #region SPAWNED
 
     public override void Spawned()
     {
@@ -31,16 +42,14 @@ public class SpawnTest : NetworkBehaviour
         if (rewardManager == null)
             rewardManager = GetComponent<NetworkQuestRewardManager>();
 
-        if (Object.HasInputAuthority && !requestSent)
-        {
-            questSystem.RequestStartOrContinueQuest();
-            requestSent = true;
-        }
+        Debug.Log(
+            $"[SpawnTest] Spawned | InputAuthority: {Object.HasInputAuthority}"
+        );
     }
 
-    // =========================================
-    // GUI
-    // =========================================
+    #endregion
+
+    #region GUI
 
     private void OnGUI()
     {
@@ -52,7 +61,7 @@ public class SpawnTest : NetworkBehaviour
 
         InitializeStyles();
 
-        float panelHeight = 160f +
+        float panelHeight = 270f +
             questSystem.ObjectiveCount * lineHeight * 2f;
 
         GUI.Box(
@@ -76,6 +85,34 @@ public class SpawnTest : NetworkBehaviour
         );
 
         y += lineHeight + 5f;
+
+        #region QUEST BUTTONS
+
+        if (GUI.Button(
+            new Rect(x, y, contentWidth, 32f),
+            "ACCEPT FIXED QUEST",
+            buttonStyle))
+        {
+            RequestAcceptFixedQuestForTest();
+        }
+
+        y += 38f;
+
+        GUI.enabled = questSystem.Status == QuestStatus.InProgress;
+
+        if (GUI.Button(
+            new Rect(x, y, contentWidth, 32f),
+            "COMPLETE QUEST",
+            buttonStyle))
+        {
+            RequestCompleteQuestForTest();
+        }
+
+        GUI.enabled = true;
+
+        y += 42f;
+
+        #endregion
 
         if (questSystem.Status == QuestStatus.NotStarted)
         {
@@ -169,101 +206,134 @@ public class SpawnTest : NetworkBehaviour
         }
     }
 
-    
-private void Update()
-{
-    // Only the local player can trigger the test
-    if (Object == null || !Object.HasInputAuthority)
-        return;
+    #endregion
 
-    if (Input.GetKeyDown(KeyCode.Alpha1))
+    #region UPDATE - KEYBOARD TEST
+
+    private void Update()
     {
-        RequestCompleteQuestForTest();
-    }
-}
+        if (Object == null || !Object.HasInputAuthority)
+            return;
 
-private void RequestCompleteQuestForTest()
-{
-    if (questSystem == null)
-        return;
-
-    // Host / StateAuthority can execute directly
-    if (Object.HasStateAuthority)
-    {
-        CompleteQuestForTest();
-    }
-    else
-    {
-        RPC_CompleteQuestForTest();
-    }
-}
-
-[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-private void RPC_CompleteQuestForTest()
-{
-    CompleteQuestForTest();
-}
-
-private void CompleteQuestForTest()
-{
-    if (!Object.HasStateAuthority)
-        return;
-
-    if (questSystem == null || rewardManager == null)
-    {
-        Debug.LogWarning("[QuestTest] Missing QuestSystem or RewardManager!");
-        return;
-    }
-
-    if (questSystem.Status != QuestStatus.InProgress)
-    {
-        Debug.Log("[QuestTest] No active quest to complete.");
-        return;
-    }
-
-    Debug.Log("[QuestTest] Completing quest...");
-
-    for (int i = 0; i < questSystem.ObjectiveCount; i++)
-    {
-        NetworkObjective objective = questSystem.GetObjective(i);
-
-        if (objective.Completed)
-            continue;
-
-        int remainingAmount =
-            objective.RequiredAmount - objective.CurrentAmount;
-
-        if (remainingAmount <= 0)
-            continue;
-
-        ObjectiveType type = (ObjectiveType)objective.Type;
-
-        switch (type)
+        // Phím 1: Hoàn thành Quest
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            case ObjectiveType.Collect:
-                questSystem.AddCollectProgress(
-                    objective.TargetItemID,
-                    remainingAmount
-                );
-                break;
+            RequestCompleteQuestForTest();
+        }
 
-            case ObjectiveType.Defeat:
-                questSystem.AddDefeatProgress(
-                    objective.TargetID.ToString(),
-                    remainingAmount
-                );
-                break;
+        // Phím N: Tương tác NPC
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            if (SnowmanNPC.instance != null)
+                SnowmanNPC.instance.Interact();
         }
     }
 
-    Debug.Log("[QuestTest] Quest completion requested.");
-    Debug.Log("[QuestTest] Waiting for NetworkQuestRewardManager...");
-}
+    #endregion
 
+    #region ACCEPT FIXED QUEST TEST
 
-    // =========================================
-    // DRAW STATUS
-    // =========================================
+    private void RequestAcceptFixedQuestForTest()
+    {
+        if (questSystem == null)
+        {
+            Debug.LogWarning("[QuestTest] QuestSystem is missing!");
+            return;
+        }
+
+        Debug.Log("[QuestTest] Requesting Fixed Quest...");
+
+        questSystem.RequestAcceptFixedQuest();
+    }
+
+    #endregion
+
+    #region COMPLETE QUEST TEST
+
+    private void RequestCompleteQuestForTest()
+    {
+        if (questSystem == null)
+            return;
+
+        if (Object.HasStateAuthority)
+        {
+            CompleteQuestForTest();
+        }
+        else
+        {
+            RPC_CompleteQuestForTest();
+        }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_CompleteQuestForTest()
+    {
+        CompleteQuestForTest();
+    }
+
+    private void CompleteQuestForTest()
+    {
+        if (!Object.HasStateAuthority)
+            return;
+
+        if (questSystem == null || rewardManager == null)
+        {
+            Debug.LogWarning(
+                "[QuestTest] Missing QuestSystem or RewardManager!"
+            );
+            return;
+        }
+
+        if (questSystem.Status != QuestStatus.InProgress)
+        {
+            Debug.Log("[QuestTest] No active quest to complete.");
+            return;
+        }
+
+        Debug.Log("[QuestTest] Completing quest...");
+
+        for (int i = 0; i < questSystem.ObjectiveCount; i++)
+        {
+            NetworkObjective objective =
+                questSystem.GetObjective(i);
+
+            if (objective.Completed)
+                continue;
+
+            int remainingAmount =
+                objective.RequiredAmount - objective.CurrentAmount;
+
+            if (remainingAmount <= 0)
+                continue;
+
+            ObjectiveType type =
+                (ObjectiveType)objective.Type;
+
+            switch (type)
+            {
+                case ObjectiveType.Collect:
+                    questSystem.AddCollectProgress(
+                        objective.TargetItemID,
+                        remainingAmount
+                    );
+                    break;
+
+                case ObjectiveType.Defeat:
+                    questSystem.AddDefeatProgress(
+                        objective.TargetID.ToString(),
+                        remainingAmount
+                    );
+                    break;
+            }
+        }
+
+        Debug.Log("[QuestTest] Quest completion requested.");
+        Debug.Log("[QuestTest] Waiting for NetworkQuestRewardManager...");
+    }
+
+    #endregion
+
+    #region DRAW STATUS
 
     private void DrawStatus(
         float x,
@@ -298,9 +368,9 @@ private void CompleteQuestForTest()
         );
     }
 
-    // =========================================
-    // DRAW LABEL
-    // =========================================
+    #endregion
+
+    #region DRAW LABEL
 
     private void DrawLabel(
         string message,
@@ -315,9 +385,9 @@ private void CompleteQuestForTest()
         );
     }
 
-    // =========================================
-    // GUI STYLE
-    // =========================================
+    #endregion
+
+    #region GUI STYLE
 
     private void InitializeStyles()
     {
@@ -343,5 +413,13 @@ private void CompleteQuestForTest()
             fontStyle = FontStyle.Bold,
             normal = { textColor = Color.green }
         };
+
+        buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 14,
+            fontStyle = FontStyle.Bold
+        };
     }
+
+    #endregion
 }
