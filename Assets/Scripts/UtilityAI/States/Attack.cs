@@ -8,6 +8,7 @@ public class Attack : EnemyBaseState
     Transform curTarget;
     AIAnimationControll animator;
 
+
     public Attack(Context context) : base(context)
     {
         animator = context.Brain.GetComponentInChildren<AIAnimationControll>();
@@ -31,8 +32,6 @@ public class Attack : EnemyBaseState
             curTarget = controller.Runner.GetPlayerObject(context.TargetPlayer).transform;
         }
 
-
-
         float minAttackDuration = 10f;
         float duration = minAttackDuration + (context.Brain != null ? context.Brain.Level : 0);
         controller.MinAttackTimer = TickTimer.CreateFromSeconds(controller.Runner, duration);
@@ -40,13 +39,7 @@ public class Attack : EnemyBaseState
         float delayEnter = durationAttack * animator.FrameDamageNormalize;//thời gian bắt đầu vào clip đến frame damage
         controller.AttackIntervalTimer = TickTimer.CreateFromSeconds(controller.Runner, delayEnter);
         animator.transform.localPosition = Vector3.zero;
-        animator.transform.localRotation = Quaternion.identity;
-
-        if (curTarget.TryGetComponent<NetworkPlayer>(out var player))
-        {
-            player.TakeDamage(10000, controller.Object);
-        }
-
+        animator.transform.localRotation = Quaternion.identity;     
     }
     
 
@@ -96,6 +89,11 @@ public class Attack : EnemyBaseState
             Debug.Log("Missing mục tiêu => Idle");
             return EnemyState.Idle;
         }        
+
+        if(curTarget.TryGetComponent<HealthComponent>(out var healthPlayer))
+        {
+            if (!healthPlayer.IsAlive) return EnemyState.Idle;
+        }
 
         var controller = context.Controller;
         if ((curTarget.position - controller.transform.position).sqrMagnitude > 1.5 * 1.5)

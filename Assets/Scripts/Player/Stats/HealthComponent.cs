@@ -76,6 +76,11 @@ public class HealthComponent : NetworkBehaviour
         CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
     }
 
+    public void Respawn()
+    {
+        Restore(MaxHealth);
+    }
+
 
 
     public void TakeDamage(float amount, NetworkObject attacker = null)

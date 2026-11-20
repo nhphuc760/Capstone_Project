@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Fusion;
 using Fusion.Sockets;
+using Unity.AI.Navigation;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +13,8 @@ public class MapManager : NetworkBehaviour
 {
    
     public static MapManager Ins { get; private set; }
+    [SerializeField] NavMeshSurface surface;
+
 
     [Header("Map Boundaries")]
     public float mapWidth = 50f;
@@ -261,6 +264,137 @@ public class MapManager : NetworkBehaviour
 
     #region Helper
 
+
+   /// <summary>
+/// Tìm vị trí spawn ngẫu nhiên trong vùng Red (dùng zoneGroup và kiểm tra valid)
+/// </summary>
+/// <param name="maxAttempts">Số lần thử tối đa cho mỗi zoneGroup</param>
+/// <param name="objectBounds">Bounds của object cần tránh va chạm</param>
+/// <param name="checkLayers">LayerMask để kiểm tra va chạm</param>
+/// <returns>Vị trí spawn hợp lệ, hoặc null nếu không tìm thấy</returns>
+public Vector3? FindValidSpawnPositionInRed(
+    int maxAttempts = 80,
+    Bounds objectBounds = default,
+    LayerMask checkLayers = default)
+{
+    var redGroups = GetZoneGroups(ZoneType.Red);
+    if (redGroups == null || redGroups.Count == 0)
+    {
+        Debug.LogWarning("[MapManager] Không có vùng Red nào!");
+        return null;
+    }
+
+    foreach (var redGroup in redGroups)
+    {
+        // Tạo vị trí ngẫu nhiên trong zoneGroup
+        Vector3? validPosition = GetRandomValidPositionInZoneGroup(
+            redGroup,
+            maxAttempts,
+            objectBounds,
+            checkLayers);
+        
+        if (validPosition.HasValue)
+        {
+            return validPosition.Value;
+        }
+    }
+
+    Debug.LogWarning("[MapManager] Không tìm được vị trí spawn hợp lệ trong bất kỳ vùng Red nào.");
+    return null;
+}
+
+/// <summary>
+/// Tìm vị trí spawn hợp lệ trong một zoneGroup cụ thể
+/// </summary>
+/// <param name="zoneGroup">ZoneGroup để tìm vị trí</param>
+/// <param name="maxAttempts">Số lần thử tối đa</param>
+/// <param name="objectBounds">Bounds để tránh va chạm</param>
+/// <param name="checkLayers">LayerMask để kiểm tra va chạm</param>
+/// <returns>Vị trí hợp lệ, hoặc null nếu không tìm thấy</returns>
+private Vector3? GetRandomValidPositionInZoneGroup(
+    ZoneGroup zoneGroup,
+    int maxAttempts,
+    Bounds objectBounds,
+    LayerMask checkLayers)
+{
+    if (zoneGroup == null || zoneGroup.cells.Count == 0)
+    {
+        Debug.LogWarning("[MapManager] ZoneGroup là null hoặc không có cells!");
+        return null;
+    }
+
+    // Tổng diện tích để weighted random (ưu tiên group lớn hơn)
+    float totalArea = zoneGroup.area;
+    
+    for (int attempt = 0; attempt < maxAttempts; attempt++)
+    {
+        // 1. Chọn ngẫu nhiên 1 cell trong zoneGroup
+        Vector2Int cellPos = zoneGroup.cells.RandomElement();
+        
+        // 2. Tạo vị trí thế giới từ cell
+        Vector3 worldPos = new Vector3(
+            cellPos.x * zoneCellSize + zoneCellSize * 0.5f,
+            0f,
+            cellPos.y * zoneCellSize + zoneCellSize * 0.5f
+        );
+        
+        // 3. Kiểm tra vẫn còn nằm trong Red (tránh jitter ra ngoài)
+        if (GetZoneTypeAt(worldPos.x, worldPos.z) != ZoneType.Red)
+            continue;
+            
+        // 4. Kiểm tra va chạm với objectBounds
+        if (IsPositionValid(worldPos, objectBounds, checkLayers))
+        {
+            return worldPos;
+        }
+    }
+
+    return null;
+}
+
+
+    /// <summary>
+    /// Lấy ô cell ngẫu nhiên từ một RedZoneGroup
+    /// </summary>
+    /// <param name="zoneGroup">ZoneGroup từ Red zone</param>
+    /// <returns>Cell ngẫu nhiên dưới dạng Vector2Int, hoặc Vector2Int.zero nếu group rỗng</returns>
+    public Vector2Int GetRandomCellFromZoneGroup(ZoneGroup zoneGroup)
+    {
+        if (zoneGroup == null || zoneGroup.cells.Count == 0)
+        {
+            Debug.LogWarning("[MapManager] ZoneGroup là null hoặc không có cells!");
+            return Vector2Int.zero;
+        }
+
+        return zoneGroup.cells.RandomElement();
+    }
+
+    /// <summary>
+    /// Lấy vị trí thế giới ngẫu nhiên từ một RedZoneGroup
+    /// </summary>
+    /// <param name="zoneGroup">ZoneGroup từ Red zone</param>
+    /// <param name="yOffset">Độ cao (Y) của vị trí trả về</param>
+    /// <returns>Vị trí thế giới ngẫu nhiên, hoặc Vector3.zero nếu group rỗng</returns>
+    public Vector3 GetRandomWorldPositionFromZoneGroup(ZoneGroup zoneGroup, float yOffset = 0f)
+    {
+        if (zoneGroup == null || zoneGroup.cells.Count == 0)
+        {
+            Debug.LogWarning("[MapManager] ZoneGroup là null hoặc không có cells!");
+            return Vector3.zero;
+        }
+
+        Vector2Int cellPos = zoneGroup.cells.RandomElement();
+        Vector3 worldPos = new Vector3(
+            cellPos.x * zoneCellSize + zoneCellSize * 0.5f,
+            yOffset,
+            cellPos.y * zoneCellSize + zoneCellSize * 0.5f
+        );
+        return worldPos;
+    }
+
+
+
+
     public Vector3? FindValidSpawnPositionInGreen(
     Bounds objectBounds,
     LayerMask checkLayers,
@@ -347,7 +481,7 @@ public class MapManager : NetworkBehaviour
         // halfExtents += Vector3.one * 0.3f;
 
         Collider[] hits = Physics.OverlapBox(
-            worldPos + objectBounds.center,   // nếu bounds.center không phải (0,0,0)
+            worldPos,   // nếu bounds.center không phải (0,0,0)
             halfExtents,
             Quaternion.identity,
             checkLayers

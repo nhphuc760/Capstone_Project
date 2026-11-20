@@ -1,12 +1,18 @@
 ﻿using Game.Interaction;
 using UnityEngine;
+using static GatherResult;
 
 public class TreeChopAction : GatherAction
 {
     [SerializeField] Animator animator;
-    protected override bool CanHarvest(in InteractionContext ctx)
+    protected override bool CanHarvest(in InteractionContext ctx, out string failReason)
     {
-        return ctx.Get<StaminaComponent>().CurrentStamina >= Node.StaminaCostPerGather;
+        if (ctx.Get<StaminaComponent>().CurrentStamina < Node.StaminaCostPerGather)
+        {
+            failReason = "Không đủ thể lực";
+            return false;
+        }
+        return base.CanHarvest(ctx, out failReason);
     }
     protected override void OnDepleted(in InteractionContext ctx)
     {

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8e535356e1c3914d8db371e40b70fb9, type: 3}
+  m_Name: NewQuest
+  m_EditorClassIdentifier: Assembly-CSharp::QuestSO
+  questID: 1
+  questName: Wood
+  description: 
+  objectives:
+  - objectiveID: 1
+    description: Wood
+    objectiveType: 0
+    targetItem: {fileID: 11400000, guid: c0a1e08948b474b4c98fe1331b04d9e0, type: 2}
+    targetID: 
+    requiredAmount: 1
+  rewardItems:
+  - {fileID: 11400000, guid: 2ae74d5366a542a4981aacd0204b1190, type: 2}
+  rewardAmount: 1

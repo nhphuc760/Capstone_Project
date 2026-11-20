@@ -29,6 +29,7 @@ namespace Game.Interaction
 
         [Header("References")]
         [SerializeField] SuggestTarget suggestTarget;
+        [SerializeField] GameObject modelPlayer;
 
         // ---------- Networked state ----------
         [Tooltip("Trạng thái thực của phiên Interaction")]
@@ -88,6 +89,8 @@ namespace Game.Interaction
         private Vector3 Origin => _origin != null ? _origin.position : transform.position;
         private ItemSO CurrentTool => _tools?.CurrentHold;
 
+
+
         private void Awake()
         {
             _tools = GetComponentInChildren<IItemHoldProvider>();
@@ -105,7 +108,7 @@ namespace Game.Interaction
 
         private void GameManager_StateChange(GameState state)
         {
-           if(state == GameState.Playing && HasStateAuthority) Lock = false;
+            if (state == GameState.Playing && HasStateAuthority) Lock = false;
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
@@ -169,8 +172,6 @@ namespace Game.Interaction
             var pressed = buttons.GetPressed(PrevButtons);
             PrevButtons = buttons;
             bool cancel = pressed.IsSet(_cancelBit);
-            if (Object.InputAuthority != Object.StateAuthority)
-                Debug.Log("Pressed" + pressed.Bits);
             switch (State)
             {
                 case InteractionState.Idle: TickIdle(pressed); break;
@@ -184,14 +185,14 @@ namespace Game.Interaction
             for (int s = 0; s < _slotBits.Length; s++)
             {
                 if (!pressed.IsSet(_slotBits[s])) continue;
-                Debug.Log($"[IC] press slot {s}, State={State}", this);
-                bool ok = Resolve(s, out var target, out var action);
-                Debug.Log($"[IC] Resolve={ok} target={target} action={action}", this);
-                if (ok) 
-                { 
-                    Begin(target, action, s); 
-                    return; 
+
+                if (Resolve(s, out var target, out var action, out var fail))
+                {
+                    Begin(target, action, s);
+                    return;
                 }
+
+                if (!fail.IsEmpty) SendFailReason(fail);
             }
         }
 
@@ -251,9 +252,14 @@ namespace Game.Interaction
                 return;
             }
 
-            if (!ValidateOngoing(target, action, ctx, out var failReason)) { End(action, ctx, failReason); return; }
+            if (!ValidateOngoing(target, action, ctx, out var failReason, out var fail))
+            {
+                End(action, ctx, failReason);
+                if (!fail.IsEmpty) SendFailReason(fail);
+                return;
+            }
 
-            action.OnProgress(ctx);
+            action.OnServerProgress(ctx);
 
             if (action.Mode == InteractionMode.Hold && elapsed >= ActiveDuration)
             {
@@ -277,14 +283,19 @@ namespace Game.Interaction
             var ctx = MakeContext(target, Elapsed(), 0f);
 
             if (cancel || pressed.IsSet(_slotBits[ActiveSlot])) { End(action, ctx, InteractionEndReason.Cancelled); return; }
-            if (!ValidateOngoing(target, action, ctx, out var failReason)) { End(action, ctx, failReason); return; }
+            if (!ValidateOngoing(target, action, ctx, out var failReason, out var fail))
+            {
+                End(action, ctx, failReason);
+                if (!fail.IsEmpty) SendFailReason(fail);
+                return;
+            }
             if (!action.OnSessionTick(ctx)) End(action, ctx, InteractionEndReason.Completed);
         }
 
-        private bool ValidateOngoing(Interactable target, InteractionAction action, in InteractionContext ctx, out InteractionEndReason reason)
+        private bool ValidateOngoing(Interactable target, InteractionAction action, in InteractionContext ctx, out InteractionEndReason reason, out InteractionFail fail)
         {
             reason = InteractionEndReason.Completed;
-
+            fail = default;
             if (FlatDistance(Origin, target.FocusPoint.position) > action.EffectiveRange + _rangeLeeway)
             { reason = InteractionEndReason.OutOfRange; return false; }
 
@@ -295,7 +306,7 @@ namespace Game.Interaction
                 { reason = InteractionEndReason.Moved; return false; }
             }
 
-            if (!action.CanInteract(ctx)) { reason = InteractionEndReason.ConditionFailed; return false; }
+            if (!action.CanInteract(ctx, out fail)) { reason = InteractionEndReason.ConditionFailed; return false; }
             return true;
         }
 
@@ -319,61 +330,30 @@ namespace Game.Interaction
         /// <param name="target"></param>
         /// <param name="action"></param>
         /// <returns></returns>
+        /// 
         public bool Resolve(int slot, out Interactable target, out InteractionAction action)
-        {
-            target = null; action = null;
+     => Resolve(slot, out target, out action, out _);
 
-            if (suggestTarget == null)
-            { 
-                if(Object.InputAuthority != Object.StateAuthority)
-                Debug.Log($"[Resolve#1] suggestTarget == NULL (SA={Object.HasStateAuthority} IA={Object.HasInputAuthority} tick={Runner.Tick.Raw})", this); 
-                return false; 
-            }
+        public bool Resolve(int slot, out Interactable target, out InteractionAction action, out InteractionFail fail)
+        {
+            target = null; action = null; fail = default;
+
+            if (suggestTarget == null) return false;
 
             var id = suggestTarget.CurrentTargetId;
-            if (!id.IsValid)
-            {
-                if (Object.InputAuthority != Runner.LocalPlayer)
-                    Debug.Log($"[Resolve#2] CurrentTargetId INVALID (SA={Object.HasStateAuthority} IA={Object.HasInputAuthority} tick={Runner.Tick.Raw})", this); 
-                return false; 
-            }
+            if (!id.IsValid) return false;
 
             var no = Runner.FindObject(id);
-            if (no == null)
-            {
-                if (Object.InputAuthority != Object.StateAuthority)
-                    Debug.Log($"[TargetObject null] ", this);
-                return false; 
-            }
-            if (!no.IsValid)
-            {
-                if (Object.InputAuthority != Object.StateAuthority)
-                    Debug.Log($"[no Invalid] no INVALID ", this);
-                return false; 
-            }
-
-            if (!_allowSelf && no == Object)
-            { 
-                return false; 
-            }
+            if (no == null || !no.IsValid) return false;
+            if (!_allowSelf && no == Object) return false;
 
             var it = no.GetComponentInChildren<Interactable>();
-            if (it == null)
-            {
-                if (Object.InputAuthority != Object.StateAuthority)
-                    Debug.Log($"[Interactable = null] ", this);
-                return false; 
-            }
+            if (it == null) return false;
 
             var to = it.FocusPoint.position - Origin; to.y = 0f;
             var ctx = MakeContext(it, 0f, 0f);
-            bool ok = it.TryGetBestAction(slot, ctx, to.magnitude, out var a);
-            if (!ok)
-            {
-                if (Object.InputAuthority != Runner.LocalPlayer)
-                    Debug.Log($"[no action]", this);
-                return false; 
-            }
+
+            if (!it.TryGetBestAction(slot, ctx, to.magnitude, out var a, out fail)) return false;
 
             target = it;
             action = a;
@@ -385,10 +365,26 @@ namespace Game.Interaction
         public override void Render()
         {
             var st = State;
-            if (_seenState == InteractionState.Idle && st != InteractionState.Idle) Raise(InteractionEventType.Begin);
+            if (_seenState == InteractionState.Idle && st != InteractionState.Idle)
+            {
+                Raise(InteractionEventType.Begin);
+                modelPlayer ??= transform.GetChild(0).gameObject;
+                if (Runner.TryFindObject(ActiveTarget, out NetworkObject target))
+                {
+                    var dir = (target.transform.position - transform.position).normalized;
+                    modelPlayer.transform.localRotation = Quaternion.LookRotation(dir);
+                }
+            }
             if (PerformCounter != _seenPerform) { _seenPerform = PerformCounter; Raise(InteractionEventType.Perform); }
             if (_seenState != InteractionState.Idle && st == InteractionState.Idle) Raise(InteractionEventType.End);
             _seenState = st;
+
+            if (st == InteractionState.Holding && TryGetActive(out var t, out var a))
+            {
+                float e = Elapsed();
+                var ctx = MakeContext(t, e, ActiveDuration > 0f ? Mathf.Clamp01(e / ActiveDuration) : 0f);
+                a.OnProgress(ctx, Object.HasInputAuthority);
+            }
 
             if (Object.HasInputAuthority) UpdateFocus();
         }
@@ -428,6 +424,19 @@ namespace Game.Interaction
 
         // ================= Helpers =================
 
+
+        void SendFailReason(InteractionFail fail)
+        {
+            if (!HasStateAuthority) return;
+            RPC_ShowNotification(fail.Message, fail.Code);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+        public void RPC_ShowNotification(string message, int code)
+        {
+            NotificationManager.Ins.ShowNotification(message, code);
+        }
+
         /// <summary>
         /// Thử lấy đối target có thể tương tác
         /// </summary>
@@ -457,7 +466,7 @@ namespace Game.Interaction
             Target = target,
             ItemHold = CurrentTool,
             Elapsed = elapsed,
-            Progress01 = progress,            
+            Progress01 = progress,
         };
 
         private float Elapsed() => (Runner.Tick.Raw - StartTick) * Runner.DeltaTime;

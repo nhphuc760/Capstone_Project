@@ -38,36 +38,26 @@ namespace Game.Interaction
         }
 
         /// <summary>Chọn Action ưu tiên cao nhất thoả slot + tầm + mọi điều kiện.</summary>
-        public bool TryGetBestAction(int slot, in InteractionContext ctx, float flatDistance, out InteractionAction best)
+        public bool TryGetBestAction(int slot, in InteractionContext ctx, float flatDistance,
+                              out InteractionAction best, out InteractionFail fail)
         {
             EnsureCache();
-            if (Object.InputAuthority != Runner.LocalPlayer)
-                Debug.Log($"[TBA] {name}: actions={_actions.Length} byPriority={_byPriority.Length}");
+            best = null;
+            fail = default;
+
             for (int i = 0; i < _byPriority.Length; i++)
             {
                 var a = _byPriority[i];
-                if (a.Slot != slot) 
+                if (a.Slot != slot || !a.IsInRange(flatDistance)) continue;
+
+                if (a.CanInteract(ctx, out var f))
                 {
-                    if (Object.InputAuthority != Runner.LocalPlayer)
-                        Debug.Log($"[TBA] {a.GetType().Name}: slot {a.Slot} != {slot}"); 
-                    continue; 
+                    best = a;
+                    fail = default;
+                    return true;
                 }
-                if (!a.IsInRange(flatDistance)) 
-                {
-                    if (Object.InputAuthority != Runner.LocalPlayer)
-                        Debug.Log($"[TBA] {a.GetType().Name}: out of range {flatDistance} > {a.EffectiveRange}"); 
-                    continue; 
-                }
-                if (!a.CanInteract(ctx)) 
-                {
-                    if (Object.InputAuthority != Runner.LocalPlayer)
-                        Debug.Log($"[TBA] {a.GetType().Name}: CanInteract=false (enabled={a.isActiveAndEnabled})"); 
-                    continue; 
-                }
-                best = a;
-                return true;
+                if (fail.IsEmpty) fail = f; // giữ lý do của action ưu tiên cao nhất
             }
-            best = null;
             return false;
         }
     }

@@ -41,7 +41,7 @@ public class ToolKit : MonoBehaviour
     public NetworkInventory Inventory => inventory;
     public ItemTooltip Tooltip => tooltip;
 
- 
+
 
     private void Start()
     {
@@ -154,7 +154,7 @@ public class ToolKit : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i) || Input.GetKeyDown(KeyCode.Keypad1 + i))
             {
-                SelectHotbarSlot(i);               
+                SelectHotbarSlot(i);
             }
         }
     }
@@ -169,7 +169,7 @@ public class ToolKit : MonoBehaviour
         selectedHotbarIndex = index;
         slots[index].SetSelected(true);
         OnLocalSelectedChanged?.Invoke(selectedHotbarIndex);
-    }  
+    }
 
     #endregion
 

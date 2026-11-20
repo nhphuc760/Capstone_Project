@@ -1,5 +1,6 @@
 ﻿using System;
 using Fusion;
+using Gamelogic.Extensions;
 using UnityEngine;
 using Util.Core;
 
@@ -29,6 +30,8 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
 
     [Networked]
     public TickTimer MatchTimer { get; private set; }
+
+
 
     int PlayerCount = 1;
 
@@ -179,7 +182,13 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
                 obj.name = player.ToString();
                 runner.SetPlayerObject(player, obj);
             });
-            PlayerCount++;
+            PlayerCount++;          
+            
         }
+    }
+
+    public Vector3 SpawnPoint()
+    {
+        return shopRef.transform.Find("SpawnPoint").position.RandomAround(1f);
     }
 }

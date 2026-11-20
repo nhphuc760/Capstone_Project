@@ -32,7 +32,7 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
     [SerializeField] int staminaCostPerGather;
     [SerializeField] float holdDuration = 3f;
     [SerializeField] Animator animator;
-    [SerializeField] IconTMP iconTMP;
+    public IconTMP iconTMP;
 
     [Tooltip("Phần trăm maxAmount hồi lại sau mỗi đợt wave")] 
     [SerializeField, Range(0f, 1f)] float regenRatePerWave;
@@ -79,6 +79,8 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
         CurrentAmount -= actual;
         if (CurrentAmount <= 0)
         {
+            if (HasStateAuthority)
+                Runner.Despawn(Object);
             OnDepleted?.Invoke(this);
         }
         return actual;

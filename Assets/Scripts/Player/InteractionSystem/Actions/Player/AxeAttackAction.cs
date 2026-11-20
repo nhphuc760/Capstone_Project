@@ -27,9 +27,14 @@ public class AxeAttackAction : InteractionAction
     public override float GetRepeatInterval(in InteractionContext ctx) => ClipTiming.Cycle(GetAttackSpeed(ctx));
     public override float GetAnimationSpeed(in InteractionContext ctx) => _clip.AnimSpeed(GetAttackSpeed(ctx));
 
-    public override bool OnCanInteract(in InteractionContext ctx)
+    public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
     {
-        return ctx.Get<StaminaComponent>().CurrentStamina >= staminaPerUse;
+        if (ctx.Get<StaminaComponent>().CurrentStamina < staminaPerUse)
+        {
+            FailReason = "Không đủ thể lực";
+            return false;
+        }
+        return base.OnCanInteract(ctx, out FailReason);
     }
 
     public override void OnPerform(in InteractionContext ctx)

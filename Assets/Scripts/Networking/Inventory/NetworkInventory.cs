@@ -181,7 +181,8 @@ public class NetworkInventory : NetworkBehaviour
         if (!Object.HasStateAuthority || amount <= 0) return false;
         if (!HasItem(itemID, amount)) return false;
 
-        for (int i = 0; i < InventoryCapacity; i++)
+        // Ưu tiên trừ ở Inventory chính trước
+        for (int i = 0; i < InventoryCapacity && amount > 0; i++)
         {
             InventoryItem slot = Items.Get(i);
             if (slot.itemID != itemID) continue;
@@ -192,10 +193,23 @@ public class NetworkInventory : NetworkBehaviour
 
             if (slot.amount <= 0) slot = default;
             Items.Set(i, slot);
-
-            if (amount <= 0) return true;
         }
-        return true;
+
+        // Nếu vẫn còn thì trừ tiếp ở Hotbar
+        for (int i = 0; i < HotbarCapacity && amount > 0; i++)
+        {
+            InventoryItem slot = Hotbar.Get(i);
+            if (slot.itemID != itemID) continue;
+
+            int amountToRemove = Mathf.Min(amount, slot.amount);
+            slot.amount -= amountToRemove;
+            amount -= amountToRemove;
+
+            if (slot.amount <= 0) slot = default;
+            Hotbar.Set(i, slot);
+        }
+
+        return amount <= 0;
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -267,7 +281,7 @@ public class NetworkInventory : NetworkBehaviour
         Hotbar.Set(hotbarIndex, invItem);
         Items.Set(invIndex, hotItem);
         return true;
-    }   
+    }
 
     /// <summary>
     /// Swap 2 slot trong Hotbar.

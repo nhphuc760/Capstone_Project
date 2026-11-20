@@ -8,6 +8,11 @@ namespace Game.Interaction
     /// </summary>
     public abstract class InteractionCondition : ScriptableObject
     {
+        [SerializeField] private string _failMessage;   // chỉnh trong Inspector
+
         public abstract bool Evaluate(in InteractionContext ctx);
+
+        // Mặc định lấy message trong Inspector; Condition riêng có thể override
+        public virtual InteractionFail GetFail(in InteractionContext ctx) => new InteractionFail(_failMessage);
     }
 }

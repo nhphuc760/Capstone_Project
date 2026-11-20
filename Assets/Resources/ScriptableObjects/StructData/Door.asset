@@ -26,6 +26,9 @@ MonoBehaviour:
   levels:
   - rid: 2680167812576575567
   - rid: 2672765709527810142
+  - rid: 2672765847051698292
+  - rid: 2672765847051698293
+  - rid: 2672765847051698294
   references:
     version: 2
     RefIds:
@@ -44,18 +47,66 @@ MonoBehaviour:
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
         iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
-        Wood: 20
-        Stone: 0
-        Gold: 0
+        Wood: 150
+        Stone: 150
+        Gold: 30
         Electric: 0
     - rid: 2672765709527810144
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:
         iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
-        Wood: 10
-        Stone: 0
-        Gold: 0
+        Wood: 100
+        Stone: 100
+        Gold: 20
         Electric: 0
+    - rid: 2672765847051698292
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 3
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 2
+              Value: 2000
+        upgradeRequirement:
+        - rid: 2672765847051698296
+    - rid: 2672765847051698293
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 4
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 2
+              Value: 4000
+        upgradeRequirement:
+        - rid: 2672765847051698295
+    - rid: 2672765847051698294
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 5
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 2
+              Value: 8000
+        upgradeRequirement: []
+    - rid: 2672765847051698295
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 220
+        Stone: 220
+        Gold: 30
+        Electric: 1024
+    - rid: 2672765847051698296
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 200
+        Stone: 200
+        Gold: 50
+        Electric: 128
     - rid: 2680167812576575567
       type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
       data:

@@ -305,7 +305,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorBreakAction
   _slot: 0
   _priority: 0
-  _mode: 2
+  _mode: 1
   _holdDuration: 3
   _repeatInterval: 0.6
   _minHoldTime: 0.1

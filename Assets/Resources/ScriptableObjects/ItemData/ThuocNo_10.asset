@@ -10,23 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46b207ec5bd0fe54cb362d9644b15b4e, type: 3}
-  m_Name: BuffRange_2
+  m_Name: ThuocNo_10
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
-  itemId: 2
-  itemName: Buff Range
-  description: "T\u0103ng ph\u1EA1m vi b\u1EAFn c\u1EE7a s\xFAng"
+  itemId: 10
+  itemName: "Thu\u1ED1c n\u1ED5"
+  description: "D\xF9ng \u0111\u1EC3 ch\u1EBF t\u1EA1o boomb"
   itemType: 1
-  icon: {fileID: 21300000, guid: e4c3cd89e92c9564b9ec3241e642a3de, type: 3}
+  icon: {fileID: -781907488, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
   objectPrefab: {fileID: 0}
   stackable: 1
-  maxStack: 1
-  itemLogic:
-    rid: 2672765756765634664
+  maxStack: 99
+  Components: []
   references:
     version: 2
-    RefIds:
-    - rid: 2672765756765634664
-      type: {class: BuffHealthRegen, ns: , asm: Assembly-CSharp}
-      data:
-        duration: 10
-        RegenAmount: 5
+    RefIds: []

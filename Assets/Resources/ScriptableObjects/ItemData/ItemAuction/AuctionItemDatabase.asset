@@ -18,4 +18,13 @@ MonoBehaviour:
     StartingValue: 1
   - ItemSO: {fileID: 11400000, guid: c3c4639cd64053e4baf5abff25c0ec43, type: 2}
     Amount: 1
-    StartingValue: 1
+    StartingValue: 9000
+  - ItemSO: {fileID: 11400000, guid: 2b1fc4cbd1315f34b98daac8b57d5219, type: 2}
+    Amount: 1
+    StartingValue: 4000
+  - ItemSO: {fileID: 11400000, guid: f443c8d3b197c634d9cbe3fe8c5c861f, type: 2}
+    Amount: 1
+    StartingValue: 20000
+  - ItemSO: {fileID: 11400000, guid: 47814b323c847b745800ceadb2c83c11, type: 2}
+    Amount: 1
+    StartingValue: 10000

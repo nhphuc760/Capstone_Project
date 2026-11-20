@@ -131,13 +131,6 @@ MonoBehaviour:
   _IsUpgradeable:
     _value: 0
   StructureDataSO: {fileID: 11400000, guid: 8798664e2b066694ba02048e126b9e63, type: 2}
-  interactionData:
-    Mode: 0
-    Prompt: 
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: 
-      hzState: 0
 --- !u!114 &6764767391188972342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -582,7 +575,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7986327657953249633}
-  - component: {fileID: 7298085724819809228}
   m_Layer: 0
   m_Name: DismantleProcess
   m_TagString: Untagged
@@ -612,20 +604,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -0.038}
   m_SizeDelta: {x: 136.87, y: 17.3}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7298085724819809228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5315525095912553346}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65a4758d3fdb92548befe9de18bf20ce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractProcess
-  processBar: {fileID: 5006068459776907905}
-  lastDurationShow: 0.1
 --- !u!1 &8936937798479624162
 GameObject:
   m_ObjectHideFlags: 0

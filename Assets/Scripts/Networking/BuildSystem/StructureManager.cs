@@ -83,7 +83,8 @@ public class StructureManager : NetworkBehaviour
             }
             IBuildStategy wallBuildStrategy = new WallBuildStrategy(
            this,
-           100, 100,
+           (int)MapManager.Ins.mapWidth, 
+           (int)MapManager.Ins.mapHeight,
            structureDataSO
             );
             buildStategies[playerRef].Add(wallBuildStrategy);

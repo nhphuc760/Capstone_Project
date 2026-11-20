@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: "T\u01B0\u1EDDng g\u1EA1ch"
   description: "X\xE2y d\u1EF1ng v\xF2ng th\xE0nh sinh t\u1ED3n c\u1EE7a b\u1EA1n"
   itemType: 0
-  icon: {fileID: 638538528, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
+  icon: {fileID: 21300000, guid: 9abf960f0c415f5429e71c123f83de72, type: 3}
   objectPrefab: {fileID: 1835964164062538361, guid: ec104651423ce9242a4b9902a1200d48, type: 3}
   stackable: 1
   maxStack: 99
