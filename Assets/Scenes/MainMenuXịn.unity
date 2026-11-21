@@ -8174,6 +8174,7 @@ GameObject:
   - component: {fileID: 1045265041}
   - component: {fileID: 1045265043}
   - component: {fileID: 1045265042}
+  - component: {fileID: 1045265044}
   m_Layer: 5
   m_Name: LoginPanel
   m_TagString: Untagged
@@ -8241,6 +8242,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1045265040}
   m_CullTransparentMesh: 1
+--- !u!114 &1045265044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045265040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bf996b26a566a34bb98047e5ca7ee87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmailLogin
+  LoginEmail: {fileID: 936410235}
+  LoginPassword: {fileID: 166857204}
+  SignUpEmail: {fileID: 746518572}
+  SignUpPassword: {fileID: 1984292730}
+  SignUpPasswordConfirm: {fileID: 1980843523}
+  rememberMeToggle: {fileID: 1314897009}
+  loginRootPanel: {fileID: 0}
+  logTxt: {fileID: 1610373130}
+  wrongEmailPasswordText: {fileID: 1597039635}
+  loginUI: {fileID: 109020476}
+  signUpUI: {fileID: 885141000}
+  emailVerificationPanel: {fileID: 1410857032}
+  emailPasswordNotificationPanel: {fileID: 733217557}
+  emailSuggestionPanel: {fileID: 754220001}
+  emailSuggestionContent: {fileID: 538659462}
+  emailItemPrefab: {fileID: 2013119651788874111, guid: ab6cd8bd922ddd940b7cf6bd7045dc51, type: 3}
+  emailSuggestion: {fileID: 754220002}
+  forgotPasswordPanel: {fileID: 1192144602}
+  forgotPasswordEmail: {fileID: 1444639552}
 --- !u!1 &1054147140
 GameObject:
   m_ObjectHideFlags: 0
@@ -15287,7 +15319,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1740345583}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1bf996b26a566a34bb98047e5ca7ee87, type: 3}
   m_Name: 
@@ -15298,6 +15330,7 @@ MonoBehaviour:
   SignUpPassword: {fileID: 1984292730}
   SignUpPasswordConfirm: {fileID: 1980843523}
   rememberMeToggle: {fileID: 1314897009}
+  loginRootPanel: {fileID: 0}
   logTxt: {fileID: 1610373130}
   wrongEmailPasswordText: {fileID: 1597039635}
   loginUI: {fileID: 109020476}
