@@ -105,6 +105,16 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         {
             Local = this;
         }
+        // Chặn toàn bộ HUD, Camera gameplay và trọng lực khi đang ở LobbyScene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+        {
+            if (cameraView != null) cameraView.gameObject.SetActive(false);
+            if (CanvasOverlay != null) CanvasOverlay.SetActive(false);
+            if (CanvasWorldSpace != null) CanvasWorldSpace.SetActive(false);
+            if (controller != null) controller.enabled = false;
+            gameObject.name = Object.InputAuthority.ToString();
+            return;
+        }
         if (!Object.HasInputAuthority)
         {
             cameraView.gameObject.SetActive(false);
@@ -173,6 +183,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     private void Update()
     {
+        // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+            return;
         if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
         {
 
@@ -222,6 +235,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     public override void FixedUpdateNetwork()
     {
+        // Don't process input in the lobby scene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene") return;
 
         _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))

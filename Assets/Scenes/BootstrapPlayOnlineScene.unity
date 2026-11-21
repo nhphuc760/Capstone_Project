@@ -344,6 +344,7 @@ GameObject:
   m_Component:
   - component: {fileID: 220042751}
   - component: {fileID: 220042752}
+  - component: {fileID: 220042753}
   m_Layer: 0
   m_Name: RoomManager
   m_TagString: Untagged
@@ -379,6 +380,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
   DestroyOnLoad: 1
+--- !u!114 &220042753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 220042750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce96f49fa9759f64c822d4500915e338, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FusionRoomConnector
+  runnerPrefab: {fileID: 1857745361433860855, guid: d07824ec8013fb14a81f978bee1f6e0c, type: 3}
+  lobbySceneName: LobbyScene
+  modeSceneName: ChooseType
 --- !u!1 &262697266
 GameObject:
   m_ObjectHideFlags: 0

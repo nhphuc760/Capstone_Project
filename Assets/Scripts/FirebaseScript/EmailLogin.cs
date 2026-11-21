@@ -161,7 +161,10 @@ public class EmailLogin : MonoBehaviour
     {
         ResetLoginFlowState();
         GameObject target = loginRootPanel != null ? loginRootPanel : gameObject;
-        target.SetActive(false);
+        if (UIHistoryManager.Instance != null)
+            UIHistoryManager.Instance.ClosePanel(target);
+        else
+            target.SetActive(false);
     }
 
     #region  sign up

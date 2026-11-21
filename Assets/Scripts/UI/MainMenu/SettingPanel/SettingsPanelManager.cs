@@ -108,7 +108,11 @@ public class SettingsPanelManager : MonoBehaviour
     public void CloseSettings()
     {
         PlayerPrefs.Save();
-        if (settingsRootPanel != null) settingsRootPanel.SetActive(false);
+        GameObject target = settingsRootPanel != null ? settingsRootPanel : gameObject;
+        if (UIHistoryManager.Instance != null)
+            UIHistoryManager.Instance.ClosePanel(target);
+        else
+            target.SetActive(false);
     }
 
     public void SwitchTab(int tabIndex)
