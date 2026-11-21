@@ -241,7 +241,7 @@ public class SpawnTest : NetworkBehaviour
             return;
         }
 
-        Debug.Log("[QuestTest] Requesting Fixed Quest...");
+        Debug.LogWarning("[QuestTest] Requesting Fixed Quest...");
 
         questSystem.RequestAcceptFixedQuest();
     }
