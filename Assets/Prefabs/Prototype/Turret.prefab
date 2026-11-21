@@ -394,7 +394,7 @@ Transform:
   m_GameObject: {fileID: 4521814646217563196}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0.00008182527, z: 0.93678665}
+  m_LocalPosition: {x: -0, y: 0, z: 0.997}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -489,7 +489,7 @@ Transform:
   m_GameObject: {fileID: 4968997862501867644}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.132, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -570,6 +570,7 @@ GameObject:
   - component: {fileID: 2072528498854197460}
   - component: {fileID: 606200054760940304}
   - component: {fileID: 9088086269654509872}
+  - component: {fileID: 4143958458513494198}
   m_Layer: 7
   m_Name: Turret
   m_TagString: Untagged
@@ -593,6 +594,7 @@ Transform:
   - {fileID: 8825727321362012548}
   - {fileID: 3408870042218246780}
   - {fileID: 3266815691766240456}
+  - {fileID: 1478964410893600190}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &579249724772208274
@@ -614,13 +616,6 @@ MonoBehaviour:
   bulletSpawnPoint: {fileID: 483561701056668735}
   gun: {fileID: 4715788360554794306}
   bulletPrefab: {fileID: 207511739529609716, guid: b968db06dde62c148908d76051b8658e, type: 3}
-  interactionData:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 3
-    InteractorAnimation:
-      stateName: Dismantle
-      hzState: 0.9
   EnemyMask:
     serializedVersion: 2
     m_Bits: 64
@@ -645,6 +640,8 @@ MonoBehaviour:
   - {fileID: 579249724772208274}
   - {fileID: 1695700423723160842}
   - {fileID: 606200054760940304}
+  - {fileID: 4143958458513494198}
+  - {fileID: 3191062653039285290}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &1695700423723160842
 MonoBehaviour:
@@ -716,6 +713,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 3619852371075955209}
   sinA: 0.05
   freq: 3
+--- !u!114 &4143958458513494198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5505136185357839792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5
 --- !u!1 &5508218973088232314
 GameObject:
   m_ObjectHideFlags: 0
@@ -791,6 +802,72 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &6077687505800867253
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1478964410893600190}
+  - component: {fileID: 3191062653039285290}
+  m_Layer: 0
+  m_Name: DismantleAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1478964410893600190
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6077687505800867253}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5125351975716865461}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3191062653039285290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6077687505800867253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91bc914671f1b4493b236f0065535a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StructureBreakAction
+  _slot: 0
+  _priority: 0
+  _mode: 1
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
+  _presentation:
+    Prompt: Hold E
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Dismantle
+    EndState: 
+  ProgressUI: {fileID: 3195526112464711228}
+  structureBase: {fileID: 579249724772208274}
+  icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
+  StaminaPerUse: 5
 --- !u!1 &6956742026752278929
 GameObject:
   m_ObjectHideFlags: 0
@@ -927,7 +1004,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3992446436013236961}
-  - component: {fileID: 5944869586757783993}
+  - component: {fileID: 3195526112464711228}
   m_Layer: 0
   m_Name: DismantleProcess
   m_TagString: Untagged
@@ -957,7 +1034,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0.17}
   m_SizeDelta: {x: 136.87, y: 17.3}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &5944869586757783993
+--- !u!114 &3195526112464711228
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -966,11 +1043,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8501249765831008325}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65a4758d3fdb92548befe9de18bf20ce, type: 3}
+  m_Script: {fileID: 11500000, guid: a170bf658d920144098e61961aae834b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractProcess
-  processBar: {fileID: 8968749288716283562}
-  lastDurationShow: 0.1
+  m_EditorClassIdentifier: Assembly-CSharp::ProgressUI
+  progress: {fileID: 8968749288716283562}
+  Icon: {fileID: 4010438949219430157}
 --- !u!1 &9023772045355893058
 GameObject:
   m_ObjectHideFlags: 0

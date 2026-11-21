@@ -458,7 +458,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2039387846413938039}
-  - component: {fileID: 5104578356014714174}
+  - component: {fileID: 3000929804934960029}
   m_Layer: 0
   m_Name: DismantleProcess
   m_TagString: Untagged
@@ -488,7 +488,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -0.187}
   m_SizeDelta: {x: 136.87, y: 17.3}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &5104578356014714174
+--- !u!114 &3000929804934960029
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -497,11 +497,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3396611731281823555}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65a4758d3fdb92548befe9de18bf20ce, type: 3}
+  m_Script: {fileID: 11500000, guid: a170bf658d920144098e61961aae834b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractProcess
-  processBar: {fileID: 2602917922292736813}
-  lastDurationShow: 0.1
+  m_EditorClassIdentifier: Assembly-CSharp::ProgressUI
+  progress: {fileID: 2602917922292736813}
+  Icon: {fileID: 3017855601928043295}
 --- !u!1 &3669855425859780043
 GameObject:
   m_ObjectHideFlags: 0
@@ -564,6 +564,7 @@ GameObject:
   - component: {fileID: 7739534596670683588}
   - component: {fileID: -4897570500326141719}
   - component: {fileID: 2243937036136575106}
+  - component: {fileID: 8628076122730771065}
   m_Layer: 7
   m_Name: Trap
   m_TagString: Untagged
@@ -587,6 +588,7 @@ Transform:
   - {fileID: 92569080663909183}
   - {fileID: 7322980997845630670}
   - {fileID: 161713234118159885}
+  - {fileID: 2934646309045026791}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6083776747789578425
@@ -607,13 +609,6 @@ MonoBehaviour:
   StructureDataSO: {fileID: 11400000, guid: 1bd43087c598a2c47a1ae21f2f0eb474, type: 2}
   bullet: {fileID: 4956890643768896885}
   speedTime: 1
-  interactionData:
-    Mode: 0
-    Prompt: 
-    HoldTime: 0
-    InteractorAnimation:
-      stateName: 
-      hzState: 0
 --- !u!114 &6645808644994046317
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -634,6 +629,8 @@ MonoBehaviour:
   - {fileID: 6083776747789578425}
   - {fileID: 5842302027075810974}
   - {fileID: -4897570500326141719}
+  - {fileID: 8628076122730771065}
+  - {fileID: 9015277981424983161}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &5842302027075810974
 MonoBehaviour:
@@ -705,6 +702,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 1141114567210918960}
   sinA: 0.05
   freq: 3
+--- !u!114 &8628076122730771065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760876431861692138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5
 --- !u!1 &4629693124944830459
 GameObject:
   m_ObjectHideFlags: 0
@@ -1000,6 +1011,72 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!1 &8021849952680615834
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2934646309045026791}
+  - component: {fileID: 9015277981424983161}
+  m_Layer: 0
+  m_Name: DismantleAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2934646309045026791
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8021849952680615834}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8959084208935640596}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9015277981424983161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8021849952680615834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91bc914671f1b4493b236f0065535a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StructureBreakAction
+  _slot: 0
+  _priority: 0
+  _mode: 1
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
+  _presentation:
+    Prompt: Hold E
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Dismantle
+    EndState: 
+  ProgressUI: {fileID: 3000929804934960029}
+  structureBase: {fileID: 6083776747789578425}
+  icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
+  StaminaPerUse: 5
 --- !u!1 &9009023232061614518
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9b4d8c69e3c1bd48b972de3d1e895ac, type: 3}
+  m_Name: Monster Definition
+  m_EditorClassIdentifier: Assembly-CSharp::SilentCastle.MonsterAI.MonsterDefinition
+  startLevel: 1
+  maxLevel: 10
+  baseExpToNext: 40
+  expGrowth: 1.35
+  expPerHit: 5
+  expPerKill: 25
+  levelUpHealPercent: 0.25
+  baseMaxHp: 300
+  hpGrowth: 1.2
+  baseDamage: 13
+  damageGrowth: 1.15
+  baseMoveSpeed: 8
+  moveSpeedPerLevel: 0.15
+  baseAttackInterval: 1.2
+  attackIntervalGrowth: 0.96
+  minAttackInterval: 0.5
+  attackRange: 0.5
+  fleeHpAtLevel1: 0.6
+  fleeHpAtMaxLevel: 0.08
+  personalityRange: 0.2
+  rageFleeSuppression: 0.5
+  fleeSpeedMultiplier: 1.25
+  attackClipLength: 1.25
+  attackHitNormalized: 0.73333335
+  minAttackAnimSpeed: 0.5
+  maxAttackAnimSpeed: 3
+  healPercentPerSecond: 0.06
+  dawnSafetyMultiplier: 1.25
+  dawnSafetyBufferSeconds: 2
+  minSortieSeconds: 8
+  daylightSurvivalSeconds: 12
+  corpseSeconds: 2
+  targeting: {fileID: 11400000, guid: a85d39a49d40e7446a4f9e1d91e50a43, type: 2}
+  skills:
+  - {fileID: 11400000, guid: b7b4f303715958948916dbee1200263f, type: 2}

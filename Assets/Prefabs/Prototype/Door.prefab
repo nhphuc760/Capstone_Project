@@ -315,8 +315,9 @@ MonoBehaviour:
   _moveTolerance: 0.3
   _conditions:
   - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
+  - {fileID: 11400000, guid: 29135e6c394f87e47b29a9b462bec3d3, type: 2}
   _presentation:
-    Prompt: Interact
+    Prompt: "C\u1EA1y c\u1EEDa"
     Icon: {fileID: 0}
     BeginState: 
     LoopState: Dismantle

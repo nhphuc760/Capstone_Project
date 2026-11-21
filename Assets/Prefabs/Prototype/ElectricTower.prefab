@@ -1,5 +1,71 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &284415001587326819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2121884533424022270}
+  - component: {fileID: 4453782666299121633}
+  m_Layer: 0
+  m_Name: DismantleAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2121884533424022270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 284415001587326819}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7997828757933864642}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4453782666299121633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 284415001587326819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91bc914671f1b4493b236f0065535a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StructureBreakAction
+  _slot: 0
+  _priority: 0
+  _mode: 1
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
+  _presentation:
+    Prompt: Hold E
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Dismantle
+    EndState: 
+  ProgressUI: {fileID: 3985886719995298884}
+  structureBase: {fileID: 2068201481643314879}
+  icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
+  StaminaPerUse: 5
 --- !u!1 &593112680582160806
 GameObject:
   m_ObjectHideFlags: 0
@@ -1046,7 +1112,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6859367524069028105}
-  - component: {fileID: 2903051098612666361}
+  - component: {fileID: 3985886719995298884}
   m_Layer: 0
   m_Name: DismantleProcess
   m_TagString: Untagged
@@ -1076,7 +1142,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0.023}
   m_SizeDelta: {x: 136.87, y: 17.3}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2903051098612666361
+--- !u!114 &3985886719995298884
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1085,11 +1151,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7110255558702592637}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65a4758d3fdb92548befe9de18bf20ce, type: 3}
+  m_Script: {fileID: 11500000, guid: a170bf658d920144098e61961aae834b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractProcess
-  processBar: {fileID: 1005754595679936121}
-  lastDurationShow: 0.1
+  m_EditorClassIdentifier: Assembly-CSharp::ProgressUI
+  progress: {fileID: 1005754595679936121}
+  Icon: {fileID: 7719471352018769703}
 --- !u!1 &7588526742645363919
 GameObject:
   m_ObjectHideFlags: 0
@@ -1105,6 +1171,7 @@ GameObject:
   - component: {fileID: 5201635968903795911}
   - component: {fileID: -8753669421416796243}
   - component: {fileID: 1141771326752349819}
+  - component: {fileID: 1508657529222943048}
   m_Layer: 7
   m_Name: ElectricTower
   m_TagString: Untagged
@@ -1137,6 +1204,7 @@ Transform:
   - {fileID: 4393269902901938594}
   - {fileID: 6763247819127551967}
   - {fileID: 859549448663102266}
+  - {fileID: 2121884533424022270}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2068201481643314879
@@ -1155,13 +1223,6 @@ MonoBehaviour:
   _IsUpgradeable:
     _value: 0
   StructureDataSO: {fileID: 11400000, guid: fbaeafb1bb9600444ae27edc84b53fc4, type: 2}
-  interactionData:
-    Mode: 1
-    Prompt: Hold E
-    HoldTime: 2
-    InteractorAnimation:
-      stateName: Dismantle
-      hzState: 0.9
   electricMeshes:
   - {fileID: 4827941997040645983}
   - {fileID: 8878795627198230411}
@@ -1192,6 +1253,8 @@ MonoBehaviour:
   - {fileID: 2068201481643314879}
   - {fileID: 5201635968903795911}
   - {fileID: -8753669421416796243}
+  - {fileID: 1508657529222943048}
+  - {fileID: 4453782666299121633}
   ForceRemoteRenderTimeframe: 0
 --- !u!65 &5763408016659463928
 BoxCollider:
@@ -1267,6 +1330,20 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 8126637177927398267}
   sinA: 0.05
   freq: 3
+--- !u!114 &1508657529222943048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7588526742645363919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5
 --- !u!1 &8126637177927398267
 GameObject:
   m_ObjectHideFlags: 0

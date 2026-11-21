@@ -2,6 +2,7 @@
 using FischlWorks_FogWar;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
+using SilentCastle.MonsterAI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -48,7 +49,7 @@ public class GatherResult
 }
 
 
-public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMonsterTarget
 {
     [Flags]
     public enum PlayerState : byte
@@ -99,6 +100,20 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     Door doorPlayer;
     public Door Door => doorPlayer;
 
+    public NetworkId TargetId => Object.Id;
+
+    public TargetKind Kind => TargetKind.Player;
+
+    public Vector3 Position => transform.position;
+
+    public bool IsAlive => Health.IsAlive;
+
+    public float Health01 => Health.HealthPercent;
+
+    public float BodyRadius => 0.6f;
+
+    public bool IsTargetable => IsAlive;
+
     public override void Spawned()
     {
         if (Runner.LocalPlayer == Object.InputAuthority && Local == null)
@@ -122,6 +137,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         Health.Initialize(_stats);
         Stamina.Initialize(_stats);
         level = 1;
+        if(WorldContext.Instance != null)
+        WorldContext.Instance.Register(this);
+
         if (HasInputAuthority)
         {
             //Subcribe Inventory Event
@@ -168,6 +186,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         {
             fogSpawner.UnregisterPlayer();
         }
+        if (WorldContext.Instance != null) WorldContext.Instance.Unregister(this);
     }
 
 
@@ -369,9 +388,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             Electric = 100,
         });
     }
+
+    public void ReceiveDamage(float amount, MonsterBrain attacker)
+    {
+        Health.TakeDamage(amount, attacker.Object);
+    }
     //IInteractable implementation
     #region Interactions
-   
+
 
     #endregion
 

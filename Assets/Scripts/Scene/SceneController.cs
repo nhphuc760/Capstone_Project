@@ -22,7 +22,7 @@ public class SceneController : MonoBehaviour
             return;
         }
         Instance = this;
-        if(DontDestroy)
+        if (DontDestroy)
             DontDestroyOnLoad(gameObject);
         loadedSceneBySlot.Add(SceneManager.GetActiveScene().name);
     }
