@@ -1138,9 +1138,9 @@ MonoBehaviour:
   LevelDataToLoad: {fileID: 0}
   saveDataOnScan: 1
   levelNameToSave: Default
-  levelDimensionX: 11
-  levelDimensionY: 11
-  unitScale: 1
+  levelDimensionX: 128
+  levelDimensionY: 128
+  unitScale: 2
   scanSpacingPerUnit: 0.25
   rayStartHeight: 5
   rayMaxDistance: 10
@@ -3120,7 +3120,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1727429388803840140
 MeshRenderer:
   m_ObjectHideFlags: 0

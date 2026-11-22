@@ -134,4 +134,32 @@ public class NetworkDataManager : MonoBehaviour
         }
         SetPresenceUser(userID, newPre);        
     }
+    private void OnApplicationQuit()
+    {
+        if (@ref != null)
+        {
+            @ref.Child("Presence/Status").SetValueAsync((int)OnlineStatus.Offline);
+        }
+    }
+    public void UpdateAvatarCache(string userId, Sprite newSprite, string newAvatarUrl = null)
+    {
+        if (string.IsNullOrEmpty(userId) || newSprite == null) return;
+
+        // Cập nhật lại Sprite mới vào Dictionary userAvatar
+        SetAvatarUser(userId, newSprite);
+
+        // Đồng bộ luôn AvatarUrl trong dữ liệu Presence đang lưu trên RAM
+        if (!string.IsNullOrEmpty(newAvatarUrl))
+        {
+            if (myPresence != null && userId == FirebaseManager.UserID)
+            {
+                myPresence.AvatarUrl = newAvatarUrl;
+            }
+
+            if (userPresence.TryGetValue(userId, out var cachedPresence) && cachedPresence != null)
+            {
+                cachedPresence.AvatarUrl = newAvatarUrl;
+            }
+        }
+    }
 }
