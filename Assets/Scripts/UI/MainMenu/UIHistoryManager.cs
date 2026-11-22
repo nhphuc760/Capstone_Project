@@ -30,6 +30,20 @@ public class UIHistoryManager : MonoBehaviour
     {
         if (IsEscapePressed())
         {
+            CleanupInactiveTop();
+
+            if (historyStack.Count > 0)
+            {
+                GameObject topPanel = historyStack.Peek().panel;
+                // Nhường quyền xử lý ESC cho các panel có nhiều lớp con nội bộ
+                if (topPanel != null &&
+                    (topPanel.GetComponent<EmailLogin>() != null ||
+                     topPanel.GetComponent<SettingsPanelManager>() != null))
+                {
+                    return;
+                }
+            }
+
             GoBack();
         }
     }
@@ -43,7 +57,7 @@ public class UIHistoryManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Tạm tắt Panel hiện tại và bật Panel mới; bấm ESC sẽ bật lại Panel cũ (Dùng cho: Login -> Forgot Password).
+    /// Tạm tắt Panel hiện tại và bật Panel mới; bấm ESC sẽ bật lại Panel cũ.
     /// </summary>
     public void OpenPanelExclusive(GameObject panel)
     {
@@ -73,6 +87,25 @@ public class UIHistoryManager : MonoBehaviour
             panel = panel,
             hidPrevious = hidePrevious
         });
+    }
+
+    /// <summary>
+    /// Đóng một Panel cụ thể và đồng bộ lại stack (dùng khi Panel tự đóng bằng ESC hoặc nút Back).
+    /// </summary>
+    public void ClosePanel(GameObject panel)
+    {
+        if (panel == null) return;
+
+        CleanupInactiveTop();
+
+        if (historyStack.Count > 0 && historyStack.Peek().panel == panel)
+        {
+            GoBack();
+        }
+        else
+        {
+            panel.SetActive(false);
+        }
     }
 
     /// <summary>
