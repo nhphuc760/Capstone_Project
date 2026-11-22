@@ -8761,6 +8761,7 @@ GameObject:
   - component: {fileID: 126555772}
   - component: {fileID: 126555773}
   - component: {fileID: 126555774}
+  - component: {fileID: 126555775}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -8828,10 +8829,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 1438553860
   ObjectInterest: 1
-  Flags: 262145
+  Flags: 131073
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 126555772}
+  - {fileID: 126555775}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &126555774
 MonoBehaviour:
@@ -8850,6 +8852,29 @@ MonoBehaviour:
   txtPlayerCount: {fileID: 1677661544}
   btnLeaveRoom: {fileID: 1945581082}
   chooseTypeSceneName: ChooseType
+--- !u!114 &126555775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126555770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d27e5bb91d182d445914dbf0d3de47fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyReadyManager
+  actionButton: {fileID: 345404655}
+  actionButtonText: {fileID: 210029276}
+  leaveRoomButton: {fileID: 1945581082}
+  chooseTypeSceneName: ChooseType
+  allowPlayWhenAlone: 1
+  activePlayColor: {r: 0.2901961, g: 0.8509804, b: 0.5686275, a: 1}
+  disabledPlayColor: {r: 0.17254902, g: 0.20784314, b: 0.2509804, a: 1}
+  clientNotReadyColor: {r: 0.9490196, g: 0.72156864, b: 0.29411766, a: 1}
+  clientReadyColor: {r: 0.2901961, g: 0.8509804, b: 0.5686275, a: 1}
+  activeTextColor: {r: 0.05882353, g: 0.09803922, b: 0.078431375, a: 1}
+  disabledTextColor: {r: 0.50980395, g: 0.5686275, b: 0.627451, a: 1}
 --- !u!4 &126791918 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2384488552515130820, guid: 8022ebd68cb5b6948be983bf7aa7b94e, type: 3}
@@ -24177,7 +24202,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -24258,7 +24283,7 @@ MonoBehaviour:
   borderColor: {r: 0.36078432, g: 0.8784314, b: 0.7019608, a: 1}
   borderThickness: {x: 2.5, y: -2.5}
   hideBorderWhenIdle: 1
-  brightenOnHover: 1
+  brightenOnHover: 0
   hoverBrightness: 1.12
 --- !u!1001 &345722367
 PrefabInstance:
@@ -107244,7 +107269,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -111007,7 +111032,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -123141,14 +123166,14 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1945581085}
   - {fileID: 1614493399}
   - {fileID: 1677661542}
+  - {fileID: 345404654}
   - {fileID: 1409553011}
   - {fileID: 853877538}
-  - {fileID: 345404654}
   - {fileID: 688499009}
   - {fileID: 1226638363}
-  - {fileID: 1945581085}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
