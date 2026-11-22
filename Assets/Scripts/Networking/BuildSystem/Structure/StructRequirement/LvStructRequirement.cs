@@ -15,7 +15,11 @@ public class LvStructRequirement : RequirementDefinition
             definition = this,
             structManager = services.structureManager,
         };
-    }    
+    }
+    public override string ToString()
+    {
+        return $"{structureRequire._name}: " + $"Lv {Level}".ToColor(Color.lightBlue);
+    }
   
 }
 
@@ -39,7 +43,7 @@ public class LvStructRequirementInstance : IRequirement
 
     public string GetInfor()
     {
-        return $"{definition.structureRequire._name}: " + $"lv{definition.Level}".ToColor(Color.lightBlue);
+        return $"{definition.structureRequire._name}: " + $"Lv {definition.Level}".ToColor(Color.lightBlue);
     }
 
     public CheckMetResult Met()

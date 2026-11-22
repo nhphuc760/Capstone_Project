@@ -25,6 +25,7 @@ public class StructureBreakAction : InteractionAction
 
         FailReason = null;
         return structureBase.Object.InputAuthority != ctx.Player;
+        //return true;
     }
 
     public override void OnPerform(in InteractionContext ctx)
@@ -40,6 +41,12 @@ public class StructureBreakAction : InteractionAction
     public override float GetHoldDuration(in InteractionContext ctx)
     {
         return HoldDuration + structureBase.Level;
+    }
+
+    public override void OnProgress(in InteractionContext ctx, bool isLocal)
+    {
+        if (ProgressUI != null)
+            ProgressUI.UpdateProgress(ctx.Progress01);
     }
 
     public override void OnPresentation(InteractionEventType type, in InteractionContext ctx, bool isLocal)

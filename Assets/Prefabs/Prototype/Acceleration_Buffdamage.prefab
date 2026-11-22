@@ -272,6 +272,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7679464940785531418}
+  - component: {fileID: 5231692921093627330}
   m_Layer: 0
   m_Name: DismantleProcess
   m_TagString: Untagged
@@ -301,6 +302,86 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -0.187}
   m_SizeDelta: {x: 136.87, y: 17.3}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5231692921093627330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2974833437503120742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a170bf658d920144098e61961aae834b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProgressUI
+  progress: {fileID: 977058874592418596}
+  Icon: {fileID: 6149514329114880870}
+--- !u!1 &3755711774480375018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1587744894663114749}
+  - component: {fileID: 808211818410399005}
+  m_Layer: 0
+  m_Name: DismantleAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1587744894663114749
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3755711774480375018}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.034, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7713206221932512550}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &808211818410399005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3755711774480375018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91bc914671f1b4493b236f0065535a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StructureBreakAction
+  _slot: 0
+  _priority: 0
+  _mode: 1
+  _holdDuration: 1
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
+  _presentation:
+    Prompt: Hold E
+    Icon: {fileID: 0}
+    BeginState: 
+    LoopState: Dismantle
+    EndState: 
+  ProgressUI: {fileID: 5231692921093627330}
+  structureBase: {fileID: 9140460362870556818}
+  icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
+  StaminaPerUse: 5
 --- !u!1 &4752416784186492189
 GameObject:
   m_ObjectHideFlags: 0
@@ -483,6 +564,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7679464940785531418}
+  - {fileID: 1587744894663114749}
   m_Father: {fileID: 4416175423606940840}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -776,6 +858,7 @@ GameObject:
   - component: {fileID: 6237601311705059200}
   - component: {fileID: 6705114966394790466}
   - component: {fileID: 9042099124277803736}
+  - component: {fileID: 5362821568493349186}
   m_Layer: 7
   m_Name: Acceleration_Buffdamage
   m_TagString: Untagged
@@ -858,6 +941,8 @@ MonoBehaviour:
   - {fileID: 9140460362870556818}
   - {fileID: 6237601311705059200}
   - {fileID: 6705114966394790466}
+  - {fileID: 5362821568493349186}
+  - {fileID: 808211818410399005}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &6237601311705059200
 MonoBehaviour:
@@ -908,3 +993,17 @@ MonoBehaviour:
   IndicatorTarget: {fileID: 7634312060422979891}
   sinA: 0.05
   freq: 3
+--- !u!114 &5362821568493349186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8473599197872226979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40dec232557d4be47b67513de4b8b97c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
+  _focusPoint: {fileID: 0}
+  _defaultRange: 2.5

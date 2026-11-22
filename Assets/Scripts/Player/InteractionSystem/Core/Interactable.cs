@@ -18,6 +18,8 @@ namespace Game.Interaction
         private InteractionAction[] _actions;     // theo thứ tự hierarchy => index giống nhau trên mọi peer
         private InteractionAction[] _byPriority; // sự tồn tại của nó để đảm bảo nếu có nhiều action chồng chập trên cùng đối tượng sẽ được quyết định bằng ưu tiên
 
+        [SerializeField] PromtInteractUI _promt;
+        public PromtInteractUI Prompt => _promt;
         public Transform FocusPoint => _focusPoint != null ? _focusPoint : transform;
         public float DefaultRange => _defaultRange;
         public IReadOnlyList<InteractionAction> Actions { get { EnsureCache(); return _actions; } }

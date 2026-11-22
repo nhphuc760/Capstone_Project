@@ -1,8 +1,9 @@
 ﻿using Fusion;
 using Game.Interaction;
+using SilentCastle.MonsterAI;
 using UnityEngine;
 
-public class Door : StructureBase, ITakedamageable, IOwnable
+public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
 {
 
     [HideInInspector]
@@ -19,6 +20,20 @@ public class Door : StructureBase, ITakedamageable, IOwnable
 
     public int MaxSecurity = 10;
     [Networked] public int Security { get; set; } = 1;
+
+    public NetworkId TargetId => Object.Id;
+
+    public TargetKind Kind => TargetKind.Gate;
+
+    public Vector3 Position => OutideOppositeDoor;
+
+    public bool IsAlive => HealthDoor.IsAlive;
+
+    public float Health01 => HealthDoor.HealthPercent;
+
+    public float BodyRadius => 0f;
+
+    public bool IsTargetable => IsAlive && isActiveAndEnabled;
 
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
@@ -38,6 +53,7 @@ public class Door : StructureBase, ITakedamageable, IOwnable
 
     private void Awake()
     {
+
     }
 
 
@@ -49,12 +65,16 @@ public class Door : StructureBase, ITakedamageable, IOwnable
         HealthDoor.Initialize(_structureStats);
         HealthDoor.OnDeath += HealthDoor_OnDeath;
         HasInitialized = false;
+        if (WorldContext.Instance)
+            WorldContext.Instance.Register(this);
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         base.Despawned(runner, hasState);
         HealthDoor.OnDeath -= HealthDoor_OnDeath;
+        if (WorldContext.Instance)
+            WorldContext.Instance.Unregister(this);
     }
 
     private void HealthDoor_OnDeath(NetworkObject obj)
@@ -96,13 +116,17 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     }
 
     public void TakeDamage(float amount, NetworkObject attacker)
-    {
-        HealthDoor?.TakeDamage(amount, attacker);
+    {        
+        HealthDoor?.TakeDamage(amount, attacker);       
     }
 
     public override string GetInfor()
     {
-        return $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth}";
+        string s = "";
+
+        s +=  $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth} \n";
+        s += $"Security: {Security}";
+        return s ;  
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -131,6 +155,11 @@ public class Door : StructureBase, ITakedamageable, IOwnable
     public bool IsOwnedBy(PlayerRef player)
     {
         return player == Object.InputAuthority;
+    }
+
+    public void ReceiveDamage(float amount, MonsterBrain attacker)
+    {
+        HealthDoor.TakeDamage(amount, attacker.Object);
     }
 }
 
