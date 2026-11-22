@@ -24,8 +24,8 @@ public class StructureBreakAction : InteractionAction
         }
 
         FailReason = null;
-        //return structureBase.Object.InputAuthority != ctx.Player;
-        return true;
+        return structureBase.Object.InputAuthority != ctx.Player;
+        //return true;
     }
 
     public override void OnPerform(in InteractionContext ctx)

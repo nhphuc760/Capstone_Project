@@ -432,6 +432,7 @@ MonoBehaviour:
   ServerPort: 0
   DefaultRoomName: 
   InitialScenePath: 
+  GameplayScenePath: 
   _currentStage: 0
   AutoConnectVirtualInstances: 1
   VirtualInstanceConnectDelay: 1
@@ -1613,10 +1614,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkTimeManager
   monster: {fileID: 9167156249108236841}
-  cycleDuration: 180
+  cycleDuration: 360
   dayHour: 6
   nightHour: 18
-  startDayTime: 15
+  startDayTime: 7
   _CurrentTimeOfDay: 0
   _IsDaytime:
     _value: 0
@@ -1647,7 +1648,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef415f36ec8982c4985223ce1096dd99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NavMeshBakeManager
-  bakeOnTypes: 0100000002000000
+  bakeOnTypes: 0100000002000000030000000400000005000000060000000700000008000000
   IncludeLayer:
     serializedVersion: 2
     m_Bits: 1975

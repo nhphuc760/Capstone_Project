@@ -53,6 +53,7 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
 
     private void Awake()
     {
+
     }
 
 
@@ -115,13 +116,17 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
     }
 
     public void TakeDamage(float amount, NetworkObject attacker)
-    {
-        HealthDoor?.TakeDamage(amount, attacker);
+    {        
+        HealthDoor?.TakeDamage(amount, attacker);       
     }
 
     public override string GetInfor()
     {
-        return $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth}";
+        string s = "";
+
+        s +=  $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth} \n";
+        s += $"Security: {Security}";
+        return s ;  
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

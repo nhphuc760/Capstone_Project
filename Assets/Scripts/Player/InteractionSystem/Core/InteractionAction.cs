@@ -45,7 +45,6 @@ namespace Game.Interaction
         [SerializeField] private InteractionCondition[] _conditions;
 
         [SerializeField] private InteractionPresentation _presentation = new InteractionPresentation();
-
         public int Slot => _slot;
         public int Priority => _priority;
         public InteractionMode Mode => _mode;
@@ -57,7 +56,7 @@ namespace Game.Interaction
         public float MoveTolerance => _moveTolerance;
         public InteractionPresentation Presentation => _presentation;
 
-        
+
         public Interactable Owner { get; private set; }
         public byte Index { get; private set; }
 
@@ -109,6 +108,7 @@ namespace Game.Interaction
         public virtual bool OnCanInteract(in InteractionContext ctx, out string FailReason)
         {
             FailReason = null;
+
             return true;
         }
         public virtual float GetHoldDuration(in InteractionContext ctx) => _holdDuration;
@@ -116,13 +116,28 @@ namespace Game.Interaction
         public virtual string GetPrompt(in InteractionContext ctx) => _presentation.Prompt;
 
         public virtual float GetAnimationSpeed(in InteractionContext ctx) => 1f;
+        // ---------- Hook: chỉ máy local của người tương tác (InputAuthority) ----------
+        /// <summary>Action này vừa trở thành action được nhắm tới ở slot của nó. Mặc định: hiện prompt.</summary>
+        public virtual void OnFocusEnter(in InteractionContext ctx) => ShowPrompt(ctx);
+
+        /// <summary>Gọi định kỳ khi vẫn đang focus (prompt có thể đổi chữ, vd Mở/Đóng cửa). Mặc định: cập nhật prompt.</summary>
+        public virtual void OnFocusRefresh(in InteractionContext ctx) => ShowPrompt(ctx);
+
+        /// <summary>Mất target, ra khỏi tầm, điều kiện không đạt, hoặc bắt đầu interact. Mặc định: ẩn prompt.</summary>
+        public virtual void OnFocusExit(in InteractionContext ctx)
+        {
+            if (Owner != null && Owner.Prompt != null) Owner.Prompt.Hide();
+        }
+
+        protected void ShowPrompt(in InteractionContext ctx)
+        {
+            if (Owner != null && Owner.Prompt != null)
+                Owner.Prompt.Show(GetPrompt(ctx), _presentation.Icon);
+        }
         /// <summary>Animation/VFX/SFX/UI. isLocal = máy của người tương tác (dùng để mở UI radar/pháo).</summary>
         public virtual void OnPresentation(InteractionEventType type, in InteractionContext ctx, bool isLocal) { }
 
-        public virtual void OnProgress(in InteractionContext ctx, bool isLocal)
-        {
-
-        }
+        public virtual void OnProgress(in InteractionContext ctx, bool isLocal) { }
 
 
         // ---------- Hook: chỉ StateAuthority ----------

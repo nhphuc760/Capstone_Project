@@ -87,8 +87,6 @@ namespace SilentCastle.MonsterAI
                 _repath = 0.25f;
 
                 Vector3 approach = B.ApproachPoint(t);
-                Debug.Log($"[Chase] TargetPos = {t.Position} | ApproachPoint = {approach} | MonsterPos = {B.Position}");
-
                 B.Mover.MoveTo(approach);
             }
         }
