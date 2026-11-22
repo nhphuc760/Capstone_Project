@@ -93,7 +93,7 @@ public class SpawnTest : NetworkBehaviour
             "ACCEPT FIXED QUEST",
             buttonStyle))
         {
-            RequestAcceptFixedQuestForTest();
+            
         }
 
         y += 38f;
@@ -220,30 +220,6 @@ public class SpawnTest : NetworkBehaviour
         {
             RequestCompleteQuestForTest();
         }
-
-        // Phím N: Tương tác NPC
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            if (SnowmanNPC.instance != null)
-                SnowmanNPC.instance.Interact();
-        }
-    }
-
-    #endregion
-
-    #region ACCEPT FIXED QUEST TEST
-
-    private void RequestAcceptFixedQuestForTest()
-    {
-        if (questSystem == null)
-        {
-            Debug.LogWarning("[QuestTest] QuestSystem is missing!");
-            return;
-        }
-
-        Debug.LogWarning("[QuestTest] Requesting Fixed Quest...");
-
-        questSystem.RequestAcceptFixedQuest();
     }
 
     #endregion
@@ -273,25 +249,6 @@ public class SpawnTest : NetworkBehaviour
 
     private void CompleteQuestForTest()
     {
-        if (!Object.HasStateAuthority)
-            return;
-
-        if (questSystem == null || rewardManager == null)
-        {
-            Debug.LogWarning(
-                "[QuestTest] Missing QuestSystem or RewardManager!"
-            );
-            return;
-        }
-
-        if (questSystem.Status != QuestStatus.InProgress)
-        {
-            Debug.Log("[QuestTest] No active quest to complete.");
-            return;
-        }
-
-        Debug.Log("[QuestTest] Completing quest...");
-
         for (int i = 0; i < questSystem.ObjectiveCount; i++)
         {
             NetworkObjective objective =

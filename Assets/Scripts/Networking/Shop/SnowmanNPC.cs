@@ -17,6 +17,14 @@ public class SnowmanNPC : MonoBehaviour
         instance = this;
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            Interact();
+        }
+    }
+
     void MakesureHasPlayer()
     {
         player = player != null ? player : networkObj.Runner.GetPlayerObject(networkObj.Runner.LocalPlayer).GetBehaviour<NetworkPlayer>();
@@ -32,7 +40,6 @@ public class SnowmanNPC : MonoBehaviour
 
         if (distance <= 5f)
         {
-            
             QuestSystem.RequestAcceptFixedQuest();
         }
         else if (distance > 5f)
