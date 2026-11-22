@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class SnowmanNPC : MonoBehaviour
 {
+    public static SnowmanNPC instance;
+
     [SerializeField] ShopManager Shop;
     [SerializeField] GameObject ShopUI;
     [SerializeField] NetworkObject networkObj;   
@@ -10,21 +12,41 @@ public class SnowmanNPC : MonoBehaviour
     NetworkPlayer player;
     //quick test
 
-    private void Start()
+    void Awake()
     {
-        NetworkQuestSys QuestSystem = player.GetComponent<NetworkQuestSys>();
+        instance = this;
     }
 
     void MakesureHasPlayer()
     {
         player = player != null ? player : networkObj.Runner.GetPlayerObject(networkObj.Runner.LocalPlayer).GetBehaviour<NetworkPlayer>();
+
+        Debug.Log("[Test]Player: " + player);
+
+        QuestSystem = player.GetComponent<NetworkQuestSys>();
+    }
+
+    void PlayerDistanceCheck()
+    {
+        float distance = Vector3.Distance(player.transform.position, transform.position);
+
+        if (distance <= 5f)
+        {
+            
+            QuestSystem.RequestAcceptFixedQuest();
+        }
+        else if (distance > 5f)
+        {
+            Debug.Log("[Test]Player cách snowman: " + distance);
+            return;
+        }
+
     }
 
     public void Interact()
     {
         MakesureHasPlayer();
-
-        QuestSystem.RequestAcceptFixedQuest();
+        PlayerDistanceCheck();
     }
     
 
