@@ -433,19 +433,43 @@ public class EmailLogin : MonoBehaviour
                 {
                     try
                     {
-                        // Kiểm tra xem tài khoản này có đang Online ở máy khác không
-                        var statusSnap = await FirebaseDatabase.DefaultInstance
-                            .GetReference($"Users/{result.User.UserId}/Presence/Status")
-                            .GetValueAsync();
+                        // Bật lại kết nối database nếu phiên trước vừa gọi GoOffline() lúc thoát/Stop Editor
+                        FirebaseDatabase.DefaultInstance.GoOnline();
 
-                        if (statusSnap.Exists && statusSnap.Value != null)
+                        var userRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{result.User.UserId}");
+                        var userSnap = await userRef.GetValueAsync();
+
+                        if (userSnap.Exists && userSnap.HasChild("Presence/Status"))
                         {
-                            int currentStatus = System.Convert.ToInt32(statusSnap.Value);
+                            int currentStatus = System.Convert.ToInt32(userSnap.Child("Presence/Status").Value);
                             if (currentStatus != (int)OnlineStatus.Offline)
                             {
-                                auth.SignOut();
-                                openEmailPasswordNotificationPanel("This account is already logged in on another device.");
-                                return;
+                                long lastActive = userSnap.HasChild("Session/LastActive")
+                                    ? System.Convert.ToInt64(userSnap.Child("Session/LastActive").Value)
+                                    : 0;
+
+                                bool isSessionStillAlive = false;
+                                if (lastActive > 0)
+                                {
+                                    // Lấy giờ server hiện tại để so sánh chuẩn xác, không phụ thuộc đồng hồ máy tính
+                                    var pingRef = userRef.Child("Session/PingCheck");
+                                    await pingRef.SetValueAsync(ServerValue.Timestamp);
+                                    var pingSnap = await pingRef.GetValueAsync();
+
+                                    if (pingSnap.Exists && pingSnap.Value != null)
+                                    {
+                                        long serverNow = System.Convert.ToInt64(pingSnap.Value);
+                                        // Nếu nhịp Heartbeat vẫn cập nhật trong vòng 25 giây gần nhất -> đang chơi thật ở nơi khác
+                                        isSessionStillAlive = (serverNow - lastActive) < 25000;
+                                    }
+                                }
+
+                                if (isSessionStillAlive)
+                                {
+                                    auth.SignOut();
+                                    openEmailPasswordNotificationPanel("This account is already logged in on another device.");
+                                    return;
+                                }
                             }
                         }
                     }

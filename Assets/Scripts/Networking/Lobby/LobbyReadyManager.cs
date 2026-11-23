@@ -400,6 +400,12 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                             .Perform();
                     }
 
+                    if (RoomDatabaseManager.Instance != null)
+                        await RoomDatabaseManager.Instance.LeaveRoom();
+
+                    if (NetworkDataManager.Instance != null)
+                        await NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.Online);
+
                     if (_runner != null)
                     {
                         try

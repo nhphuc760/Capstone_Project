@@ -1,39 +1,45 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
-using System.Linq;
 using Newtonsoft.Json;
-using System;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
+
 public class FriendManager
-{    
-    List<string> friends = new List<string>();
+{
+    private List<string> friends = new List<string>();
+    private readonly Dictionary<string, DatabaseReference> presenceRefs = new Dictionary<string, DatabaseReference>();
+
     public int FriendCount => friends.Count;
     public MakeFriend MakeFriend { get; private set; }
     public event Action<string> OnPresenceChanged;
+
     public async UniTask Initialize(string jsonUserSnapshot)
     {
         await Load(jsonUserSnapshot);
         MakeFriend = new MakeFriend(this);
         await MakeFriend.Initialize(jsonUserSnapshot);
-        Debug.Log("Init friend" + friends.Count);
-    } 
+    }
 
-    public void AddFriend(string userID)
+    public async void AddFriend(string userID)
     {
-        if (!IsFriend(userID))
-        {            
-            friends.Add(userID);                
-            Save();
-            Debug.Log($"Friend {userID} added.");
-            SubPresenceChanged(userID);
-            EventBus<DataEvent.OnFriendAdded>.Raise(new DataEvent.OnFriendAdded { userID = userID});
-        }
-        else
-        {
+        if (string.IsNullOrEmpty(userID) || userID == FirebaseManager.UserID) return;
 
-            Debug.Log($"Friend {userID} is already in the list.");
+        if (!IsFriend(userID))
+        {
+            friends.Add(userID);
+            Save();
+
+            // Đảm bảo luôn có sẵn Presence & Avatar trước khi dựng UI để nút Invite hoạt động ngay
+            if (NetworkDataManager.Instance != null && NetworkDataManager.Instance.GetPresenceUser(userID) == null)
+            {
+                await NetworkDataManager.Instance.LoadPresence(userID);
+            }
+
+            SubPresenceChanged(userID);
+            EventBus<DataEvent.OnFriendAdded>.Raise(new DataEvent.OnFriendAdded { userID = userID });
         }
     }
 
@@ -42,96 +48,138 @@ public class FriendManager
         if (IsFriend(userID))
         {
             friends.Remove(userID);
+            UnsubPresenceChanged(userID);
             Save();
-            Debug.Log($"Friend {userID} removed.");
-            EventBus<DataEvent.OnFriendRemoved>.Raise(new DataEvent.OnFriendRemoved { userID = userID});
-        }
-        else
-        {
-            Debug.Log($"Friend {userID} not found in the list.");
+            EventBus<DataEvent.OnFriendRemoved>.Raise(new DataEvent.OnFriendRemoved { userID = userID });
         }
     }
-    void Save()
+
+    /// <summary>
+    /// Hủy kết bạn 2 chiều trên Firebase
+    /// </summary>
+    public async UniTask UnfriendBidirectionalAsync(string targetUserID)
+    {
+        if (string.IsNullOrEmpty(targetUserID) || !IsFriend(targetUserID)) return;
+
+        RemoveFriend(targetUserID);
+
+        try
+        {
+            var targetFriendsRef = FirebaseManager.RealtimeDB.reference.Child($"Users/{targetUserID}/Friends");
+            var snapshot = await targetFriendsRef.GetValueAsync();
+            if (snapshot.Exists)
+            {
+                var targetList = JsonConvert.DeserializeObject<List<string>>(snapshot.GetRawJsonValue()) ?? new List<string>();
+                if (targetList.Remove(FirebaseManager.UserID))
+                {
+                    await targetFriendsRef.SetRawJsonValueAsync(JsonConvert.SerializeObject(targetList));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[FriendManager] Không thể cập nhật danh sách bạn phía đối phương: {ex.Message}");
+        }
+    }
+
+    private void Save()
     {
         string json = JsonConvert.SerializeObject(friends);
-        Debug.Log("Friend save json: " + json);
         FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Friends").SetRawJsonValueAsync(json);
-        Debug.Log("Friends list saved to Firebase.");
     }
-    async UniTask Load(string jsonUserSnapshot)
+
+    private async UniTask Load(string jsonUserSnapshot)
     {
         JObject obj = JObject.Parse(jsonUserSnapshot);
         string friendJsonSnapshot = obj["Friends"]?.ToString();
-        if (friendJsonSnapshot != null)
+        if (!string.IsNullOrEmpty(friendJsonSnapshot))
         {
+            friends = JsonConvert.DeserializeObject<List<string>>(friendJsonSnapshot) ?? new List<string>();
+            friends.RemoveAll(id => string.IsNullOrEmpty(id) || id == FirebaseManager.UserID);
 
-            friends = JsonConvert.DeserializeObject<List<string>>(friendJsonSnapshot);
-            foreach (var i in friends)
+            foreach (var id in friends)
             {
-                await NetworkDataManager.Instance.LoadPresence(i);
-                SubPresenceChanged(i);
+                await NetworkDataManager.Instance.LoadPresence(id);
+                SubPresenceChanged(id);
             }
-            Debug.Log("Friends list loaded from Firebase." + friends.Count);
+        }
+    }
 
-        }
-        else
-        {
-            Debug.Log("No friends list found in Firebase.");
-        }
-    }
-    public bool IsFriend(string userID)
-    {
-        return friends.Contains(userID);
-    }
+    public bool IsFriend(string userID) => friends.Contains(userID);
 
     public async UniTask<DataSnapshot[]> Search(string name, string tag = null)
     {
-        if (string.IsNullOrEmpty(name))
+        if (string.IsNullOrWhiteSpace(name))
+            return Array.Empty<DataSnapshot>();
+
+        string cleanName = name.Trim();
+        string cleanTag = tag?.Trim().TrimStart('#');
+
+        var dataSnapshot = await FirebaseManager.RealtimeDB.reference
+            .Child("Users")
+            .OrderByChild("Presence/Name")
+            .EqualTo(cleanName)
+            .LimitToFirst(15)
+            .GetValueAsync();
+
+        if (!dataSnapshot.HasChildren)
+            return Array.Empty<DataSnapshot>();
+
+        var candidates = dataSnapshot.Children
+            .Where(x => x.Key != FirebaseManager.UserID && !IsFriend(x.Key));
+
+        if (!string.IsNullOrEmpty(cleanTag))
         {
-            Debug.LogWarning("Search name is null or empty");
-            return null;
+            candidates = candidates.Where(x =>
+                string.Equals(x.Child("Presence/Tag").Value?.ToString(), cleanTag, StringComparison.OrdinalIgnoreCase));
         }
-        var dataSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Users").OrderByChild("Presence/Name").StartAt(name).EndAt(name).LimitToFirst(10).GetValueAsync();
-        if (!dataSnapshot.HasChildren) return null;
-        var list = dataSnapshot.Children;       
-        if (!string.IsNullOrEmpty(tag))
-        {
-            
-            var tmp = list
-                .Where(x => x.Child("Presence/Tag").Value.ToString() == tag 
-                            && x.Key != FirebaseManager.UserID 
-                            && !NetworkDataManager.Instance.friendManager.IsFriend(x.Key))
-                .ToArray();
-            if (tmp.Length > 0)
-            {
-                return tmp;
-            }
-            return list.ToArray();
-        }
-        return list
-            .Where(x => x.Key != FirebaseManager.UserID && !NetworkDataManager.Instance.friendManager.IsFriend(x.Key))
-            .ToArray();
-    }   
-    public List<string> GetFriends() => friends;    
-    
-     void SubPresenceChanged(string userID)
-    {
-        
-        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userID}/Presence");
-        @ref.ValueChanged += OnPresenceChangedHandle;
-       
+
+        return candidates.ToArray();
     }
 
-    async void OnPresenceChangedHandle(object sender, ValueChangedEventArgs args) 
+    public List<string> GetFriends() => friends;
+
+    private void SubPresenceChanged(string userID)
+    {
+        if (presenceRefs.ContainsKey(userID)) return;
+
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{userID}/Presence");
+        @ref.ValueChanged += OnPresenceChangedHandle;
+        presenceRefs[userID] = @ref;
+    }
+
+    private void UnsubPresenceChanged(string userID)
+    {
+        if (presenceRefs.TryGetValue(userID, out var @ref))
+        {
+            @ref.ValueChanged -= OnPresenceChangedHandle;
+            presenceRefs.Remove(userID);
+        }
+    }
+
+    private async void OnPresenceChangedHandle(object sender, ValueChangedEventArgs args)
     {
         if (!args.Snapshot.Exists) return;
+
         string rawJson = args.Snapshot.GetRawJsonValue();
-        string userID = args.Snapshot.Reference.Parent.Key;
-        Debug.Log($"userID Changed: {args.Snapshot.Key} RawJson: {rawJson}");
-        Debug.Log($"{args.Snapshot.Reference.Parent.Key}");
+        string userID = args.Snapshot.Reference.Parent?.Key;
+        if (string.IsNullOrEmpty(userID)) return;
+
         Presence newPresence = JsonConvert.DeserializeObject<Presence>(rawJson);
+        if (newPresence == null) return;
+
         await NetworkDataManager.Instance.UpddatePresenceData(userID, newPresence);
         OnPresenceChanged?.Invoke(userID);
     }
-}
 
+    public void CleanUp()
+    {
+        foreach (var @ref in presenceRefs.Values)
+        {
+            if (@ref != null)
+                @ref.ValueChanged -= OnPresenceChangedHandle;
+        }
+        presenceRefs.Clear();
+        MakeFriend?.CleanUp();
+    }
+}

@@ -4,13 +4,15 @@ using Cysharp.Threading.Tasks;
 using Fusion;
 using UnityEngine;
 
-public class InviteSender // checked
+public class InviteSender 
 {
 
     private string myId;
     private InviteManager manager;
     private Dictionary<string, Invite> pendingInvites = new();
     private Dictionary<string, Action> activeListeners = new();
+    private const string ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     public void Initialize(string myID, InviteManager manager)
     {
         this.manager = manager;
@@ -18,25 +20,29 @@ public class InviteSender // checked
     }
 
     public async void SendInvite(string receiverId)
-    {       
+    {
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         var currentRoom = RoomDatabaseManager.Instance.CurrentRoom;
         if (currentRoom == null)
         {
-            currentRoom = await RoomDatabaseManager.Instance.CreateRoom();
+            //currentRoom = await RoomDatabaseManager.Instance.CreateRoom();
+            string roomCode = GenerateRoomCode(5);
+            currentRoom = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
+            await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomCode}").SetValueAsync(currentRoom.RoomID);
         }
-        else if (currentRoom.Members.Contains(receiverId)) 
+        else if (currentRoom.Members.Contains(receiverId))
         {
             return;
         }
 
         Invite invite = new Invite()
-            {
-                RoomID = currentRoom.RoomID,
-                SenderID = myId,
-                Status = InviteStatus.Pending,
-                CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
-            };
+        {
+            RoomID = currentRoom.RoomID,
+            RoomCode = currentRoom.RoomName,
+            SenderID = myId,
+            Status = InviteStatus.Pending,
+            CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
+        };
         bool isNew = await InviteDatabase.CreateOrUpdateInReceiver(receiverId, invite);
         pendingInvites[receiverId] = invite;
         if (isNew)
@@ -59,15 +65,27 @@ public class InviteSender // checked
                     Debug.Log($"[Sender] Đối phương {receiverId} đã ACCEPT. Tiến hành Start Session...");
                     StopListening(receiverId);
 
-                    // Khởi tạo phòng multiplayer (ví dụ: Photon Fusion)
-                    var result = await NetworkRunnerHandler.Ins.StartSession(invite.RoomID, 2, null);
-                    if (!result.Ok || !NetworkRunnerHandler.Ins._runner.IsInSession)
+                    //// Khởi tạo phòng multiplayer (ví dụ: Photon Fusion)
+                    //var result = await NetworkRunnerHandler.Ins.StartSession(invite.RoomID, 2, null);
+                    //if (!result.Ok || !NetworkRunnerHandler.Ins._runner.IsInSession)
+                    //{
+                    //    await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Error);
+                    //    return;
+                    //}
+
+                    //await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready);
+
+                    var activeRunner = UnityEngine.Object.FindAnyObjectByType<NetworkRunner>();
+                    bool isAlreadyInSession = activeRunner != null && activeRunner.IsRunning;
+                    if (!isAlreadyInSession)
                     {
-                        await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Error);
-                        return;
+                        var modeSelect = UnityEngine.Object.FindAnyObjectByType<ModeSelectCardManager>();
+                        if (modeSelect != null)
+                        {
+                            modeSelect.HostRoomByInvite(invite.RoomCode);
+                        }
                     }
 
-                    await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready);
                     // Dọn dẹp dữ liệu thừa trên Database sau khi kết nối thành công
                     await InviteDatabase.RemoveInvite(receiverId, myId);
                     pendingInvites.Remove(receiverId);
@@ -84,6 +102,14 @@ public class InviteSender // checked
         });
 
         activeListeners[receiverId] = unsubscribe;
+    }
+
+    private string GenerateRoomCode(int length)
+    {
+        char[] chars = new char[length];
+        for (int i = 0; i < length; i++)
+            chars[i] = ROOM_CHARS[UnityEngine.Random.Range(0, ROOM_CHARS.Length)];
+        return new string(chars);
     }
 
     private void StopListening(string receiverId)

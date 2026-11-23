@@ -116,6 +116,13 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
         if (RoomDatabaseManager.Instance != null)
             await RoomDatabaseManager.Instance.LeaveRoom();
 
+        // Đảm bảo trạng thái luôn trả về Online kể cả khi CurrentRoom đã null
+        if (NetworkDataManager.Instance != null)
+            await NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.Online);
+
+        if (activeRunner == null)
+            activeRunner = FindFirstObjectByType<NetworkRunner>();
+
         if (activeRunner != null)
             await activeRunner.Shutdown();
 

@@ -148,4 +148,127 @@ public static class InviteDatabase
 
         return tcs.Task;
     }
+
+    /// <summary>
+    /// Tìm phòng trên Lobbies mà targetUserID đang làm Host hoặc Member.
+    /// </summary>
+    public static async UniTask<Room> FindRoomByUserAsync(string targetUserID)
+    {
+        if (string.IsNullOrEmpty(targetUserID)) return null;
+
+        var lobbiesSnapshot = await FirebaseManager.RealtimeDB.reference.Child("Lobbies").GetValueAsync();
+        if (!lobbiesSnapshot.Exists) return null;
+
+        foreach (var child in lobbiesSnapshot.Children)
+        {
+            string rawJson = child.GetRawJsonValue();
+            if (string.IsNullOrEmpty(rawJson)) continue;
+
+            Room room = JsonConvert.DeserializeObject<Room>(rawJson);
+            if (room == null || room.Status == RoomStatus.Error) continue;
+
+            bool isHost = room.HostID == targetUserID;
+            bool isMember = room.Members != null && room.Members.Contains(targetUserID);
+            if (isHost || isMember)
+            {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Người chơi bên ngoài gửi yêu cầu xin vào phòng tới node JoinRequests của Host.
+    /// </summary>
+    public static async UniTask<bool> CreateOrUpdateJoinRequest(string hostID, Invite request)
+    {
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{hostID}/JoinRequests/{request.SenderID}");
+        var snapshot = await @ref.GetValueAsync();
+        if (!snapshot.Exists)
+        {
+            await @ref.OnDisconnect().RemoveValue();
+        }
+        string json = JsonConvert.SerializeObject(request);
+        await @ref.SetRawJsonValueAsync(json);
+        return !snapshot.Exists;
+    }
+
+    /// <summary>
+    /// Host lắng nghe các yêu cầu xin vào phòng gửi đến mình.
+    /// </summary>
+    public static Action ListenIncomingJoinRequests(Action<string, Invite> callback)
+    {
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/JoinRequests");
+
+        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) =>
+        {
+            if (!args.Snapshot.Exists) return;
+            Invite req = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
+            callback(args.Snapshot.Key, req);
+        };
+
+        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) =>
+        {
+            if (!args.Snapshot.Exists) return;
+            Invite req = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
+            callback(args.Snapshot.Key, req);
+        };
+
+        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) =>
+        {
+            callback(args.Snapshot.Key, null);
+        };
+
+        @ref.ChildAdded += handleChildAdded;
+        @ref.ChildChanged += handleChildChanged;
+        @ref.ChildRemoved += handleChildRemoved;
+
+        return () =>
+        {
+            @ref.ChildAdded -= handleChildAdded;
+            @ref.ChildChanged -= handleChildChanged;
+            @ref.ChildRemoved -= handleChildRemoved;
+        };
+    }
+
+    /// <summary>
+    /// Người xin vào phòng lắng nghe phản hồi Accept / Reject từ Host.
+    /// </summary>
+    public static Action ListenJoinRequestReply(string hostID, string requesterID, Action<InviteStatus> callback)
+    {
+        DatabaseReference statusRef = FirebaseManager.RealtimeDB.reference
+            .Child($"Users/{hostID}/JoinRequests/{requesterID}/Status");
+
+        EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
+        {
+            if (!e.Snapshot.Exists) return;
+            int statusValue = Convert.ToInt32(e.Snapshot.Value);
+            callback((InviteStatus)statusValue);
+        };
+
+        statusRef.ValueChanged += changeHandle;
+
+        return () =>
+        {
+            statusRef.ValueChanged -= changeHandle;
+        };
+    }
+
+    /// <summary>
+    /// Host cập nhật trạng thái Accept / Reject cho yêu cầu xin vào phòng.
+    /// </summary>
+    public static async UniTask UpdateJoinRequestStatus(string requesterID, InviteStatus status)
+    {
+        string path = $"Users/{FirebaseManager.UserID}/JoinRequests/{requesterID}/Status";
+        await FirebaseManager.RealtimeDB.SetValue(path, (int)status);
+    }
+
+    /// <summary>
+    /// Xóa node JoinRequest sau khi xử lý xong.
+    /// </summary>
+    public static async UniTask RemoveJoinRequest(string hostID, string requesterID)
+    {
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{hostID}/JoinRequests/{requesterID}");
+        await @ref.RemoveValueAsync();
+    }
 }
