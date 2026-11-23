@@ -65,17 +65,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: +
+  m_text: Request
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
+  m_sharedMaterial: {fileID: 754288228294411259, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -92,10 +92,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24.75
-  m_fontSizeBase: 24
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -204,8 +204,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: In match
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
+  m_sharedMaterial: {fileID: 754288228294411259, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -455,6 +455,7 @@ GameObject:
   - component: {fileID: 1122134620391716724}
   - component: {fileID: 3629790155627296339}
   - component: {fileID: 6353981156169931348}
+  - component: {fileID: 8368039443474962467}
   m_Layer: 5
   m_Name: requestJoin
   m_TagString: Untagged
@@ -479,8 +480,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -53.4, y: -0.1566}
-  m_SizeDelta: {x: 33.3552, y: 27.687}
+  m_AnchoredPosition: {x: -44.4, y: -0.1566}
+  m_SizeDelta: {x: 75.3509, y: 27.687}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1122134620391716724
 CanvasRenderer:
@@ -503,7 +504,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.11395091, g: 1, b: 0, a: 1}
+  m_Color: {r: 0.11395091, g: 1, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -564,6 +565,26 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8368039443474962467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3599419427014260652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0497b16aa8bccac45b558b7fab03789c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoonlighterButton
+  labelText: {fileID: 1137456614041064508}
+  normalColor: {r: 0.937, g: 0.925, b: 0.902, a: 1}
+  hoverColor: {r: 0.078, g: 0.945, b: 0.584, a: 1}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.85}
+  hoverScale: 1.1
+  pressedScale: 0.96
+  duration: 0.16
+  shadowOffsetY: -0.35
 --- !u!1 &6398675033318396952
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,6 +597,7 @@ GameObject:
   - component: {fileID: 7307700715555572212}
   - component: {fileID: 6181597658297661865}
   - component: {fileID: 2535907957246125602}
+  - component: {fileID: 1150902123154913124}
   m_Layer: 5
   m_Name: Invite
   m_TagString: Untagged
@@ -600,8 +622,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -15.8843, y: -0.1}
-  m_SizeDelta: {x: 31.769, y: 27.5736}
+  m_AnchoredPosition: {x: -41.038, y: -0.1}
+  m_SizeDelta: {x: 82.076, y: 27.5736}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7307700715555572212
 CanvasRenderer:
@@ -624,7 +646,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -685,6 +707,26 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1150902123154913124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6398675033318396952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0497b16aa8bccac45b558b7fab03789c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoonlighterButton
+  labelText: {fileID: 1771929290114957405}
+  normalColor: {r: 0.937, g: 0.925, b: 0.902, a: 1}
+  hoverColor: {r: 0.078, g: 0.945, b: 0.584, a: 1}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.85}
+  hoverScale: 1.1
+  pressedScale: 0.96
+  duration: 0.16
+  shadowOffsetY: -0.35
 --- !u!1 &6865198970952354167
 GameObject:
   m_ObjectHideFlags: 0
@@ -871,8 +913,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Torualone
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
+  m_sharedMaterial: {fileID: 754288228294411259, guid: e3075c540e2d1ca409c6df8640f2a49f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1015,8 +1057,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1033,10 +1075,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24.65
-  m_fontSizeBase: 24
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1

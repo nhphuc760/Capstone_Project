@@ -3721,6 +3721,8 @@ GameObject:
   - component: {fileID: 5550687586956063432}
   - component: {fileID: 4076327860458310933}
   - component: {fileID: 6148496610991257368}
+  - component: {fileID: 1055275231376092100}
+  - component: {fileID: 9121695416440700251}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3834,6 +3836,7 @@ MonoBehaviour:
   - {fileID: 5550687586956063432}
   - {fileID: 4076327860458310933}
   - {fileID: 6148496610991257368}
+  - {fileID: 9121695416440700251}
   - {fileID: 3210318161609772509}
   - {fileID: 6912120905335120596}
   - {fileID: 8893701886593952330}
@@ -4099,6 +4102,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
   _focusPoint: {fileID: 7483691084072435924}
   _defaultRange: 1.5
+  _promt: {fileID: 0}
 --- !u!114 &645725365916528908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4167,6 +4171,35 @@ MonoBehaviour:
   countDownUI: {fileID: 8883510269750823950}
   _IsDead:
     _value: 0
+--- !u!114 &1055275231376092100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77020a117dd25d944a1810c930118ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVisualApplier
+  targetRenderer: {fileID: 7870886116827748439}
+  rootBone: {fileID: 2533260470969312404}
+  database: {fileID: 11400000, guid: 49710c1349eea204f88013659b7057b2, type: 2}
+--- !u!114 &9121695416440700251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d1cf5c900e43334192fd0161aa3ce34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyCharacterSelector
+  visualApplier: {fileID: 1055275231376092100}
+  _SelectedCharacterIndex: 0
 --- !u!1 &2017936969440827881
 GameObject:
   m_ObjectHideFlags: 0
