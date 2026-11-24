@@ -112,7 +112,7 @@ public class StructureUI : MonoBehaviour
     }
     public void DestroyAction()
     {
-        m_Structure.RPC_RequireDestroy();
         Hide();
+        m_Structure.RPC_RequireDestroy();
     }
 }

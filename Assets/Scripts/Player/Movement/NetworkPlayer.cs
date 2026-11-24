@@ -191,6 +191,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         }
     }
 
+    private void Start()
+    {
+        transform.SetAsFirstSibling();
+    }
+
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
@@ -211,7 +216,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
             return;
 
-        //Killed Monster
+        //Test Killed Monster
         if (Input.GetKeyDown(KeyCode.K) && HasInputAuthority)
         {
             FindAnyObjectByType<MonsterBrain>().GetComponent<ITakedamageable>().TakeDamage(50, Object);
@@ -417,10 +422,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
     {
         AddResource(new NetworkResourcePlayer
         {
-            Wood = 100,
-            Stone = 100,
-            GoldOre = 100,
-            Electric = 100,
+            Wood = 1000,
+            Stone = 1000,
+            GoldOre = 1000,
+            Electric = 1000,
         });
     }
 

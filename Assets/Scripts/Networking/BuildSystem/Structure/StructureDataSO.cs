@@ -7,6 +7,7 @@ public enum StructureType
     None,
     Wall,
     Door,
+    Cannon,
     Turret,
     ElectricTower,
     Acceleration,

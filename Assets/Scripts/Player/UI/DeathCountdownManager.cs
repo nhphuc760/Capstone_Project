@@ -16,6 +16,7 @@ public class DeathCountdownManager : NetworkBehaviour
     public event System.Action<bool> OnDeadStateChanged; // true = dead, false = alive
     public event System.Action<float> OnCountdownUpdated; // remaining time
 
+    [SerializeField] Animator animator;
     private NetworkPlayer networkPlayer;
 
     public override void Spawned()
@@ -28,6 +29,8 @@ public class DeathCountdownManager : NetworkBehaviour
         {
             networkPlayer.Health.OnDeath += HandlePlayerDeath;
         }
+
+        animator ??= GetComponentInChildren<Animator>();
     }
     private void Update()
     {
@@ -95,12 +98,8 @@ public class DeathCountdownManager : NetworkBehaviour
 
     private void HandlePlayerDeath(NetworkObject killer)
     {
-        // This is called on all clients when health reaches 0
-        // State authority will handle actual state changes in FixedUpdateNetwork
-        //if (HasInputAuthority)
-        //{
-        //    countDownUI.
-        //}
+        if (HasStateAuthority) networkPlayer.Lock = true;
+        animator.Play("Die");      
     }
 
     private void StartRespawnCountdown()
@@ -140,8 +139,9 @@ public class DeathCountdownManager : NetworkBehaviour
             if(spawnPos != null)
                 GetBehaviour<SimpleKCC>().SetPosition((Vector3)spawnPos + Vector3.one * 0.5f);
         }
-
+        networkPlayer.Lock = false;
         networkPlayer.Health.Respawn();
+        RPC_RespawnAll();
         countDownUI.OnDeathStateChanged(IsDead);
     }
 
@@ -166,4 +166,11 @@ public class DeathCountdownManager : NetworkBehaviour
         if (!IsDead) return 0f;
         return RespawnCountdown.RemainingTime(Runner) ?? 0f;
     }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    void RPC_RespawnAll()
+    {
+        animator.Play("Idle");
+    }
+
 }

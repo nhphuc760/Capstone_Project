@@ -410,13 +410,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
   _presentation:
     Prompt: "C\u1EA1y c\u1EEDa"
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
     BeginState: 
     LoopState: Dismantle
     EndState: 
   ProgressUI: {fileID: 3592443864361486263}
   structureBase: {fileID: 7749394870295635956}
-  icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
   StaminaPerUse: 5
 --- !u!1 &3020079898480025630
 GameObject:
@@ -476,13 +475,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 65adfb641e2da1f43adc2654db5a104e, type: 2}
   _presentation:
     Prompt: "Ph\xE1"
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 4abcdfb7cc036404d99f75ba4434e1f8, type: 3}
     BeginState: 
     LoopState: Dismantle
     EndState: 
   ProgressUI: {fileID: 3592443864361486263}
   structureBase: {fileID: 7749394870295635956}
-  icon: {fileID: 0}
   StaminaPerUse: 10
 --- !u!1 &4075221189564791397
 GameObject:
@@ -816,6 +814,7 @@ Transform:
   - {fileID: 2258094282772238139}
   - {fileID: 4641934289313208894}
   - {fileID: 3195522650895538366}
+  - {fileID: 7178047858005543425}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4469356558914598430
@@ -865,6 +864,7 @@ MonoBehaviour:
   - {fileID: 7714990854647571792}
   - {fileID: 2423236278514722866}
   - {fileID: 4509193796251557147}
+  - {fileID: 6242134096011984737}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &4414434722191012621
 MonoBehaviour:
@@ -1185,12 +1185,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ce4e4f0fb9cb9b94d8603612faf52e48, type: 2}
   _presentation:
     Prompt: "Kh\xF3a b\u1EA3o m\u1EADt"
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: a91e4271be3fe1e4598b0d1f3347afa8, type: 3}
     BeginState: 
     LoopState: 
     EndState: 
   ProgressUI: {fileID: 3592443864361486263}
-  icon: {fileID: 0}
 --- !u!1 &6515579033888805127
 GameObject:
   m_ObjectHideFlags: 0
@@ -1591,6 +1590,71 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &8197223718800437728
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7178047858005543425}
+  - component: {fileID: 6242134096011984737}
+  m_Layer: 0
+  m_Name: DoorAlarmingAction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7178047858005543425
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8197223718800437728}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.38432997, y: 1.43643, z: 0.22425002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7818045939132499394}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6242134096011984737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8197223718800437728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70bbef0fdab1b0148b3cbbb6a3418f1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorAlarmingAction
+  _slot: 0
+  _priority: 6
+  _mode: 1
+  _holdDuration: 3
+  _repeatInterval: 0.6
+  _minHoldTime: 0.1
+  _maxRange: -1
+  _moveSpeedMultiplier: 1
+  _cancelOnMove: 1
+  _moveTolerance: 0.3
+  _conditions:
+  - {fileID: 11400000, guid: a5fd2bbcf091e59498eabd5e56fe3b62, type: 2}
+  - {fileID: 11400000, guid: 29135e6c394f87e47b29a9b462bec3d3, type: 2}
+  _presentation:
+    Prompt: "G\u1EAFn"
+    Icon: {fileID: 21300000, guid: 2bbe877e72d316045ae4b55f7eee722e, type: 3}
+    BeginState: 
+    LoopState: Dismantle
+    EndState: 
+  progressUI: {fileID: 3592443864361486263}
+  alarming: {fileID: 11400000, guid: 79b7974148ed3554883119df9a35a1a8, type: 2}
 --- !u!1 &8963330738773408781
 GameObject:
   m_ObjectHideFlags: 0
@@ -1718,4 +1782,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressUI
   progress: {fileID: 2453981348059055825}
-  Icon: {fileID: 0}
+  Icon: {fileID: 2104433536406000700}

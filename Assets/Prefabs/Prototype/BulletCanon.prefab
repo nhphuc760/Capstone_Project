@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8655246223107781734
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: SortKey
+      value: 1262766961
+      objectReference: {fileID: 0}
+    - target: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[0]'
+      value: 
+      objectReference: {fileID: 4264558283627648307}
+    - target: {fileID: 676646226411578804, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[1]'
+      value: 
+      objectReference: {fileID: 3297111166544528210}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368287901931717931, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4154691573922993125, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_Name
+      value: BulletCanon
+      objectReference: {fileID: 0}
+    - target: {fileID: 8516118609811023778, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.19999999
+      objectReference: {fileID: 0}
+    - target: {fileID: 8516118609811023778, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.19999999
+      objectReference: {fileID: 0}
+    - target: {fileID: 8516118609811023778, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.19999999
+      objectReference: {fileID: 0}
+    - target: {fileID: 8516118609811023778, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 3752810712693512060, guid: b968db06dde62c148908d76051b8658e, type: 3}
+    - {fileID: 207511739529609716, guid: b968db06dde62c148908d76051b8658e, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4154691573922993125, guid: b968db06dde62c148908d76051b8658e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3297111166544528210}
+  m_SourcePrefab: {fileID: 100100000, guid: b968db06dde62c148908d76051b8658e, type: 3}
+--- !u!114 &4264558283627648307 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4842317099415249237, guid: b968db06dde62c148908d76051b8658e, type: 3}
+  m_PrefabInstance: {fileID: 8655246223107781734}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734956030702413699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+--- !u!1 &4734956030702413699 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4154691573922993125, guid: b968db06dde62c148908d76051b8658e, type: 3}
+  m_PrefabInstance: {fileID: 8655246223107781734}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3297111166544528210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734956030702413699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39625a0ed3cbf00449b27f67b8f8e03c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.CannonShell
+  _speed: 14
+  _minFlightTime: 0.6
+  _maxFlightTime: 3
+  _arcHeightPerMeter: 0.35
+  _minArcHeight: 2
+  _maxArcHeight: 10
+  _explosionRadius: 2
+  _hitLayers:
+    serializedVersion: 2
+    m_Bits: 200
+  _impactVfxPrefab: {fileID: 467751860875805754, guid: 7c6d9bb9c8994364dbe5ba2e32dd4d13, type: 3}
+  _impactVfxLifetime: 3
+  _StartPos: {x: 0, y: 0, z: 0}
+  _TargetPos: {x: 0, y: 0, z: 0}
+  _StartTick: 0
+  _FlightTime: 0
+  _ArcHeight: 0

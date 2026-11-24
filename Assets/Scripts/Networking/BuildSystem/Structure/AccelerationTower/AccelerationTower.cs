@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Fusion;
 using UnityEngine;
 
@@ -57,8 +57,7 @@ public class AccelerationTower : StructureBase
 
     public override string GetInfor()
     {
-        return $"IDMod: {idModifier}\n" +
-            $"Speed: {_structureStats.Get(StatsType.Value)}";
+        return $"Hiệu ứng: {_structureStats.Get(StatsType.Value)}";
     }
 
 

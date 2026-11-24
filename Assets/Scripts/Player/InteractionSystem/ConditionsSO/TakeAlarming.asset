@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad92d1efe61b04347aa9bf081670ec89, type: 3}
+  m_Name: TakeAlarming
+  m_EditorClassIdentifier: Assembly-CSharp::TakeItemCondition
+  _failMessage: "C\u1EA7n chu\xF4ng b\xE1o \u0111\u1ED9ng"
+  ItemSO: {fileID: 11400000, guid: 79b7974148ed3554883119df9a35a1a8, type: 2}
+  Invert: 0

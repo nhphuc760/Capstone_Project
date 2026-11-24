@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d0b62bbde02ef14a9b5fcea5861d599, type: 3}
+  m_Name: Cannon_1006
+  m_EditorClassIdentifier: Assembly-CSharp::StructureDataSO
+  icon: {fileID: 1724724460, guid: d271e08c7a003884ea7bdfcb73c1e756, type: 3}
+  _id:
+    _length: 4
+    _data:
+      Data: 3100000030000000300000003600000000000000000000000000000000000000
+  _name: "Ph\xE1o th\u1EA7n c\xF4ng"
+  _description: "G\xE2y s\xE1t th\u01B0\u01A1ng di\u1EC7n r\u1ED9ng"
+  structureType: 3
+  structureCategory: 1
+  buildRequirement:
+  - rid: 2680167812576575576
+  prefabs: {fileID: 5403458721929245978, guid: f6b5536411c6f484a9bebd4c52a59026, type: 3}
+  levels:
+  - rid: 2680167778642559051
+  - rid: 2680167813166923850
+  - rid: 2672765847051698265
+  references:
+    version: 2
+    RefIds:
+    - rid: 2672765847051698265
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 3
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 9
+              Value: 1
+            - Key: 4
+              Value: 12
+            - Key: 1
+              Value: 150
+        upgradeRequirement: []
+    - rid: 2680167778642559051
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 1
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 9
+              Value: 0.2
+            - Key: 1
+              Value: 50
+            - Key: 4
+              Value: 6.5
+        upgradeRequirement:
+        - rid: 2680167812576575566
+    - rid: 2680167812576575566
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 200
+        Stone: 150
+        Gold: 20
+        Electric: 128
+    - rid: 2680167812576575576
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 178
+        Stone: 200
+        Gold: 50
+        Electric: 1024
+    - rid: 2680167813166923850
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 2
+        Stats:
+          stats:
+            _serializedList:
+            - Key: 9
+              Value: 0.5
+            - Key: 4
+              Value: 9
+            - Key: 1
+              Value: 80
+        upgradeRequirement:
+        - rid: 2680167813166923851
+    - rid: 2680167813166923851
+      type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
+      data:
+        iconTMP: {fileID: 11400000, guid: e93403ec32228c7449afcd2f0a8d30b7, type: 2}
+        Wood: 500
+        Stone: 200
+        Gold: 50
+        Electric: 2048

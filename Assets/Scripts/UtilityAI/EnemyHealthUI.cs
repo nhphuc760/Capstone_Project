@@ -23,6 +23,11 @@ public class EnemyHealthUI : MonoBehaviour
         //Util.Core.Utils.DelayCall(1f, () => { AiBrain_OnLevelUp(); }).Forget();
     }
 
+    private void LateUpdate()
+    {
+        transform.forward = Camera.main.transform.forward;
+    }
+
     private void AiBrain_OnLevelUp(int lvl)
     {
         if(Lv)

@@ -141,6 +141,7 @@ namespace Game.Interaction
 
 
         // ---------- Hook: chỉ StateAuthority ----------
+
         public virtual void OnBegin(in InteractionContext ctx) { }
         public virtual void OnServerProgress(in InteractionContext ctx) { }
         public virtual void OnPerform(in InteractionContext ctx) { }

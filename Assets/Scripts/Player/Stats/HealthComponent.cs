@@ -85,6 +85,8 @@ public class HealthComponent : NetworkBehaviour
 
     public void TakeDamage(float amount, NetworkObject attacker = null)
     {
+
+        if (!HasStateAuthority) return;
         if(!IsAlive || amount  <= 0) return;
         float oldHealth = CurrentHealth;
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
@@ -94,11 +96,16 @@ public class HealthComponent : NetworkBehaviour
         OnTakeDamage?.Invoke(attacker);
         if (CurrentHealth <= 0 && oldHealth > 0)
         {
-            OnDeath?.Invoke(attacker);
+            RPC_OnDeath(attacker);
         }
 
     }
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    void RPC_OnDeath(NetworkId attacker)
+    {
+        OnDeath?.Invoke(Runner.FindObject(attacker));
+    }
 
     void RegenerateHealth()
     {

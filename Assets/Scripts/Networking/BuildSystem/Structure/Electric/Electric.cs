@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -53,7 +53,7 @@ public class Electric : StructureBase
 
     public override string GetInfor()
     {
-        return $"Electric: {(int)_structureStats.Get(StatsType.Value)}/{1/_structureStats.Get(StatsType.Speed)}s";
+        return $"Điện năng: {(int)_structureStats.Get(StatsType.Value)}/{1/_structureStats.Get(StatsType.Speed)}s";
     }
 
     public override void UpgradeLogic()

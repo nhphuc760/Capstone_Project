@@ -55,8 +55,8 @@ public class Trap : StructureBase
 
     public override string GetInfor()
     {
-        return $"Percent: {_structureStats.Get(StatsType.Value)}\n" +
-            $"Range: {_structureStats.Get(StatsType.Range)}";
+        return $"Hiệu ứng: {_structureStats.Get(StatsType.Value)}\n" +
+            $"Phạm vi: {_structureStats.Get(StatsType.Range)}";
     }
 
     public override void UpgradeLogic()

@@ -4172,6 +4172,7 @@ MonoBehaviour:
   countDownUI: {fileID: 8883510269750823950}
   _IsDead:
     _value: 0
+  animator: {fileID: 6721125320261425079}
 --- !u!1 &2017936969440827881
 GameObject:
   m_ObjectHideFlags: 0

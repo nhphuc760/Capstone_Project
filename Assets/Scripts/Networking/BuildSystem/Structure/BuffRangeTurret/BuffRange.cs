@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using UnityEngine;
 
 public class BuffRange : StructureBase
@@ -48,8 +48,7 @@ public class BuffRange : StructureBase
 
     public override string GetInfor()
     {
-        return $"IDMod: {idModifier}\n" +
-             $"Range: {_structureStats.Get(StatsType.Value)}";
+        return $"Hiệu ứng: {_structureStats.Get(StatsType.Value)}";
     }
 
     public override void UpgradeLogic()
