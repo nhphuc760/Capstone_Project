@@ -2,6 +2,7 @@
 using Fusion;
 using UnityEngine;
 
+[Serializable]
 public struct Modifier: INetworkStruct
 {
     [Tooltip("Server tạo bằng mã ID unique trong runtime")]

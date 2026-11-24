@@ -2,6 +2,7 @@
 using FischlWorks_FogWar;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
+using SilentCastle.MonsterAI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -48,7 +49,7 @@ public class GatherResult
 }
 
 
-public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
+public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMonsterTarget
 {
     [Flags]
     public enum PlayerState : byte
@@ -56,11 +57,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         None,
         Interacting,
         Shopping,
-
     }
     public static NetworkPlayer Local { get; private set; }
 
     [Networked] public NetworkString<_32> Name { get; private set; } = default;
+    [Networked] public bool Lock { get; set; }
 
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
@@ -100,11 +101,35 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
     Door doorPlayer;
     public Door Door => doorPlayer;
 
+    public NetworkId TargetId => Object.Id;
+
+    public TargetKind Kind => TargetKind.Player;
+
+    public Vector3 Position => transform.position;
+
+    public bool IsAlive => Health.IsAlive;
+
+    public float Health01 => Health.HealthPercent;
+
+    public float BodyRadius => 0.6f;
+
+    public bool IsTargetable => IsAlive;
+
     public override void Spawned()
     {
         if (Runner.LocalPlayer == Object.InputAuthority && Local == null)
         {
             Local = this;
+        }
+        // Chặn toàn bộ HUD, Camera gameplay và trọng lực khi đang ở LobbyScene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+        {
+            if (cameraView != null) cameraView.gameObject.SetActive(false);
+            if (CanvasOverlay != null) CanvasOverlay.SetActive(false);
+            if (CanvasWorldSpace != null) CanvasWorldSpace.SetActive(false);
+            if (controller != null) controller.enabled = false;
+            gameObject.name = Object.InputAuthority.ToString();
+            return;
         }
         if (!Object.HasInputAuthority)
         {
@@ -123,6 +148,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         Health.Initialize(_stats);
         Stamina.Initialize(_stats);
         level = 1;
+        if(WorldContext.Instance != null)
+            WorldContext.Instance.Register(this);
+
         if (HasInputAuthority)
         {
             //Subcribe Inventory Event
@@ -143,6 +171,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
         }
 
+        GameManager.Instance.RegisterCamera(Object.InputAuthority, cameraView);
 
         if (HasStateAuthority)
         {
@@ -169,11 +198,25 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         {
             fogSpawner.UnregisterPlayer();
         }
+        if (WorldContext.Instance != null) WorldContext.Instance.Unregister(this);
+
+        GameManager.Instance.UnregisterCamera(Object.InputAuthority);
+
     }
 
 
     private void Update()
     {
+        // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+            return;
+
+        //Killed Monster
+        if (Input.GetKeyDown(KeyCode.K) && HasInputAuthority)
+        {
+            FindAnyObjectByType<MonsterBrain>().GetComponent<ITakedamageable>().TakeDamage(50, Object);
+        }
+
         if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
         {
 
@@ -200,10 +243,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.transform.root.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
+                if (hit.transform.root.TryGetComponent<StructureBase>(out var structure) && (structure.Object.InputAuthority == Runner.LocalPlayer))
                 {
                     Debug.Log(hit.transform.root.name);
-                    StructureUI.Show(context);
+                    StructureUI.Show(structure);
                 }
                 else
                 {
@@ -223,6 +266,12 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
 
     public override void FixedUpdateNetwork()
     {
+        // Don't process input in the lobby scene
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene") return;
+
+
+        //if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        if (Lock) return;
 
         _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
@@ -245,16 +294,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data;
-            animator.SetBool("IsWalking", inputDirection.sqrMagnitude > 0);
+            previousInput = data;            
             controller.Move(moveDirection);
 
         }
 
-        if (transform.position.y <= -10f)
-        {
-            controller.SetPosition(Vector3.one);
-        }
+        //if (transform.position.y <= -10f)
+        //{
+        //    controller.SetPosition(Vector3.one);
+        //}
     }
 
 
@@ -265,10 +313,18 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         float angularSpeed = 720f;
         if (previousInput.moveDirection.sqrMagnitude > 0)
         {
+            animator.SetBool("IsWalking", true);
             Quaternion targetRotation = Quaternion.LookRotation(previousInput.moveDirection);
             model.localRotation = Quaternion.RotateTowards(model.localRotation, targetRotation , angularSpeed * Time.deltaTime);
         }
-        model.localPosition = Vector3.zero;
+        else
+        {
+            animator.SetBool("IsWalking", false);
+        }
+            model.localPosition = Vector3.zero;
+
+       
+
     }
     private void OnDestroy()
     {
@@ -341,13 +397,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
         if (HasStateAuthority)
         {
             _stats.AddModifier(mod);
+            Debug.Log(JsonUtility.ToJson(mod));
         }
     }
 
     public void RemoveModifier(int _id)
     {
         if (HasStateAuthority)
+        {
+            Debug.Log("Remove by" + _id);
             _stats.RemoveModifierByID(_id);
+        }
     }
 
     //RPC calls
@@ -363,9 +423,14 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable
             Electric = 100,
         });
     }
+
+    public void ReceiveDamage(float amount, MonsterBrain attacker)
+    {
+        Health.TakeDamage(amount, attacker.Object);
+    }
     //IInteractable implementation
     #region Interactions
-   
+
 
     #endregion
 

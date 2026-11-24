@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Fusion;
 using UnityEngine;
 
@@ -25,18 +27,27 @@ public class ResourceRequirement : RequirementDefinition
 
     public override string ToString()
     {
-        string s = string.Empty;
         if(iconTMP == null)
         {
             Debug.LogWarning("iconTMP null");
             iconTMP = Resources.LoadAll<IconTMP>("IconTextMeshPro").First();
         }
 
-        s += Wood > 0 ? $"{iconTMP.WoodCode} {Wood}  " : "";
-        s += Stone > 0 ? $"{iconTMP.StoneCode} {Stone}  " : "";
-        s += Gold > 0 ? $"{iconTMP.GoldCode} {Gold}  " : "";
-        s += Electric > 0 ? $"{iconTMP.ElectricCode} {Electric}" : "";
-        return s;
+        List<string> infos = new List<string>();
+
+        if (Wood > 0) infos.Add($"{iconTMP.WoodCode} {Wood}");
+        if (Stone > 0) infos.Add($"{iconTMP.StoneCode} {Stone}");
+        if (Gold > 0) infos.Add($"{iconTMP.GoldCode} {Gold}");
+        if (Electric > 0) infos.Add($"{iconTMP.ElectricCode} {Electric}");
+
+        List<string> lines = new List<string>();
+
+        for (int i = 0; i < infos.Count; i += 2)
+        {
+            lines.Add(string.Join("  ", infos.Skip(i).Take(2)));
+        }
+
+        return string.Join("\n", lines);
     }
     
 }
@@ -57,13 +68,38 @@ public class ResourceRequirementInstance : IRequirement
 
     public string GetInfor()
     {
-        string info = string.Empty;
+        List<string> infos = new List<string>();
 
-        info += definition.Wood > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Wood)}: " + (definition.Wood.ToString().ToColor(Player.resourcePlayer.Wood > definition.Wood ? Color.green : Color.red)) + "\n") : "";
-        info += definition.Stone > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Stone)}: " + (definition.Stone.ToString().ToColor(Player.resourcePlayer.Stone > definition.Stone ? Color.green : Color.red)) + "\n") : "";
-        info += definition.Gold > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Gold)}: " + (definition.Gold.ToString().ToColor(Player.resourcePlayer.GoldOre > definition.Gold ? Color.green : Color.red))) : "";
-        info += definition.Electric > 0 ? ($"{definition.iconTMP.GetResourceCode(ResourceType.Electric)}: " + (definition.Electric.ToString().ToColor(Player.resourcePlayer.Electric > definition.Electric ? Color.green : Color.red)) + "\n") : "";
-        return info;
+        if (definition.Wood > 0)
+            infos.Add($"{definition.iconTMP.GetResourceCode(ResourceType.Wood)}: " +
+                definition.Wood.ToString().ToColor(Player.resourcePlayer.Wood >= definition.Wood ? Color.green : Color.red));
+
+        if (definition.Stone > 0)
+            infos.Add($"{definition.iconTMP.GetResourceCode(ResourceType.Stone)}: " +
+                definition.Stone.ToString().ToColor(Player.resourcePlayer.Stone >= definition.Stone ? Color.green : Color.red));
+
+        if (definition.Gold > 0)
+            infos.Add($"{definition.iconTMP.GetResourceCode(ResourceType.Gold)}: " +
+                definition.Gold.ToString().ToColor(Player.resourcePlayer.GoldOre >= definition.Gold ? Color.green : Color.red));
+
+        if (definition.Electric > 0)
+            infos.Add($"{definition.iconTMP.GetResourceCode(ResourceType.Electric)}: " +
+                definition.Electric.ToString().ToColor(Player.resourcePlayer.Electric >= definition.Electric ? Color.green : Color.red));
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < infos.Count; i++)
+        {
+            result.Append(infos[i]);
+
+            if (i % 2 == 0 && i + 1 < infos.Count)
+                result.Append("  ");
+
+            else if (i % 2 == 1 && i + 1 < infos.Count)
+                result.AppendLine();
+        }
+
+        return result.ToString();
     }
 
     public CheckMetResult Met()

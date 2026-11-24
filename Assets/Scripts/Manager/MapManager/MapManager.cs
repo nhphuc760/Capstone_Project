@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Fusion;
-using Fusion.Sockets;
+using Oddworm.Framework;
 using Unity.AI.Navigation;
 using UnityEngine;
 
@@ -32,13 +32,6 @@ public class MapManager : NetworkBehaviour
     public ZoneSpawnConfig greenZoneConfig;
     public ZoneSpawnConfig yellowZoneConfig;
     public ZoneSpawnConfig redZoneConfig;
-
-
-    [Header("Spawns Shop")]
-    [SerializeField] LayerMask obstacleMask;
-
-
-
 
 
     [Header("Zone Group Settings")]
@@ -481,12 +474,11 @@ private Vector3? GetRandomValidPositionInZoneGroup(
         // halfExtents += Vector3.one * 0.3f;
 
         Collider[] hits = Physics.OverlapBox(
-            worldPos + objectBounds.center,   // nếu bounds.center không phải (0,0,0)
+            worldPos,   // nếu bounds.center không phải (0,0,0)
             halfExtents,
             Quaternion.identity,
             checkLayers
         );
-
         return hits.Length == 0;
     }
 

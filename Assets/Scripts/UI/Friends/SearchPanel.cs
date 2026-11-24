@@ -9,74 +9,149 @@ public class SearchPanel : MonoBehaviour
     [SerializeField] TMP_InputField Tag;
     [SerializeField] RectTransform content;
     [SerializeField] Button Search;
-    string _name;
-    string _tag;
-    const string RESAULTSEARCH_KEY = "RESULTSEARCHUI";
+    [SerializeField] GameObject emptyResultText;
+
+    private string _lastQueryKey;
+    private bool _isSearching;
+    private const string RESAULTSEARCH_KEY = "RESULTSEARCHUI";
+
     private void Awake()
     {
         Tag.onValidateInput += OnValidateTag;
         Search.onClick.AddListener(OnSearchClick);
+        Name.onSubmit.AddListener(_ => OnSearchClick());
+        Tag.onSubmit.AddListener(_ => OnSearchClick());
     }
 
-    async void OnSearchClick()
+    private async void OnSearchClick()
     {
-        if (Name.text.Trim() == _name && Tag.text.Trim() == _tag)
+        if (_isSearching) return;
+
+        string cleanName = Name.text != null ? Name.text.Trim() : string.Empty;
+        string cleanTag = Tag.text != null ? Tag.text.Trim().TrimStart('#') : string.Empty;
+
+        if (string.IsNullOrEmpty(cleanName))
         {
+            ClearResults();
+            if (emptyResultText != null) emptyResultText.SetActive(false);
             return;
         }
-        _name = Name.text.Trim();
-        _tag = Tag.text.Trim();
-        var snapshot = await NetworkDataManager.Instance.friendManager.Search(_name, _tag);
-        if (snapshot != null)
+
+        string queryKey = $"{cleanName}#{cleanTag}";
+        //if (queryKey == _lastQueryKey) return;
+
+        _isSearching = true;
+        if (Search != null) Search.interactable = false;
+
+        try
         {
-            for (int i = content.childCount - 1; i>= 0; i--)
+            _lastQueryKey = queryKey;
+            var snapshot = await NetworkDataManager.Instance.friendManager.Search(cleanName, cleanTag);
+
+            ClearResults();
+
+            int shownCount = 0;
+            string emptyReason = "No player found.";
+
+            if (snapshot != null && snapshot.Length > 0)
             {
-                GameObject obj = content.GetChild(i).gameObject;
-                if (obj.activeSelf)
+                foreach (var child in snapshot)
                 {
-                    ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, obj);
+                    //if (child.Key == FirebaseManager.UserID || NetworkDataManager.Instance.friendManager.IsFriend(child.Key))
+                    //    continue;
+
+                    if (child.Key == FirebaseManager.UserID)
+                    {
+                        emptyReason = "Cannot add yourself.";
+                        continue;
+                    }
+
+                    if (NetworkDataManager.Instance.friendManager.IsFriend(child.Key))
+                    {
+                        emptyReason = "Already in your friend list.";
+                        continue;
+                    }
+
+                    string rawPresence = child.Child("Presence").GetRawJsonValue();
+                    if (string.IsNullOrEmpty(rawPresence)) continue;
+
+                    Presence presence = JsonConvert.DeserializeObject<Presence>(rawPresence);
+                    if (NetworkDataManager.Instance.GetPresenceUser(child.Key) != null)
+                        await NetworkDataManager.Instance.UpddatePresenceData(child.Key, presence);
+                    else
+                        await NetworkDataManager.Instance.LoadPresence(child.Key, presence);
+
+                    //GameObject element = ObjectPoolManager.Ins.Get(RESAULTSEARCH_KEY, content);
+                    //ResultSearchUI scripts = element.GetComponent<ResultSearchUI>();
+                    //scripts.UpdateUI(child.Key);
+                    //shownCount++;
+
+                    GameObject element = ObjectPoolManager.Ins.Get(RESAULTSEARCH_KEY, content, false);
+                    if (element != null && element.TryGetComponent<ResultSearchUI>(out var scripts))
+                    {
+                        scripts.UpdateUI(child.Key);
+                        shownCount++;
+                    }
                 }
             }
-            foreach (var child in snapshot)
-            {
-                if (NetworkDataManager.Instance.friendManager.IsFriend(child.Key))
-                {
-                    continue;
-                }
 
-                Presence presence = JsonConvert.DeserializeObject<Presence>(child.Child("Presence").GetRawJsonValue());
-                if (NetworkDataManager.Instance.GetPresenceUser(child.Key) != null)
+            Debug.Log($"[SearchPanel] Query '{queryKey}' -> Raw: {snapshot?.Length ?? 0}, Shown: {shownCount}");
+
+            if (emptyResultText != null)
+            {
+                emptyResultText.SetActive(shownCount == 0);
+                if (shownCount == 0)
                 {
-                    await NetworkDataManager.Instance.UpddatePresenceData(child.Key, presence);
+                    var tmp = emptyResultText.GetComponentInChildren<TextMeshProUGUI>(true);
+                    if (tmp != null) tmp.text = emptyReason;
                 }
-                else
-                {
-                    await NetworkDataManager.Instance.LoadPresence(child.Key, presence);
-                }
-                GameObject element = ObjectPoolManager.Ins.Get(RESAULTSEARCH_KEY, content);
-                ResultSearchUI scripts = element.GetComponent<ResultSearchUI>();
-                scripts.UpdateUI(child.Key);
             }
         }
-        else
+        finally
         {
-            Debug.Log("Không tìm thấy người chơi nào");
+            _isSearching = false;
+            if (Search != null) Search.interactable = true;
         }
     }
 
-    char OnValidateTag(string text, int charIndex, char addedChar)
+    private void ClearResults()
     {
+        if (content == null) return;
+
+        for (int i = content.childCount - 1; i >= 0; i--)
+        {
+            GameObject obj = content.GetChild(i).gameObject;
+            //if (obj.activeSelf)
+            //{
+            //    obj.GetComponent<ResultSearchUI>()?.ResetUI();
+            //    ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, obj);
+            //}
+            if (obj.activeSelf && obj.TryGetComponent<ResultSearchUI>(out var resultItem))
+            {
+                resultItem.ResetUI();
+                ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, obj);
+            }
+        }
+    }
+
+    private char OnValidateTag(string text, int charIndex, char addedChar)
+    {
+        if (char.IsWhiteSpace(addedChar) || addedChar == '#') return '\0';
         return char.ToUpperInvariant(addedChar);
     }
+
     private void OnDestroy()
     {
-        Tag.onValidateInput -= OnValidateTag;
-        Search.onClick.RemoveAllListeners();
+        if (Tag != null) Tag.onValidateInput -= OnValidateTag;
+        if (Search != null) Search.onClick.RemoveAllListeners();
+        if (Name != null) Name.onSubmit.RemoveAllListeners();
+        if (Tag != null) Tag.onSubmit.RemoveAllListeners();
     }
 
     private void OnDisable()
     {
-        _name = null;
-        _tag = null;
+        _lastQueryKey = null;
+        ClearResults();
+        if (emptyResultText != null) emptyResultText.SetActive(false);
     }
 }

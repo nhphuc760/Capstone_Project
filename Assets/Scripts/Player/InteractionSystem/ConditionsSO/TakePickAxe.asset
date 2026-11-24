@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad92d1efe61b04347aa9bf081670ec89, type: 3}
   m_Name: TakePickAxe
   m_EditorClassIdentifier: Assembly-CSharp::TakeItemCondition
+  _failMessage: "C\u1EA7n d\xF9ng cu\u1ED1c"
   ItemSO: {fileID: 11400000, guid: c6c740b0fe2d0984c958b2dc023c316f, type: 2}
   Invert: 0

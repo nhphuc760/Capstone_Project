@@ -20,6 +20,7 @@ public class DeathCountdownManager : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (!enabled) return;
         networkPlayer = GetComponent<NetworkPlayer>();
         if (HasInputAuthority)
             countDownUI = GetComponentInChildren<DeathCountdownUI>(includeInactive: true);
@@ -58,6 +59,7 @@ public class DeathCountdownManager : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        if (!enabled) return;
         if (!HasStateAuthority) return;
 
         // Check if player is dead
@@ -84,6 +86,7 @@ public class DeathCountdownManager : NetworkBehaviour
 
     public override void Render()
     {
+        if (!enabled) return;
         // Notify UI of countdown changes on clients with input authority
         if (HasInputAuthority && IsDead)
         {

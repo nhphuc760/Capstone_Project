@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,31 +11,77 @@ public class ResultSearchUI : MonoBehaviour
     [SerializeField] Sprite defaultAvatar;
     [SerializeField] Button Cancel;
     [SerializeField] Image pendingRequestIcon;
-    const string RESAULTSEARCH_KEY = "RESULTSEARCHUI";
-    string userID;
+
+    private string userID;
 
     private void OnEnable()
     {
+        Cancel.onClick.RemoveAllListeners();
+        RequestFriend.onClick.RemoveAllListeners();
         Cancel.onClick.AddListener(OnCancelPendingRequest);
         RequestFriend.onClick.AddListener(OnRequestFriendClick);
+
+        if (NetworkDataManager.Instance?.friendManager?.MakeFriend != null)
+            NetworkDataManager.Instance.friendManager.MakeFriend.onPendingChanged += OnPendingChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (NetworkDataManager.Instance?.friendManager?.MakeFriend != null)
+            NetworkDataManager.Instance.friendManager.MakeFriend.onPendingChanged -= OnPendingChanged;
+
+        ResetUI();
+    }
+
+    private void OnPendingChanged(string changedUserId)
+    {
+        if (changedUserId == userID)
+            RefreshActionButtons();
     }
 
     public void UpdateUI(string userID)
     {
         if (string.IsNullOrEmpty(userID)) return;
         this.userID = userID;
+
         Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
-        Debug.Log(JsonConvert.SerializeObject(presence));
         Sprite avatar = NetworkDataManager.Instance.GetAvatarUser(userID);
-        Avatar.sprite = avatar;
-        NameTag.text = $"{presence.Name} #{presence.Tag}";
-        status.text = GetStatusText(presence.Status);        
-        //nếu người này đã được gửi lời mời trước đó
-        ShowRequestButtonOrNot(!NetworkDataManager.Instance.friendManager.MakeFriend.HasPending(userID));
+
+        Avatar.sprite = avatar != null ? avatar : defaultAvatar;
+
+        if (presence != null)
+        {
+            NameTag.text = $"{presence.Name} <color=#9AA6B2>#{presence.Tag}</color>";
+            status.text = GetStatusText(presence.Status);
+        }
+        else
+        {
+            NameTag.text = "Unknown";
+            status.text = "Offline".ToColor(Color.gray);
+        }
+
+        RefreshActionButtons();
+    }
+
+    private void RefreshActionButtons()
+    {
+        if (string.IsNullOrEmpty(userID)) return;
+
+        var makeFriend = NetworkDataManager.Instance.friendManager.MakeFriend;
+        if (NetworkDataManager.Instance.friendManager.IsFriend(userID))
+        {
+            RequestFriend.gameObject.SetActive(false);
+            Cancel.gameObject.SetActive(false);
+            if (pendingRequestIcon != null) pendingRequestIcon.gameObject.SetActive(false);
+            return;
+        }
+
+        ShowRequestButtonOrNot(!makeFriend.HasPending(userID));
     }
 
     public void ResetUI()
     {
+        userID = null;
         NameTag.text = string.Empty;
         status.text = string.Empty;
         Avatar.sprite = defaultAvatar;
@@ -44,57 +89,37 @@ public class ResultSearchUI : MonoBehaviour
         Cancel.onClick.RemoveAllListeners();
     }
 
-    void OnCancelPendingRequest()
+    private void OnCancelPendingRequest()
     {
+        if (string.IsNullOrEmpty(userID)) return;
         NetworkDataManager.Instance.friendManager.MakeFriend.CancelFriendRequest(userID);
         ShowRequestButtonOrNot(true);
     }
 
-    void OnRequestFriendClick()
+    private void OnRequestFriendClick()
     {
+        if (string.IsNullOrEmpty(userID)) return;
         NetworkDataManager.Instance.friendManager.MakeFriend.SendFriendRequest(userID);
-        ShowRequestButtonOrNot(false); 
+        RefreshActionButtons();
     }
 
-    void ShowRequestButtonOrNot(bool value)
+    private void ShowRequestButtonOrNot(bool showAddButton)
     {
-        if (value)
-        {
-            RequestFriend.gameObject.SetActive(true);
-            Cancel.gameObject.SetActive(false);
-            pendingRequestIcon.gameObject.SetActive(false);
-        }
-        else
-        {
-            RequestFriend.gameObject.SetActive(false);
-            Cancel.gameObject.SetActive(true);
-            pendingRequestIcon.gameObject.SetActive(true);
-        }
+        RequestFriend.gameObject.SetActive(showAddButton);
+        Cancel.gameObject.SetActive(!showAddButton);
+        if (pendingRequestIcon != null)
+            pendingRequestIcon.gameObject.SetActive(!showAddButton);
     }
 
-    private void OnDisable()
+    private string GetStatusText(OnlineStatus onlineStatus)
     {
-        ResetUI();
-        if (gameObject.activeSelf)
+        return onlineStatus switch
         {
-            ObjectPoolManager.Ins.Release(RESAULTSEARCH_KEY, gameObject);
-        }
-    }
-
-    string GetStatusText(OnlineStatus status)
-    {
-        switch (status)
-        {
-            case OnlineStatus.Online:
-                return status.ToString().ToColor(Color.green);
-            case OnlineStatus.Offline:
-                return status.ToString().ToColor(Color.gray);
-            case OnlineStatus.InParty:
-                return status.ToString().ToColor(Color.white);
-            case OnlineStatus.InMatch:
-                return status.ToString().ToColor(Color.blue);
-            default:
-                return status.ToString();
-        }
+            OnlineStatus.Online => onlineStatus.ToString().ToColor(Color.green),
+            OnlineStatus.Offline => onlineStatus.ToString().ToColor(Color.gray),
+            OnlineStatus.InParty => "In Lobby".ToColor(Color.yellow),
+            OnlineStatus.InMatch => onlineStatus.ToString().ToColor(Color.cyan),
+            _ => onlineStatus.ToString()
+        };
     }
 }

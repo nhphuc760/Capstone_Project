@@ -55,7 +55,11 @@ public class ObjectPoolManager : MonoBehaviour
 
                 actionOnRelease: (obj) =>
                 {
-                    obj.SetActive(false);
+                    if (obj != null)
+                    {
+                        obj.SetActive(false);
+                        obj.transform.SetParent(transform, false);
+                    }
                 },
 
                 actionOnDestroy: (obj) =>

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Fusion;
 using Unity.AI.Navigation;
 using UnityEngine;
-using UnityEngine.AI;
 
 /// <summary>
 /// Single-surface runtime NavMesh baker.
@@ -81,14 +80,7 @@ public class NavMeshBakeManager : MonoBehaviour
 
         if (Ins == this)
             Ins = null;
-    }
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            EnemyObjectTest.SetActive(true);
-        }
-    }
+    }  
 
     void LateUpdate()
     {

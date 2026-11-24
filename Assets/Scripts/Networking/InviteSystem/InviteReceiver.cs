@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 public class InviteReceiver
 {
@@ -59,10 +60,11 @@ public class InviteReceiver
             }
             else
             {
-                CountDownTimer countDown = new CountDownTimer(10);
+                CountDownTimer countDown = new CountDownTimer(30);
                 countDown.Start().OnExpired(() =>
                 {
                     Debug.Log($"[Receiver] Lời mời từ {senderID} đã hết hạn.");
+                    InviteDatabase.RemoveInvite(myId, senderID).Forget();
                     RemoveInvite(senderID);
                 });
                 countDowns[senderID] = countDown;

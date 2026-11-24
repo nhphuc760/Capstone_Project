@@ -26,15 +26,19 @@ public class ShopManager : NetworkBehaviour
         Debug.Log(playerInSide.ToString());
         onBuyToken = new EventBinding<ReliableReceiveData>(OnReliableReceiveData);
         EventBus<ReliableReceiveData>.Register(onBuyToken);
+        NetworkTimeManager.OnDayStart += OnDayStart;
+        NetworkTimeManager.OnNightStart += OnNightStart;
     }
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         EventBus<ReliableReceiveData>.Deregister(onBuyToken);
+        NetworkTimeManager.OnDayStart -= OnDayStart;
+        NetworkTimeManager.OnNightStart -= OnNightStart;
     }
     private void OnTriggerEnter(Collider other)
     {
         if (!HasStateAuthority) return;
-        Debug.Log("Collider with " + other.transform.root.name);
+        //Debug.Log("Collider with " + other.transform.root.name);
         if (other.transform.root.TryGetComponent<NetworkPlayer>(out var player))
         {
             if (playerInSide.Contains(player.Object.InputAuthority)) return;
@@ -78,7 +82,7 @@ public class ShopManager : NetworkBehaviour
 
     void OnPlayerInsidedChanged()
     {
-        Debug.Log(playerInSide.ToString());
+        //Debug.Log(playerInSide.ToString());
     }
 
     void TriggerDamage(NetworkObject attacker)
@@ -95,17 +99,31 @@ public class ShopManager : NetworkBehaviour
 
     void OnDayStart()
     {
+        if (!HasStateAuthority) return;
         bannedLists.Clear();
         AddPlayerInsided();
+        RPC_SetActiveShop(true);
+
     }
 
     
     void OnNightStart()
     {
+        if (HasStateAuthority) return;
         RemovePlayerStillInside();
         playerInSide.Clear();
+        RPC_SetActiveShop(false);
         //Add item trading
     }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+
+    void RPC_SetActiveShop(bool active)
+    {
+        gameObject.SetActive(active);
+    }
+
+
 
 
 

@@ -9,6 +9,21 @@ public class DoorBreakAction : StructureBreakAction
         return HoldDuration + Door.Security;
     }
 
+    public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
+    {
+        if (!base.OnCanInteract(ctx, out FailReason))
+        {
+            return false;
+        }
+
+        if (Door.IsOpen)
+        {
+            FailReason = null;
+            return false;
+        }   
+        return true;
+    }
+
     public override void OnPerform(in InteractionContext ctx)
     {
         Door.RPC_RequestTriggerDoor(true);

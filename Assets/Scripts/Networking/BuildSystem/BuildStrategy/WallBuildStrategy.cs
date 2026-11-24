@@ -115,12 +115,6 @@ public class WallBuildStrategy : IBuildStategy
             if (doorObj != null)
             {
                 doorObj.RPC_SetActiveNetworked(true);
-                doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
-
-                // ... rest of swapping logic ...
-
-                Vector3 posOutSide = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);
-                doorObj.SetOutSideOppositeDoor(posOutSide);
             }
             doorObj.GetBehaviour<NetworkTransform>().Teleport(doorPos + new Vector3(.5f, 0f, .5f));
             if (doorPos != cell)
@@ -137,8 +131,21 @@ public class WallBuildStrategy : IBuildStategy
                 structureManager.SetStructure(cell, doorObj);
             }
             structureManager.SetEnclosedZone(playerRef, enclosedList);
-            Vector3 doorOppositeOutside = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, walls.Keys.ToHashSet(), enclosedList) + new Vector3(0.5f, 0, 0.5f);
+
+            // Tính OutsideOpposite SAU khi door đã ở vị trí cuối cùng (sau swap nếu có).
+            // finalWalls phải phản ánh topology thật: door không còn là wall, cell (nếu swap) là wall.
+            var finalWalls = new HashSet<Vector3Int>(wallSet);
+            if (doorPos != cell)
+            {
+                finalWalls.Remove(doorPos); // doorPos giờ là door, không còn wall
+                finalWalls.Add(cell);       // wall cũ được chuyển sang cell
+            }
+            // else: door nằm đúng tại cell mới → cell không thuộc wall set (đúng vì wallSet chưa có cell)
+
+            Vector3Int outsideCell = EnclosedChecker.GetOutsideCellOppositeDoor(doorPos, finalWalls, enclosedList);
+            Vector3 doorOppositeOutside = outsideCell + new Vector3(0.5f, 0f, 0.5f);
             doorObj.SetOutSideOppositeDoor(doorOppositeOutside);
+
             EventBus<BuildStategyEvent>.Raise(new BuildStategyEvent
             {
                 PlayerRef = playerRef,
@@ -166,8 +173,10 @@ public class WallBuildStrategy : IBuildStategy
         }
         MakeSureBuildSystemValid(runner, playerRef);
         int idWall = 6;
-        runner.GetPlayerObject(playerRef).GetBehaviour<NetworkInventory>().RemoveItem(idWall, 1);
+        var removeResult = runner.GetPlayerObject(playerRef).GetBehaviour<NetworkInventory>().RemoveItem(idWall, 1);
+        Debug.Log("BuildWall Result = " + removeResult);
     }
+
 
     void MakeSureBuildSystemValid(NetworkRunner runner, PlayerRef playerRef)
     {
@@ -237,7 +246,7 @@ public class WallBuildStrategy : IBuildStategy
                     return new BuildValidationResult
                     {
                         Reason = BuildFailReason.OtherDoorInSafeZone,
-                        Message = "Đã có người chơi xây thành trong khu an toàn, Hãy chọn nơi khác"
+                        Message = "Đã có người chơi xây thành trong khu vực, Hãy chọn nơi khác"
                     };
                 }
             }

@@ -1,9 +1,10 @@
 ﻿using System;
 using Fusion;
+using SilentCastle.MonsterAI;
 using UnityEngine;
 using UtilityAI.Core;
 
-public class NetworkTimeManager : NetworkBehaviour
+public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
 {
     [SerializeField] NetworkObject monster;
     public static event System.Action OnDayStart;
@@ -12,20 +13,27 @@ public class NetworkTimeManager : NetworkBehaviour
     public float cycleDuration = 360f; // Duration of a full day-night cycle in seconds
     public float dayHour = 6f; //bắt đầu sáng vào lúc 6h
     public float nightHour = 18f; //bắt đầu tối vào lúc 18h
+    public float startDayTime = 12;
     [Networked] public float CurrentTimeOfDay { get; private set; } // Current time in seconds
     [Networked] public NetworkBool IsDaytime { get; private set; } // True if it's daytime, false if it's nighttime
+
+    public bool IsNight => !IsDaytime;
+
+    public float SecondsUntilDawn => IsNight ?  TimeRemainingToDayTime() : 0;
 
     public override void Spawned()
     {
         if (HasStateAuthority) // Chỉ Server mới khởi tạo thời gian
         {
-            CurrentTimeOfDay = 12f; // Bắt đầu game vào lúc 12h trưa
+            CurrentTimeOfDay = startDayTime; // Bắt đầu game vào lúc 12h trưa
             IsDaytime = true;
         }
     }
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
+        if (GameManager.Instance.CurrentState != GameState.Playing) return;
+
         CurrentTimeOfDay += (Runner.DeltaTime / cycleDuration) * 24f;
         CurrentTimeOfDay %= 24f;
         CheckDayNightEvents();
@@ -48,6 +56,26 @@ public class NetworkTimeManager : NetworkBehaviour
         }
     }
 
+    public float TimeRemainingToDayTime()
+    {
+        float hoursRemaining;
+
+        if (CurrentTimeOfDay < dayHour)
+        {
+            // Ví dụ: 3h sáng -> còn 3 giờ tới 6h
+            hoursRemaining = dayHour - CurrentTimeOfDay;
+        }
+        else
+        {
+            // Ví dụ:
+            // 20h -> còn 10 giờ tới 6h hôm sau
+            // 12h -> còn 18 giờ tới 6h hôm sau
+            hoursRemaining = (24f - CurrentTimeOfDay) + dayHour;
+        }
+
+        // Quy đổi giờ game -> giây thực
+        return (hoursRemaining / 24f) * cycleDuration;
+    }
 
     void HandleNight()
     {
@@ -64,7 +92,6 @@ public class NetworkTimeManager : NetworkBehaviour
     {
         if (HasStateAuthority)
         {
-            monster.GetBehaviour<AIController>().RPC_ResetState();
             RPC_VisibleMonster(false);
         }
     }

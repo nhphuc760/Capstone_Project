@@ -9,27 +9,36 @@ public class FriendRequestUI : MonoBehaviour
     [SerializeField] Button Accept;
     [SerializeField] Button Deny;
     [SerializeField] Sprite defaultAvatar;
-    string userID;    
+
+    private string userID;
+
     public void UpdateUI(string userID)
     {
         this.userID = userID;
         Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
         Sprite avt = NetworkDataManager.Instance.GetAvatarUser(userID);
-        NameTag.text = $"{presence.Name} #{presence.Tag}";
-        Avatar.sprite = avt;
+
+        NameTag.text = presence != null ? $"{presence.Name} <color=#D8C89E>#{presence.Tag}</color>" : "Đang tải...";
+        Avatar.sprite = avt != null ? avt : defaultAvatar;
+
+        Accept.interactable = true;
+        Deny.interactable = true;
         Accept.onClick.AddListener(OnAcceptClick);
         Deny.onClick.AddListener(OnDenyClick);
     }
-    void OnAcceptClick()
+
+    private void OnAcceptClick()
     {
+        Accept.interactable = false;
+        Deny.interactable = false;
         NetworkDataManager.Instance.friendManager.MakeFriend.AcceptFriendRequest(userID);
-        Destroy(gameObject);
     }
-    void OnDenyClick()
+
+    private void OnDenyClick()
     {
+        Accept.interactable = false;
+        Deny.interactable = false;
         NetworkDataManager.Instance.friendManager.MakeFriend.DeclineFriendRequest(userID);
-        Destroy(gameObject);
-        
     }
 
     public void ResetUI()
@@ -38,9 +47,5 @@ public class FriendRequestUI : MonoBehaviour
         NameTag.text = string.Empty;
         Accept.onClick.RemoveAllListeners();
         Deny.onClick.RemoveAllListeners();
-    }   
-    private void OnDestroy()
-    {
-        
     }
 }

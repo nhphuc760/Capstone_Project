@@ -138,9 +138,7 @@ namespace UtilityAI.Core
         {
 
             UpdateRecoverZone();
-            var redZone = MapManager.Ins?.ZoneGroupsByType[ZoneType.Red];
-            NavMeshSurface surface = NavMeshBakeManager.Ins?.Surface;
-            if (surface == null) return null;
+            var redZone = MapManager.Ins?.ZoneGroupsByType[ZoneType.Red];            
             (float, Vector3) tupple = new (float.MaxValue, -Vector3.one);
             foreach (var i in redZone)
             {

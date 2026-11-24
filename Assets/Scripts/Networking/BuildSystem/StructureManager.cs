@@ -83,7 +83,8 @@ public class StructureManager : NetworkBehaviour
             }
             IBuildStategy wallBuildStrategy = new WallBuildStrategy(
            this,
-           (int)MapManager.Ins.mapWidth, (int)MapManager.Ins.mapHeight,
+           (int)MapManager.Ins.mapWidth, 
+           (int)MapManager.Ins.mapHeight,
            structureDataSO
             );
             buildStategies[playerRef].Add(wallBuildStrategy);
@@ -367,6 +368,26 @@ public class StructureManager : NetworkBehaviour
         {
             return HashCode.Combine(playerRef, structureCategory, structureType);
         }
+    }
+
+
+    public bool IsInsideEnclosedZone(PlayerRef player, Vector3 worldPos, bool hasOwner = true)
+    {
+        // Chuyển world position → cell (giống cách BuildSystem đang dùng)
+        Vector3Int cell = new Vector3Int(
+            Mathf.FloorToInt(worldPos.x),
+            0,
+            Mathf.FloorToInt(worldPos.z)
+        );
+
+        int key = cell.ToKey();
+
+        // Nếu cell không nằm trong bất kỳ vùng enclosed nào → false
+        if (!enclosedZone.TryGet(key, out PlayerRef owner))
+            return false;
+
+        // Chỉ trả true nếu vùng enclosed đó thuộc về player này
+        return hasOwner ? owner == player : true;
     }
 
 }

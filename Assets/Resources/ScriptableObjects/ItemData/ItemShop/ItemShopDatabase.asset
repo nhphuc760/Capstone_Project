@@ -55,3 +55,9 @@ MonoBehaviour:
       Stone: 20
       GoldOre: 30
       Electric: 40
+  - itemSO: {fileID: 11400000, guid: b834265ebc779be4186de3dcfbb1fade, type: 2}
+    price:
+      Wood: 10
+      Stone: 10
+      GoldOre: 10
+      Electric: 10

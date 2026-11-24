@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Game.Interaction;
 using UnityEngine;
 
@@ -14,13 +14,18 @@ public class StructureBreakAction : InteractionAction
         structureBase = GetComponentInParent<StructureBase>();
     }
 
-    public override bool OnCanInteract(in InteractionContext ctx)
+
+    public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
     {
-
-        if (ctx.Get<StaminaComponent>().CurrentStamina <= StaminaPerUse + structureBase.Level)
+        if (ctx.Get<StaminaComponent>().CurrentStamina < StaminaPerUse + structureBase.Level)
+        {
+            FailReason = "Không đủ thể lực";
             return false;
+        }
 
+        FailReason = null;
         return structureBase.Object.InputAuthority != ctx.Player;
+        //return true;
     }
 
     public override void OnPerform(in InteractionContext ctx)
@@ -36,6 +41,12 @@ public class StructureBreakAction : InteractionAction
     public override float GetHoldDuration(in InteractionContext ctx)
     {
         return HoldDuration + structureBase.Level;
+    }
+
+    public override void OnProgress(in InteractionContext ctx, bool isLocal)
+    {
+        if (ProgressUI != null)
+            ProgressUI.UpdateProgress(ctx.Progress01);
     }
 
     public override void OnPresentation(InteractionEventType type, in InteractionContext ctx, bool isLocal)

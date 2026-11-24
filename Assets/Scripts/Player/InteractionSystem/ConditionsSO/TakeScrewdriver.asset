@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad92d1efe61b04347aa9bf081670ec89, type: 3}
   m_Name: TakeScrewdriver
   m_EditorClassIdentifier: Assembly-CSharp::TakeItemCondition
+  _failMessage: "C\u1EA7n Tua v\xEDt v\u1EA1n n\u0103ng"
   ItemSO: {fileID: 11400000, guid: fc9d2bcf2f0abec459f137e51397e183, type: 2}
   Invert: 0

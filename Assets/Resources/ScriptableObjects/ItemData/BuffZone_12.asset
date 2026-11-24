@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46b207ec5bd0fe54cb362d9644b15b4e, type: 3}
+  m_Name: BuffZone_12
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSO
+  itemId: 12
+  itemName: "\u0110\u1ECBa s\xE1t tr\u1EADn"
+  description: "T\u1EA1o ra m\u1ED9t v\xF9ng t\u0103ng s\u1EE9c m\u1EA1nh cho b\u1EA3n
+    th\xE2n, \u0111\u1ED3ng th\u1EDDi \xE1p ch\u1EBF s\u1EE9c m\u1EA1nh ng\u01B0\u1EDDi
+    kh\xE1c"
+  itemType: 0
+  icon: {fileID: 443164140, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
+  objectPrefab: {fileID: 7373037473547555952, guid: 36cdb4f520ded524e95867c53964f285, type: 3}
+  stackable: 1
+  maxStack: 1
+  Components:
+  - rid: 2672765964527075412
+  references:
+    version: 2
+    RefIds:
+    - rid: 2672765964527075412
+      type: {class: ConsumableComponent, ns: , asm: Assembly-CSharp}
+      data:
+        ConsumePerUse: 1
+        Effects:
+        - rid: 2672765964527075420
+    - rid: 2672765964527075420
+      type: {class: BuffZoneEffect, ns: , asm: Assembly-CSharp}
+      data: 
