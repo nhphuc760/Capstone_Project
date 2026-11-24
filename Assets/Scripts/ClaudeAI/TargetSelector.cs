@@ -3,22 +3,31 @@ using UnityEngine;
 
 namespace SilentCastle.MonsterAI
 {
-
     public static class TargetSelector
     {
+        // Mức ưu tiên (số nhỏ = ưu tiên cao)
+        public const int TierExposedPlayer = 0;  // player lộ diện ngoài thành
+        public const int TierGate = 1;           // cửa thành
+        public const int TierFallback = 2;       // cửa vỡ hết -> player trong thành
+
         static readonly List<IMonsterTarget> _buf = new List<IMonsterTarget>(32);
 
-        /// <param name="force">true = bỏ qua commit/hysteresis (dùng khi chưa có mục tiêu).</param>
+        /// <param name="force">true = bỏ qua commit/hysteresis (dùng khi chưa có mục tiêu hoặc khẩn cấp).
+        /// Nếu xuất hiện mục tiêu ở tier ưu tiên cao hơn mục tiêu hiện tại thì tự động force.</param>
         public static IMonsterTarget Select(MonsterBrain m, bool force)
         {
             var w = m.World;
             var p = m.Profile;
             var cur = m.CurrentTarget;
 
-            BuildCandidates(m, w, p);
+            BuildCandidates(m, w, p, out int tier);
             if (_buf.Count == 0) return null;
 
             bool curValid = cur != null && cur.IsTargetable && _buf.Contains(cur);
+
+            // Có mục tiêu ở tier tốt hơn (vd đang đánh cửa mà player lộ diện) -> đổi ngay, không hysteresis
+            if (curValid && TierOf(w, cur) > tier) force = true;
+
             if (curValid && !force && m.TimeOnTarget < p.minCommitSeconds) return cur;
 
             IMonsterTarget best = null;
@@ -36,62 +45,62 @@ namespace SilentCastle.MonsterAI
             return best;
         }
 
-        // Luật: có player ở ngoài thành -> đánh player. Không có -> đánh cửa.
-        // Cửa đã vỡ hết -> đánh player trong thành.
-        static void BuildCandidates(MonsterBrain m, WorldContext w, TargetingProfile p)
+        /// <summary>Kiểm tra rẻ: hiện có ứng viên ở tier ưu tiên cao hơn mục tiêu đang nhắm không?</summary>
+        public static bool HasBetterTier(MonsterBrain m)
+        {
+            var cur = m.CurrentTarget;
+            if (cur == null) return false;
+            BuildCandidates(m, m.World, m.Profile, out int tier);
+            return _buf.Count > 0 && TierOf(m.World, cur) > tier;
+        }
+
+        /// <summary>Mục tiêu có còn "đúng luật" không (cửa, hoặc player đang lộ diện)? Dùng cho khoá chống lật.</summary>
+        public static bool IsLegit(WorldContext w, IMonsterTarget t) =>
+            t != null && t.IsTargetable && TierOf(w, t) != TierFallback;
+
+        static int TierOf(WorldContext w, IMonsterTarget t)
+        {
+            if (t.Kind == TargetKind.Gate) return TierGate;
+            return w.IsExposed(t.TargetId) ? TierExposedPlayer : TierFallback;
+        }
+
+        // Luật: có player lộ diện ngoài thành (và chưa quá số quái đuổi) -> đánh player.
+        // Không có -> đánh cửa. Cửa vỡ hết -> đánh player trong thành.
+        static void BuildCandidates(MonsterBrain m, WorldContext w, TargetingProfile p, out int tier)
         {
             _buf.Clear();
-            Vector3 pos = m.Position;            
+            Vector3 pos = m.Position;
+            var cur = m.CurrentTarget;
 
             var players = w.Players;
-            Debug.Log($"[TargetSelector] Players count = {players.Count}, Gates count = {w.Gates.Count}");
-
             for (int i = 0; i < players.Count; i++)
             {
                 var t = players[i];
-                if (!t.IsTargetable)
-                {
-                    Debug.Log($"  Player {t.TargetId} chết");
-                    continue;
-                }
+                if (!t.IsTargetable) continue;
+                if (!w.IsExposed(t.TargetId)) continue;
 
-                var netObj = m.Runner.FindObject(t.TargetId);
-                if (netObj == null)
-                {
-                    Debug.LogWarning($"  Không tìm thấy NetworkObject của {t.TargetId}");
-                    continue;
-                }
-
-                bool inside = w.IsInsideCastle(netObj.InputAuthority, t.Position);
                 float dist = (t.Position - pos).magnitude;
-
-                Debug.Log($"  Player {t.TargetId}: Inside={inside}, Dist={dist:F1}, Aggro={p.aggroRadiusOutside}");
-
-                if (inside) continue;
                 if (dist > p.aggroRadiusOutside) continue;
+
+                // Mỗi player chỉ bị tối đa N quái đuổi; mục tiêu hiện tại luôn được giữ chỗ
+                if (t != cur && w.GetClaims(t.TargetId) >= p.maxChasersPerPlayer) continue;
 
                 _buf.Add(t);
             }
 
-            if (_buf.Count > 0)
-            {
-                Debug.Log($"→ Chọn được {_buf.Count} player ngoài thành");
-                return;
-            }
+            if (_buf.Count > 0) { tier = TierExposedPlayer; return; }
 
             var gates = w.Gates;
             for (int i = 0; i < gates.Count; i++)
                 if (gates[i].IsTargetable) _buf.Add(gates[i]);
 
-            Debug.Log($"→ Sau khi lấy Gate: {_buf.Count}");
+            if (_buf.Count > 0) { tier = TierGate; return; }
 
-            if (_buf.Count > 0) return;
-
-            // Fallback: mọi player còn sống
+            // Fallback: cửa vỡ hết -> mọi player còn sống
             for (int i = 0; i < players.Count; i++)
                 if (players[i].IsTargetable) _buf.Add(players[i]);
 
-            Debug.Log($"→ Fallback toàn bộ player: {_buf.Count}");
+            tier = TierFallback;
         }
 
         static float Score(MonsterBrain m, WorldContext w, TargetingProfile p, IMonsterTarget t, IMonsterTarget cur)

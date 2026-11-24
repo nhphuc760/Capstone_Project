@@ -10,7 +10,7 @@ public class DoorToggleAction : InteractionAction
 
     public override string GetPrompt(in InteractionContext ctx)
     {
-        if (_door.IsOpen)
+        if (Door.IsOpen)
         {
             return "Đóng".ToColor(Color.yellow);
         }

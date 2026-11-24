@@ -1,29 +1,51 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using Cinemachine;
 using Fusion;
+using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public class PlayerCameraController : NetworkBehaviour
 {
     [Header("Cinemachine")]
-    [SerializeField] private CinemachineVirtualCamera virtualCamera;   // Kéo Virtual Camera trong Scene vào đây
-    [SerializeField] private CinemachineConfiner confiner3D;         // Kéo component Confiner2D
+    [SerializeField] private CinemachineVirtualCamera virtualCamera;
+    [SerializeField] private CinemachineConfiner confiner3D;
 
-    [Header("Optional")]
+    [Header("Camera Settings")]
     [SerializeField] private float defaultOrthoSize = 8f;
+    [SerializeField] private Transform followTarget;
+
+    private Coroutine moveRoutine;
+    private UniTaskCompletionSource moveTcs;
+    private CancellationTokenRegistration cancellationRegistration;
+
+    private bool isSpectating;
+
+    #region Network Lifecycle
 
     public override void Spawned()
     {
-        // Chỉ local player mới được điều khiển camera
-        if (HasInputAuthority == false)
+        if (!HasInputAuthority)
         {
-            // Camera của player khác thì tắt hoàn toàn
-            if (virtualCamera != null)
-                virtualCamera.enabled = false;
+            DisableForSpectator();
             return;
         }
 
-        // === Local Player ===
         SetupLocalCamera();
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        CancelCurrentMove();
+
+        if (virtualCamera != null)
+        {
+            virtualCamera.Follow = null;
+            virtualCamera.enabled = false;
+        }
+
+        isSpectating = false;
     }
 
     private void SetupLocalCamera()
@@ -34,64 +56,259 @@ public class PlayerCameraController : NetworkBehaviour
             return;
         }
 
-        // Bật camera
         virtualCamera.enabled = true;
+        virtualCamera.Follow = GetCameraFollowTarget();
 
-        // Gán Follow target
-        virtualCamera.Follow = transform.root;
-        // virtualCamera.LookAt = transform; // Chỉ dùng nếu cần
-
-        // Set Ortho Size (nếu muốn)
         var lens = virtualCamera.m_Lens;
-        //lens.OrthographicSize = defaultOrthoSize;
+        lens.OrthographicSize = defaultOrthoSize;
         virtualCamera.m_Lens = lens;
 
-        // === Set Bounding Shape khi Spawned ===
+        SetCameraBounds();
+    }
+
+    private Transform GetCameraFollowTarget()
+    {
+        return followTarget != null ? followTarget : transform.root;
+    }
+
+    #endregion
+
+    #region Spectator
+
+    /// <summary>
+    /// Bật camera của Player để Spectator có thể quan sát.
+    /// </summary>
+    public void EnableForSpectator()
+    {
+        if (virtualCamera == null)
+            return;
+
+        CancelCurrentMove();
+
+        isSpectating = true;
+
+        virtualCamera.Follow = GetCameraFollowTarget();
+        virtualCamera.enabled = true;
+
         SetCameraBounds();
     }
 
     /// <summary>
-    /// Gọi hàm này để set Bounding Shape cho Confiner
-    /// Bạn có thể gọi lại sau này nếu map thay đổi
+    /// Tắt camera của Player khi chuyển sang Player khác.
     /// </summary>
-    public void SetCameraBounds(Collider boundsCollider = null)
+    public void DisableForSpectator()
     {
-        if (confiner3D == null) return;
+        if (virtualCamera == null)
+            return;
 
-        if (boundsCollider != null)
-        {
-            confiner3D.m_BoundingVolume = boundsCollider;
-        }
-        else
-        {
-            // Tự tìm bounds trong scene (ví dụ theo tag hoặc tên)
-            var boundsObj = GameObject.FindGameObjectWithTag("Map").transform.GetChild(0).GetComponent<BoxCollider>();
-            if (boundsObj != null)
-            {
-                confiner3D.m_BoundingVolume = boundsObj;
-            }
-        }
+        CancelCurrentMove();
 
-        // Force invalidate cache (rất quan trọng)
-        confiner3D.InvalidatePathCache();
+        isSpectating = false;
+
+        virtualCamera.enabled = false;
     }
 
-    public override void Despawned(NetworkRunner runner, bool hasState)
+    #endregion
+
+    #region Camera Movement
+
+    /// <summary>
+    /// Di chuyển Follow Target theo World X/Z.
+    /// Khóa Y theo vị trí ban đầu.
+    /// </summary>
+    public UniTask MoveToViewAsync(
+        Vector3 targetPosition,
+        float transitionDuration = 1f,
+        CancellationToken cancellationToken = default)
     {
-        if (HasInputAuthority && virtualCamera != null)
+        if (followTarget == null)
         {
-            virtualCamera.Follow = null;
-            virtualCamera.enabled = false;
+            Debug.LogWarning("[PlayerCamera] followTarget chưa được gán!");
+            return UniTask.CompletedTask;
         }
+
+        if (virtualCamera == null)
+            return UniTask.CompletedTask;
+
+        if (cancellationToken.IsCancellationRequested)
+            return UniTask.FromCanceled(cancellationToken);
+
+        CancelCurrentMove();
+
+        virtualCamera.Follow = followTarget;
+
+        Vector3 currentPosition = followTarget.position;
+
+        // Chỉ di chuyển X/Z, giữ nguyên Y
+        targetPosition.y = currentPosition.y;
+
+        moveTcs = new UniTaskCompletionSource();
+
+        if (transitionDuration <= 0f)
+        {
+            followTarget.position = targetPosition;
+
+            moveTcs.TrySetResult();
+
+            UniTask task = moveTcs.Task;
+            moveTcs = null;
+
+            return task;
+        }
+
+        moveRoutine = StartCoroutine(
+            MoveRoutine(
+                currentPosition,
+                targetPosition,
+                transitionDuration
+            )
+        );
+
+        if (cancellationToken.CanBeCanceled)
+        {
+            cancellationRegistration = cancellationToken.Register(
+                CancelCurrentMove
+            );
+        }
+
+        return moveTcs.Task;
     }
 
-    // Optional: Cho phép đổi Ortho Size runtime (zoom)
+
+    public Camera DetachMainCameraForSpectator()
+    {
+        Camera mainCamera = Camera.main;
+
+        if (mainCamera == null)
+        {
+            Debug.LogWarning("[PlayerCamera] Không tìm thấy Main Camera!");
+            return null;
+        }
+
+        Transform cameraTransform = mainCamera.transform;
+
+        // Tách khỏi hierarchy của Player
+        cameraTransform.SetParent(null, true);
+
+        Debug.Log("[PlayerCamera] Main Camera detached for Spectator.");
+        return mainCamera;
+
+    }
+
+    /// <summary>
+    /// Fire-and-forget version.
+    /// </summary>
+    public void MoveToView(
+        Vector3 targetPosition,
+        float transitionDuration = 1f)
+    {
+        MoveToViewAsync(targetPosition, transitionDuration).Forget();
+    }
+
+    private IEnumerator MoveRoutine(
+        Vector3 startPosition,
+        Vector3 targetPosition,
+        float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            Vector3 position = Vector3.Lerp(
+                startPosition,
+                targetPosition,
+                t
+            );
+
+            // Lock Y
+            position.y = startPosition.y;
+
+            followTarget.position = position;
+
+            yield return null;
+        }
+
+        followTarget.position = targetPosition;
+
+        moveRoutine = null;
+
+        CompleteMove();
+    }
+
+    private void CompleteMove()
+    {
+        cancellationRegistration.Dispose();
+
+        moveTcs?.TrySetResult();
+        moveTcs = null;
+    }
+
+    private void CancelCurrentMove()
+    {
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+            moveRoutine = null;
+        }
+
+        cancellationRegistration.Dispose();
+
+        moveTcs?.TrySetCanceled();
+        moveTcs = null;
+    }
+
+    #endregion
+
+    #region Camera Settings
+
     public void SetOrthoSize(float size)
     {
-        if (virtualCamera == null) return;
+        if (virtualCamera == null)
+            return;
 
         var lens = virtualCamera.m_Lens;
         lens.OrthographicSize = size;
         virtualCamera.m_Lens = lens;
     }
+
+    public void SetCameraBounds(Collider boundsCollider = null)
+    {
+        if (confiner3D == null)
+            return;
+
+        if (boundsCollider == null)
+        {
+            GameObject mapObject = GameObject.FindGameObjectWithTag("Map");
+
+            if (mapObject == null || mapObject.transform.childCount == 0)
+            {
+                Debug.LogWarning("[PlayerCamera] Không tìm thấy Map Bounds!");
+                return;
+            }
+
+            boundsCollider = mapObject.transform
+                .GetChild(0)
+                .GetComponent<BoxCollider>();
+        }
+
+        if (boundsCollider == null)
+            return;
+
+        confiner3D.m_BoundingVolume = boundsCollider;
+
+        confiner3D.InvalidatePathCache();
+    }
+
+    public void SetFollowTarget(Transform target)
+    {
+        if (virtualCamera != null)
+            virtualCamera.Follow = target;
+    }
+
+    #endregion
 }

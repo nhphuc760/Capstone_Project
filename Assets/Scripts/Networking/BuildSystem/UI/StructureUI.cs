@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using Gamelogic.Extensions;
 using TMPro;
 using UnityEngine;
@@ -35,14 +35,13 @@ public class StructureUI : MonoBehaviour
             DestroyPanel.SetActive(m_Structure.StructureDataSO.structureType != StructureType.Door ? true : false);
             upgradeText.text = structure.GetInforUpgrade();
             destroyText.text = structure.GetResourceDestroy().info;
-            //(this.transform as RectTransform).sizeDelta = DestroyPanel.activeSelf ? new Vector2(300 , 200) : new Vector2(300, 100);
         }
         else
         {
 
             UpgradePanel.SetActive(false);
-            destroyText.text = structure.GetResourceDestroy().info;  
-            //(this.transform as RectTransform).sizeDelta = new Vector2(300, 100);
+            var destroyInfo = structure.GetResourceDestroy();
+            destroyText.text = string.IsNullOrEmpty(destroyInfo.info) ? "Phá hủy" : destroyInfo.info;
         }
         if(cts != null && !cts.IsCancellationRequested)
         {
@@ -104,10 +103,11 @@ public class StructureUI : MonoBehaviour
         if (checkUpdateResult.Success)
         {
             m_Structure.RPC_RequireUpgrade();
+            Hide();
         }
         else
         {
-            Debug.Log(checkUpdateResult.Message);
+            m_Structure.RPC_StructureUINotification(checkUpdateResult.Message);
         }
     }
     public void DestroyAction()

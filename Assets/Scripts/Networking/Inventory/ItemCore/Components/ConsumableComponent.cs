@@ -77,3 +77,17 @@ public class RaiseStamina : ItemEffect
     }
 }
 
+
+
+[Serializable] 
+public class BuffZoneEffect : ItemEffect
+{
+    public override void Apply(ItemContext ctx)
+    {
+        if(!ctx.IsServer) return;
+        PlayerRef player = ctx.User.InputAuthority;
+        Transform playerTRS = ctx.Runner.GetPlayerObject(player).transform;
+        ctx.Runner.Spawn(ctx.Definition.ObjectPrefab, position : playerTRS.position, inputAuthority: ctx.User.InputAuthority);
+    }
+}
+

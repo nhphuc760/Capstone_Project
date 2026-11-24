@@ -180,7 +180,19 @@ public class NetworkInventory : NetworkBehaviour
     {
         if (!Object.HasStateAuthority || amount <= 0) return false;
         if (!HasItem(itemID, amount)) return false;
+        // Nếu vẫn còn thì trừ tiếp ở Hotbar
+        for (int i = 0; i < HotbarCapacity && amount > 0; i++)
+        {
+            InventoryItem slot = Hotbar.Get(i);
+            if (slot.itemID != itemID) continue;
 
+            int amountToRemove = Mathf.Min(amount, slot.amount);
+            slot.amount -= amountToRemove;
+            amount -= amountToRemove;
+
+            if (slot.amount <= 0) slot = default;
+            Hotbar.Set(i, slot);
+        }
         // Ưu tiên trừ ở Inventory chính trước
         for (int i = 0; i < InventoryCapacity && amount > 0; i++)
         {
@@ -195,19 +207,7 @@ public class NetworkInventory : NetworkBehaviour
             Items.Set(i, slot);
         }
 
-        // Nếu vẫn còn thì trừ tiếp ở Hotbar
-        for (int i = 0; i < HotbarCapacity && amount > 0; i++)
-        {
-            InventoryItem slot = Hotbar.Get(i);
-            if (slot.itemID != itemID) continue;
-
-            int amountToRemove = Mathf.Min(amount, slot.amount);
-            slot.amount -= amountToRemove;
-            amount -= amountToRemove;
-
-            if (slot.amount <= 0) slot = default;
-            Hotbar.Set(i, slot);
-        }
+       
 
         return amount <= 0;
     }

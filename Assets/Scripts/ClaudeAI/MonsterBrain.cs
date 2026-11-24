@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SilentCastle.MonsterAI
 {
-    public enum MonsterStateId : byte {SelectTarget, Chase, Attack, Flee, Heal, Retreated, Dead }
+    public enum MonsterStateId : byte { SelectTarget, Chase, Attack, Flee, Heal, Retreated, Dead }
     public enum FleeReason : byte { None, LowHealth, Dawn }
     public enum DeathCause : byte { Killed, Sunlight }
 
@@ -16,25 +16,27 @@ namespace SilentCastle.MonsterAI
     /// Cần trên prefab: NetworkObject, NetworkTransform, NavMeshAgent, MonsterMover, MonsterBrain.
     /// </summary>
     [RequireComponent(typeof(MonsterMover))]
-    public class MonsterBrain : NetworkBehaviour
+    public class MonsterBrain : NetworkBehaviour, ITakedamageable
     {
         [SerializeField] protected MonsterDefinition definition;
-
+        [SerializeField] HealthComponent Health;
+        public HealthComponent EnemyHealth => Health;
         // ---- Trạng thái đồng bộ cho client (UI, VFX, animation) ----
         [Networked] public int Level { get; set; }
-        [Networked] public float Exp { get; set; }
-        [Networked] public float Hp { get; set; }
-        [Networked] public MonsterStateId StateId { get; set; }
+        [Networked] public int Exp { get; set; }
+
+        [Networked, OnChangedRender(nameof(EnemyStateChange))] public MonsterStateId StateId { get; set; }
         [Networked] public NetworkBool IsRaging { get; set; }
         [Networked] public float Rage01 { get; set; }
         [Networked] public float DaylightBurn01 { get; set; }
 
         // ---- Sự kiện phía client (gắn animation / VFX / âm thanh) ----
         public event Action<NetworkId, float> AttackPlayed;
+        public event Action AttackCanceled;
         public event Action<int> LevelUpPlayed;
         public event Action<DeathCause> DiedPlayed;
         public event Action<MonsterBrain> Retreated;   // chạy trên host khi về lãnh địa an toàn
-
+        public event Action<MonsterStateId> OnStateChange;
         // ---- Truy cập ----
         public MonsterDefinition Def => definition;
         public TargetingProfile Profile => definition.targeting;
@@ -49,24 +51,42 @@ namespace SilentCastle.MonsterAI
         public FleeReason FleeReason { get; set; }
         public float TimeOnTarget => _clock - _targetSince;
 
-        // ---- Chỉ số hiệu dụng (đã tính level + modifier) ----
-        public float MaxHp => definition.MaxHp(Level);
-        public float Hp01 => Mathf.Clamp01(Hp / Mathf.Max(1f, MaxHp));
-        public float BaseMoveSpeed => definition.MoveSpeed(Level);
-        public float MoveSpeed => BaseMoveSpeed * Modifiers.MoveSpeedMul;
-        public float AttackInterval =>
-            Mathf.Max(definition.minAttackInterval, definition.AttackInterval(Level) / Modifiers.AttackSpeedMul);
-        public float Damage => definition.Damage(Level) * Modifiers.DamageMul;
+        [SerializeField] Stats stats;                 // cùng NetworkObject
+        public Stats Stats => stats;                  // thay cho StatModifierSet
+
+        // ---- Chỉ số hiệu dụng ----
+        public float MaxHp => stats.Get(StatsType.Health);
+        public float Hp01 => EnemyHealth.HealthPercent;
+        public float BaseMoveSpeed => stats.GetValueBase(StatsType.MoveSpeed);
+        public float MoveSpeed => stats.Get(StatsType.MoveSpeed);
+        public float Damage => stats.Get(StatsType.Damage);
+        public float AttackRange => stats.Get(StatsType.Range);
+        public float AttackInterval => 1f / stats.Get(StatsType.AttackSpeed);
+
+        void ApplyLevelStats() => stats.SetStatsBase(definition.GetStats(Level));
 
         // ---- Nội bộ (chỉ host dùng) ----
         readonly Dictionary<MonsterStateId, IMonsterState> _states = new Dictionary<MonsterStateId, IMonsterState>();
         readonly List<MonsterSkillRuntime> _skills = new List<MonsterSkillRuntime>();
         IMonsterState _state;
-        float _clock, _targetSince, _reevalTimer, _homeTimer, _homeRefreshTimer, _dayTimer;
+        float _clock, _targetSince, _reevalTimer, _threatTimer, _homeTimer, _homeRefreshTimer, _dayTimer;
         int _reservedIndex = -1;
         bool _despawning;
         DeathCause _lastDeathCause;
 
+        // Chống lật mục tiêu
+        float _lockUntil, _flipWindowEnd;
+        int _flips;
+
+
+
+
+
+
+        void EnemyStateChange()
+        {
+            OnStateChange?.Invoke(StateId);
+        }
         // =====================================================================
         //  Vòng đời
         // =====================================================================
@@ -88,10 +108,16 @@ namespace SilentCastle.MonsterAI
             var rng = new System.Random(Seed);
             Personality = 1f + ((float)rng.NextDouble() * 2f - 1f) * definition.personalityRange;
 
-            Level = Mathf.Clamp(definition.startLevel, 1, definition.maxLevel);
-            Exp = 0f;
-            Hp = MaxHp;
+            // Mỗi con có nhịp kiểm tra lệch pha nhau -> không dồn tải vào cùng 1 tick
+            _threatTimer = (float)rng.NextDouble() * definition.targeting.urgentCheckInterval;
+            _reevalTimer = (float)rng.NextDouble() * definition.targeting.reevalInterval;
 
+            Level = Mathf.Clamp(definition.startLevel, 1, definition.MaxLevel);
+            Exp = 0;
+            ApplyLevelStats();
+            Health.Initialize(Stats);
+            Health.Regenable = false;
+            Health.OnDeath += OnMonsterDeath;
             foreach (var skillDef in definition.skills)
                 if (skillDef != null) _skills.Add(skillDef.CreateRuntime(this));
 
@@ -99,8 +125,26 @@ namespace SilentCastle.MonsterAI
             ChangeState(MonsterStateId.SelectTarget);
         }
 
+        void OnMonsterDeath(NetworkObject attacker)
+        {
+            if (Object.HasStateAuthority == false) return;
+
+            PlayerRef killer = PlayerRef.None;
+
+            // Lấy player giết quái (nếu attacker là player)
+            if (attacker != null && attacker.InputAuthority.IsRealPlayer)
+            {
+                killer = attacker.InputAuthority;
+            }
+
+            // Gọi GameManager
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnMonsterDead(transform.position, killer);
+        }
+
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            Health.OnDeath -= OnMonsterDeath;
             if (!HasStateAuthority || World == null) return;
             SetTarget(null);
             ReleaseHome();
@@ -137,8 +181,12 @@ namespace SilentCastle.MonsterAI
 
             float dt = Runner.DeltaTime;
             _clock += dt;
+            stats.Tick(Runner.DeltaTime);
 
-            if (StateId == MonsterStateId.Dead) { _state.Tick(dt); return; }
+            if (StateId == MonsterStateId.Dead)
+            {
+                _state.Tick(dt); return;
+            }
 
             for (int i = 0; i < _skills.Count; i++) _skills[i].OnTick(dt);
 
@@ -201,7 +249,7 @@ namespace SilentCastle.MonsterAI
         /// <summary>Level thấp: ngưỡng cao (nhát). Level cao: ngưỡng thấp (lì). Đang nộ càng lì hơn.</summary>
         public bool ShouldFleeForHp()
         {
-            float threshold = definition.FleeThreshold01(Level) * Personality;
+            float threshold = stats.Get(StatsType.FleeHpThreshold) * Personality;
             if (IsRaging) threshold *= definition.rageFleeSuppression;
             return Hp01 < threshold;
         }
@@ -222,8 +270,13 @@ namespace SilentCastle.MonsterAI
         void RefreshHome()
         {
             if (World.PickTerritory(Position, BaseMoveSpeed, out int idx, out float travel))
-            { HomeIndex = idx; HomeTravelSeconds = travel; }
-            else { HomeIndex = -1; HomeTravelSeconds = 0f; }
+            {
+                HomeIndex = idx; HomeTravelSeconds = travel;
+            }
+            else
+            {
+                HomeIndex = -1; HomeTravelSeconds = 0f;
+            }
         }
 
         void UpdateHomeEstimate(float dt)
@@ -260,23 +313,62 @@ namespace SilentCastle.MonsterAI
         // =====================================================================
         //  Mục tiêu
         // =====================================================================
+        public bool SwitchLocked => _clock < _lockUntil;
+
         public void SetTarget(IMonsterTarget t)
         {
             if (CurrentTarget == t) return;
+            if (t != null && CurrentTarget != null && t.Kind != CurrentTarget.Kind) NoteKindFlip();
             if (CurrentTarget != null) World.RemoveClaim(CurrentTarget.TargetId);
             CurrentTarget = t;
             _targetSince = _clock;
             if (t != null) World.AddClaim(t.TargetId);
         }
 
-        /// <summary>Định kỳ cân nhắc đổi mục tiêu (có hysteresis, không đổi liên tục).</summary>
-        public bool ReevaluateTarget(float dt)
+        /// <summary>Đổi LOẠI mục tiêu (Gate <-> Player) quá nhiều trong thời gian ngắn => bị khoá một lúc.</summary>
+        void NoteKindFlip()
         {
-            _reevalTimer -= dt;
-            if (_reevalTimer > 0f) return false;
-            _reevalTimer = Profile.reevalInterval + UnityEngine.Random.Range(0f, Profile.reevalJitter);
+            var p = Profile;
+            if (_clock > _flipWindowEnd) { _flips = 0; _flipWindowEnd = _clock + p.flipWindowSeconds; }
+            if (++_flips >= p.flipLimit) _lockUntil = _clock + p.flipLockSeconds;
+        }
 
-            var best = TargetSelector.Select(this, false);
+        /// <summary>
+        /// Gọi khi đang ở trạng thái "rảnh" (Chase / Attack-Ready). Đánh giá lại theo chu kỳ thường
+        /// VÀ theo kiểm tra khẩn cấp (có mục tiêu ưu tiên cao hơn xuất hiện).
+        /// </summary>
+        public bool ReevaluateTarget(float dt) => EvaluateTarget(dt, true);
+
+        /// <summary>Chỉ chạy nhánh khẩn cấp (dùng giữa đòn vung, trước frame chạm).</summary>
+        public bool UrgentReevaluate(float dt) => EvaluateTarget(dt, false);
+
+        bool EvaluateTarget(float dt, bool allowRoutine)
+        {
+            // Bị khoá do lật liên tục: giữ nguyên mục tiêu, trừ khi nó không còn hợp lệ
+            if (SwitchLocked && TargetSelector.IsLegit(World, CurrentTarget)) return false;
+
+            bool routine = false;
+            if (allowRoutine)
+            {
+                _reevalTimer -= dt;
+                if (_reevalTimer <= 0f)
+                {
+                    routine = true;
+                    _reevalTimer = Profile.reevalInterval + UnityEngine.Random.Range(0f, Profile.reevalJitter);
+                }
+            }
+
+            bool urgent = false;
+            _threatTimer -= dt;
+            if (_threatTimer <= 0f)
+            {
+                _threatTimer = Profile.urgentCheckInterval;
+                urgent = TargetSelector.HasBetterTier(this);
+            }
+
+            if (!routine && !urgent) return false;
+
+            var best = TargetSelector.Select(this, urgent);
             if (best == null || best == CurrentTarget) return false;
             SetTarget(best);
             return true;
@@ -289,7 +381,18 @@ namespace SilentCastle.MonsterAI
         }
 
         public float DistanceTo(IMonsterTarget t) => FlatDistance(t.Position) - t.BodyRadius;
-        public bool IsInAttackRange(IMonsterTarget t, float slack = 1f) => DistanceTo(t) <= definition.attackRange * slack;
+        public bool IsInAttackRange(IMonsterTarget t, float slack = 1f) => DistanceTo(t) <= AttackRange * slack;
+
+        /// <summary>
+        /// Quái có được gây damage lên mục tiêu không? Player đã chui vào trong thành (còn trong thời gian
+        /// ân hạn "lộ diện") thì không bị đánh xuyên tường, trừ khi mọi cửa đã vỡ.
+        /// </summary>
+        public bool CanDamage(IMonsterTarget t)
+        {
+            if (t.Kind == TargetKind.Gate) return true;
+            if (!World.IsInsideNow(t.TargetId)) return true;
+            return !World.AnyGateAlive;
+        }
 
         public Vector3 ApproachPoint(IMonsterTarget t)
         {
@@ -315,40 +418,38 @@ namespace SilentCastle.MonsterAI
         /// <summary>Gọi sau mỗi đòn đánh trúng: cộng exp, tích nộ (qua skill).</summary>
         public void RegisterHit(IMonsterTarget t, float damage)
         {
-            GainExp(definition.expPerHit);
+            GainExp(1);
             for (int i = 0; i < _skills.Count; i++) _skills[i].OnDealtDamage(t, damage);
-            if (!t.IsAlive) GainExp(definition.expPerKill);
         }
 
-        public void GainExp(float amount)
+        public void GainExp(int amount)
         {
-            if (Level >= definition.maxLevel) return;
+            if (Level >= definition.MaxLevel) return;
             Exp += amount;
-            while (Level < definition.maxLevel && Exp >= definition.ExpToNext(Level))
+            if (Level < definition.MaxLevel && Exp >= definition.ExpToNext(Level))
             {
                 Exp -= definition.ExpToNext(Level);
-                float oldMax = MaxHp;
                 Level++;
-                float newMax = MaxHp;
-                Hp = Mathf.Min(newMax, Hp + (newMax - oldMax) + newMax * definition.levelUpHealPercent);
+                ApplyLevelStats();
+                EnemyHealth.Restore(MaxHp);
                 for (int i = 0; i < _skills.Count; i++) _skills[i].OnLevelUp(Level);
                 RPC_LevelUp(Level);
             }
         }
 
         /// <summary>Hệ thống damage của player gọi hàm này TRÊN HOST khi đánh trúng quái.</summary>
-        public void ReceiveDamage(float amount)
+        public void TakeDamage(float amount, NetworkObject attacker)
         {
             if (!HasStateAuthority || StateId == MonsterStateId.Dead || amount <= 0f) return;
-            Hp = Mathf.Max(0f, Hp - amount);
-            if (Hp <= 0f) Die(DeathCause.Killed);
+            EnemyHealth.TakeDamage(amount, attacker);
+            if (!EnemyHealth.IsAlive)
+                Die(DeathCause.Killed);
         }
 
         public void Die(DeathCause cause)
         {
             if (StateId == MonsterStateId.Dead) return;
             _lastDeathCause = cause;
-            Hp = 0f;
             ChangeState(MonsterStateId.Dead);
             RPC_Died((byte)cause);
         }
@@ -360,6 +461,12 @@ namespace SilentCastle.MonsterAI
         }
 
         public void NotifyRetreated() => Retreated?.Invoke(this);
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RPC_Deactivate()
+        {
+            gameObject.SetActive(false);
+        }
 
         public void DespawnSelf()
         {
@@ -373,10 +480,13 @@ namespace SilentCastle.MonsterAI
         // =====================================================================
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         public void RPC_PlayAttack(NetworkId targetId, float animSpeed)
-        { 
+        {
             transform.GetChild(0).localPosition = Vector3.zero;
-            AttackPlayed?.Invoke(targetId, animSpeed); 
+            AttackPlayed?.Invoke(targetId, animSpeed);
         }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RPC_CancelAttack() => AttackCanceled?.Invoke();
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         public void RPC_LevelUp(int newLevel) => LevelUpPlayed?.Invoke(newLevel);

@@ -71,7 +71,11 @@ namespace SilentCastle.MonsterAI
                 return;
             }
 
-            if (B.ReevaluateTarget(dt)) t = B.CurrentTarget;
+            if (B.ReevaluateTarget(dt))
+            {
+                t = B.CurrentTarget;
+                _repath = 0f;                 // đổi mục tiêu -> tính đường mới ngay
+            }
 
             if (B.IsInAttackRange(t))
             {
@@ -107,6 +111,14 @@ namespace SilentCastle.MonsterAI
 
         public override void Enter() { B.Mover.Stop(); _phase = Phase.Ready; _cooldown = 0.2f; }
 
+        public override void Exit()
+        {
+            // Rời Attack giữa chừng đòn vung (chưa tới frame chạm) -> huỷ animation phía client
+            if (_phase == Phase.Swing && !_hitDone) B.RPC_CancelAttack();
+            _phase = Phase.Ready;
+            _swingTarget = null;
+        }
+
         public override void Tick(float dt)
         {
             if (_phase == Phase.Swing) { TickSwing(dt); return; }
@@ -123,6 +135,9 @@ namespace SilentCastle.MonsterAI
             if (!B.IsInAttackRange(t, 1.25f)) { B.ChangeState(MonsterStateId.Chase); return; }
 
             B.Mover.Face(t.Position, dt);
+
+
+            if (!B.CanDamage(t)) return;
 
             _cooldown -= dt;
             if (_cooldown > 0f) return;
@@ -153,15 +168,25 @@ namespace SilentCastle.MonsterAI
             _t += dt;
             if (_swingTarget != null) B.Mover.Face(_swingTarget.Position, dt);
 
+            // Chưa tới frame chạm mà có mục tiêu ưu tiên cao hơn (vd player vừa lộ diện) -> huỷ đòn, đổi mục tiêu
+            if (!_hitDone && _t < _hitAt && B.UrgentReevaluate(dt))
+            {
+                B.RPC_CancelAttack();
+                _swingTarget = null;
+                _phase = Phase.Ready;
+                _cooldown = 0.1f;
+                return;
+            }
+
             if (!_hitDone && _t >= _hitAt)
             {
                 _hitDone = true;
                 var t = _swingTarget;
-                // Đúng frame chạm: target còn hợp lệ và còn trong tầm thì mới trúng
-                if (t != null && t.IsTargetable && B.IsInAttackRange(t, 1.5f))
+                // Đúng frame chạm: target còn hợp lệ, còn trong tầm và được phép đánh thì mới trúng
+                if (t != null && t.IsTargetable && B.IsInAttackRange(t, 1.5f) && B.CanDamage(t))
                 {
                     float dmg = B.Damage;
-                    t.ReceiveDamage(dmg, B);                      // <- gọi TakeDamage ở đây
+                    t.ReceiveDamage(dmg, B);
                     B.RegisterHit(t, dmg);                        // exp + tích nộ
                 }
             }
@@ -173,7 +198,7 @@ namespace SilentCastle.MonsterAI
     // ------------------------------------------------------------------
     // Bỏ chạy về lãnh địa (vì máu thấp hoặc sắp sáng)
     // ------------------------------------------------------------------
-    public class FleeState : MonsterStateBase
+   public class FleeState : MonsterStateBase
     {
         const float ArriveTolerance = 1.5f;
         public FleeState(MonsterBrain b) : base(b) { }
@@ -207,15 +232,22 @@ namespace SilentCastle.MonsterAI
     {
         public HealState(MonsterBrain b) : base(b) { }
 
-        public override void Enter() { B.Mover.Stop(); }
-        public override void Exit() { B.ReleaseHome(); }
+        public override void Enter() 
+        {
+            B.Mover.Stop();
+            B.EnemyHealth.RegenableConfig(true, 0);
+        }
+        public override void Exit() 
+        { 
+            B.ReleaseHome();
+            B.EnemyHealth.RegenableConfig(false, 0);
+        }
 
         public override void Tick(float dt)
         {
             if (!B.World.IsNight) { B.ChangeState(MonsterStateId.Retreated); return; }
-
-            B.Hp = Mathf.Min(B.MaxHp, B.Hp + B.MaxHp * B.Def.healPercentPerSecond * dt);
-            if (B.Hp < B.MaxHp - 0.01f) return;
+                                    
+            if (B.EnemyHealth.CurrentHealth < B.MaxHp - 0.01f) return;
 
             if (B.CanSortie) B.ChangeState(MonsterStateId.SelectTarget);
             else B.ChangeState(MonsterStateId.Retreated);
@@ -235,7 +267,7 @@ namespace SilentCastle.MonsterAI
             B.SetTarget(null);
             B.ReleaseHome();
             B.NotifyRetreated();
-            B.DespawnSelf();
+            B.RPC_Deactivate();
         }
 
         public override void Tick(float dt) { }

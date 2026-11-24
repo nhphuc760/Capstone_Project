@@ -18,7 +18,7 @@ public class SnowmanNPC : MonoBehaviour
 
     private void Start()
     {
-        NetworkQuestSys QuestSystem = player.GetComponent<NetworkQuestSys>();
+        //NetworkQuestSys QuestSystem = player.GetComponent<NetworkQuestSys>();
     }
 
     void MakesureHasPlayer()

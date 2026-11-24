@@ -1,5 +1,4 @@
 using Fusion;
-using NUnit.Framework;
 using UnityEngine;
 
 public class Bullet : NetworkBehaviour

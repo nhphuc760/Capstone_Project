@@ -114,6 +114,9 @@ namespace Game.Interaction
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
             GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
+            if (HasInputAuthority)
+                for (int s = 0; s < _focusAction.Length; s++)
+                    if (_focusAction[s] != null) SetFocus(s, null, null);
         }
 
         // ================= Public API =================
@@ -414,12 +417,28 @@ namespace Game.Interaction
             {
                 Interactable t = null; InteractionAction a = null;
                 if (State == InteractionState.Idle) Resolve(s, out t, out a);
+
                 if (t != _focusTarget[s] || a != _focusAction[s])
-                {
-                    _focusTarget[s] = t; _focusAction[s] = a;
-                    FocusChanged?.Invoke(s, t, a);
-                }
+                    SetFocus(s, t, a);
+                else if (a != null)
+                    a.OnFocusRefresh(MakeContext(t, 0f, 0f));   // vẫn focus: cập nhật chữ prompt
             }
+        }
+
+        private void SetFocus(int slot, Interactable target, InteractionAction action)
+        {
+            var oldTarget = _focusTarget[slot];
+            var oldAction = _focusAction[slot];
+
+            // oldAction == null cũng đúng khi object cũ đã bị destroy (Unity null) -> bỏ qua an toàn
+            if (oldAction != null) oldAction.OnFocusExit(MakeContext(oldTarget, 0f, 0f));
+
+            _focusTarget[slot] = target;
+            _focusAction[slot] = action;
+
+            if (action != null) action.OnFocusEnter(MakeContext(target, 0f, 0f));
+
+            FocusChanged?.Invoke(slot, target, action);
         }
 
         // ================= Helpers =================

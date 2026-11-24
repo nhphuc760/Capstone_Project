@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Fusion;
+using Oddworm.Framework;
 using Unity.AI.Navigation;
 using UnityEngine;
 
@@ -31,13 +32,6 @@ public class MapManager : NetworkBehaviour
     public ZoneSpawnConfig greenZoneConfig;
     public ZoneSpawnConfig yellowZoneConfig;
     public ZoneSpawnConfig redZoneConfig;
-
-
-    [Header("Spawns Shop")]
-    [SerializeField] LayerMask obstacleMask;
-
-
-
 
 
     [Header("Zone Group Settings")]
@@ -485,7 +479,6 @@ private Vector3? GetRandomValidPositionInZoneGroup(
             Quaternion.identity,
             checkLayers
         );
-
         return hits.Length == 0;
     }
 
