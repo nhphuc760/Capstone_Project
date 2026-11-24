@@ -41,7 +41,7 @@ public class NetworkRunnerHandler : MonoBehaviour
             SceneManager = GetSceneManager(),
             Scene = sceneStart != null ? SceneRef.FromIndex(sceneStart.Value.buildIndex) : null,
             ConnectionToken = connectionToken,
-            PlayerCount = playerCount,
+            PlayerCount = Mathf.Clamp(playerCount, 1, 4),
             OnGameStarted = onGameStarted == null ? OnGameStarted : onGameStarted,
             HostMigrationResume = hostmigrationResume,            
         });

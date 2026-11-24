@@ -1,6 +1,5 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,18 +7,43 @@ using UnityEngine.UI;
 public class FriendElementUI : MonoBehaviour
 {
     [SerializeField] private Image avatar;
+    [SerializeField] private Image statusDot;
     [SerializeField] private TextMeshProUGUI nameTag;
     [SerializeField] private TextMeshProUGUI status;
     [SerializeField] private Button invite;
+    [SerializeField] private TextMeshProUGUI inviteButtonText;
     [SerializeField] private Button requestJoin;
+    [SerializeField] private Button unfriendButton;
     [SerializeField] private Sprite defaultAvatar;
 
     private string userID;
-    private bool isInviting = false; // Cờ chống spam-click hiệu quả
+    private bool isInviting;
+    private bool isRequesting;
+    // Thêm biến theo dõi trạng thái đang ở trong Lobby
+    private bool _lastInLobbyState;
+    private float _lobbyCheckTimer;
 
     private void Awake()
     {
         SubscribeButtons();
+    }
+
+    private void OnEnable()
+    {
+        RoomDatabaseManager.OnRoomStateChanged += HandleRoomStateChanged;
+        if (!string.IsNullOrEmpty(userID))
+            UpdateUI();
+    }
+
+    private void OnDisable()
+    {
+        RoomDatabaseManager.OnRoomStateChanged -= HandleRoomStateChanged;
+    }
+
+    private void HandleRoomStateChanged(Room room)
+    {
+        if (!string.IsNullOrEmpty(userID))
+            UpdateUI();
     }
 
     private void OnDestroy()
@@ -27,93 +51,160 @@ public class FriendElementUI : MonoBehaviour
         UnsubscribeButtons();
     }
 
-    /// <summary>
-    /// Khởi tạo dữ liệu khi Instantiate phần tử bạn bè mới
-    /// </summary>
+    // Thêm Update để tự động bật nút Invite ngay khi Host vào phòng xong
+    private void Update()
+    {
+        if (string.IsNullOrEmpty(userID)) return;
+
+        _lobbyCheckTimer += Time.unscaledDeltaTime;
+        if (_lobbyCheckTimer < 0.4f) return;
+        _lobbyCheckTimer = 0f;
+
+        bool currentInLobby = IsLocalPlayerInLobby();
+        if (currentInLobby != _lastInLobbyState)
+        {
+            _lastInLobbyState = currentInLobby;
+            UpdateUI();
+        }
+    }
+
+    private bool IsLocalPlayerInLobby()
+    {
+        //if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
+        //    return true;
+
+        //var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
+        //return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
+
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+            return true;
+
+        if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
+            return true;
+
+        var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
+        return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
+    }
+
     public void Init(string userID)
     {
         this.userID = userID;
         this.isInviting = false;
 
-        // Đảm bảo các nút ở trạng thái sẵn sàng tương tác khi khởi tạo
+        RoomDatabaseManager.OnRoomStateChanged -= HandleRoomStateChanged;
+        RoomDatabaseManager.OnRoomStateChanged += HandleRoomStateChanged;
+
         if (invite != null) invite.interactable = true;
         if (requestJoin != null) requestJoin.interactable = true;
 
         UpdateUI();
     }
 
-    /// <summary>
-    /// Xử lý click nút mời
-    /// </summary>
     public async void OnInviteClick()
     {
         if (isInviting || string.IsNullOrEmpty(userID)) return;
 
+        //if (RoomDatabaseManager.Instance == null || RoomDatabaseManager.Instance.CurrentRoom == null)
+        if (!IsLocalPlayerInLobby())
+        {
+            Debug.LogWarning("[FriendUI] Bạn cần tạo hoặc vào phòng Lobby trước khi mời bạn bè!");
+            return;
+        }
+
         isInviting = true;
-        invite.interactable = false; // Khóa nút bấm ngay lập tức
+        invite.interactable = false;
+        if (inviteButtonText != null) inviteButtonText.text = "INVITED ✓";
 
         try
         {
-            // Gửi dữ liệu lên Firebase thông qua Manager
             NetworkDataManager.Instance.inviteManager.SendInvite(userID);
-
-            // Giả lập cooldown 2 giây để tránh người chơi spam click liên tục phá vỡ luồng Firebase
-            // Sử dụng CancellationTokenOnDestroy để tự động hủy Task nếu Element này bị Destroy giữa chừng
-            await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: this.GetCancellationTokenOnDestroy());
+            await UniTask.Delay(TimeSpan.FromSeconds(2.5f), cancellationToken: this.GetCancellationTokenOnDestroy());
         }
         catch (OperationCanceledException)
         {
-            // Task bị hủy an toàn khi object bị Destroy -> Không sinh ra lỗi runtime lỗi đỏ
             return;
         }
         finally
         {
             isInviting = false;
-            // Chỉ mở lại tương tác nếu UI Element vẫn còn tồn tại trong Scene (tránh lỗi Null khi Destroy)
-            if (invite != null)
-            {
-                invite.interactable = true;
-            }
+            if (invite != null) invite.interactable = true;
+            if (inviteButtonText != null) inviteButtonText.text = "INVITE";
         }
     }
 
-    public void OnRequestJoinClick()
+    public async void OnRequestJoinClick()
     {
-        if (string.IsNullOrEmpty(userID)) return;
+        //if (string.IsNullOrEmpty(userID)) return;
+        //Debug.Log($"[UI] Xin gia nhập Party của {userID}");
 
-        // TODO: Logic xin gia nhập Party của bạn bè
-        Debug.Log($"[UI] Xin gia nhập Party của {userID}");
+        if (isRequesting || string.IsNullOrEmpty(userID)) return;
+        if (NetworkDataManager.Instance?.inviteManager == null) return;
+
+        isRequesting = true;
+        if (requestJoin != null) requestJoin.interactable = false;
+
+        try
+        {
+            bool sent = await NetworkDataManager.Instance.inviteManager.SendJoinRequestAsync(userID);
+            if (sent)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(2.5f), cancellationToken: this.GetCancellationTokenOnDestroy());
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        finally
+        {
+            isRequesting = false;
+            if (requestJoin != null) requestJoin.interactable = true;
+        }
     }
 
-    /// <summary>
-    /// Cập nhật hiển thị giao diện theo thời gian thực
-    /// </summary>
+    private void OnUnfriendClick()
+    {
+        if (string.IsNullOrEmpty(userID)) return;
+        if (unfriendButton != null) unfriendButton.interactable = false;
+        NetworkDataManager.Instance?.friendManager?.UnfriendBidirectionalAsync(userID).Forget();
+    }
+
     public void UpdateUI()
     {
         if (string.IsNullOrEmpty(userID)) return;
 
         Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
         Sprite avt = NetworkDataManager.Instance.GetAvatarUser(userID);
-        Debug.Log("UpdateUI" + JsonConvert.SerializeObject(presence));
-        // 1. Cập nhật Avatar an toàn
-        avatar.sprite = avt != null ? avt : defaultAvatar;
 
-        // 2. Kiểm tra dữ liệu Presence (Tránh crash nếu Firebase tải chậm)
+        if (avatar != null)
+            avatar.sprite = avt != null ? avt : defaultAvatar;
+
         if (presence == null)
         {
             nameTag.text = "Đang tải...";
             status.text = "Offline".ToColor(Color.gray);
+            if (statusDot != null) statusDot.color = Color.gray;
             invite.gameObject.SetActive(false);
             requestJoin.gameObject.SetActive(false);
             return;
         }
 
-        // 3. Hiển thị thông tin tên & trạng thái
-        nameTag.text = $"{presence.Name} #{presence.Tag}";
+        nameTag.text = $"{presence.Name} <color=#9AA6B2>#{presence.Tag}</color>";
         status.text = GetStatusText(presence.Status);
+        if (statusDot != null) statusDot.color = GetStatusColor(presence.Status);
+
         TriggerButtonWithOnlineStatus(presence.Status);
-        // 4. Bật/Tắt các nút tương ứng dựa trên trạng thái
-        
+    }
+
+    private Color GetStatusColor(OnlineStatus onlineStatus)
+    {
+        return onlineStatus switch
+        {
+            OnlineStatus.Online => new Color32(74, 217, 145, 255),
+            OnlineStatus.InParty => new Color32(242, 184, 75, 255),
+            OnlineStatus.InMatch => new Color32(86, 180, 233, 255),
+            _ => new Color32(120, 130, 140, 255)
+        };
     }
 
     private string GetStatusText(OnlineStatus onlineStatus)
@@ -122,7 +213,7 @@ public class FriendElementUI : MonoBehaviour
         {
             OnlineStatus.Online => "Online".ToColor(Color.green),
             OnlineStatus.Offline => "Offline".ToColor(Color.gray),
-            OnlineStatus.InParty => "In Party".ToColor(Color.white),
+            OnlineStatus.InParty => "In Lobby".ToColor(Color.yellow),
             OnlineStatus.InMatch => "In Match".ToColor(Color.cyan),
             _ => onlineStatus.ToString()
         };
@@ -131,26 +222,37 @@ public class FriendElementUI : MonoBehaviour
     private void SubscribeButtons()
     {
         UnsubscribeButtons();
-        invite.onClick.AddListener(OnInviteClick);
-        requestJoin.onClick.AddListener(OnRequestJoinClick);
+        if (invite != null) invite.onClick.AddListener(OnInviteClick);
+        if (requestJoin != null) requestJoin.onClick.AddListener(OnRequestJoinClick);
+        if (unfriendButton != null) unfriendButton.onClick.AddListener(OnUnfriendClick);
     }
 
     private void UnsubscribeButtons()
     {
         if (invite != null) invite.onClick.RemoveListener(OnInviteClick);
         if (requestJoin != null) requestJoin.onClick.RemoveListener(OnRequestJoinClick);
+        if (unfriendButton != null) unfriendButton.onClick.RemoveListener(OnUnfriendClick);
     }
-    void TriggerButtonWithOnlineStatus(OnlineStatus status)
+
+    private void TriggerButtonWithOnlineStatus(OnlineStatus onlineStatus)
     {
-        if (status != OnlineStatus.Offline)
+        //bool isLocalInLobby = RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null;
+        //var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
+        //bool isRunnerInLobby = activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
+        //bool isLocalInLobby = (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null) || isRunnerInLobby;
+
+        bool isLocalInLobby = IsLocalPlayerInLobby();
+        _lastInLobbyState = isLocalInLobby;
+
+        if (onlineStatus != OnlineStatus.Offline)
         {
-            // Đẩy bạn bè đang hoạt động lên đầu danh sách hiển thị
             transform.SetAsFirstSibling();
 
-            switch (status)
+            switch (onlineStatus)
             {
                 case OnlineStatus.Online:
-                    invite.gameObject.SetActive(true);
+                    invite.gameObject.SetActive(isLocalInLobby);
+                    if (inviteButtonText != null && !isInviting) inviteButtonText.text = "INVITE";
                     requestJoin.gameObject.SetActive(false);
                     break;
 
@@ -160,21 +262,20 @@ public class FriendElementUI : MonoBehaviour
                     break;
 
                 case OnlineStatus.InParty:
-                    bool requestJoinInteracable = true;
-                    if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
-                    {
-                        if (RoomDatabaseManager.Instance.CurrentRoom.Members.Contains(userID))
-                        {
-                            requestJoinInteracable = false;
-                        }
-                    }
+                    //bool canRequestJoin = true;
+                    //if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null && RoomDatabaseManager.Instance.CurrentRoom.Members.Contains(userID))
+                    //{
+                    //    canRequestJoin = false;
+                    //}
+                    bool canRequestJoin = !isLocalInLobby;
                     invite.gameObject.SetActive(false);
-                    requestJoin.gameObject.SetActive(requestJoinInteracable);
+                    requestJoin.gameObject.SetActive(canRequestJoin);
                     break;
             }
         }
         else
         {
+            transform.SetAsLastSibling();
             invite.gameObject.SetActive(false);
             requestJoin.gameObject.SetActive(false);
         }

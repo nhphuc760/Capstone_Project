@@ -136,6 +136,8 @@ public class PlayerCameraController : NetworkBehaviour
         CancelCurrentMove();
 
         virtualCamera.Follow = followTarget;
+        if (!enabled) return;
+        if (confiner3D == null) return;
 
         Vector3 currentPosition = followTarget.position;
 
@@ -169,6 +171,22 @@ public class PlayerCameraController : NetworkBehaviour
             cancellationRegistration = cancellationToken.Register(
                 CancelCurrentMove
             );
+            //// Tự tìm bounds trong scene (ví dụ theo tag hoặc tên)
+            //var boundsObj = GameObject.FindGameObjectWithTag("Map").transform.GetChild(0).GetComponent<BoxCollider>();
+            //if (boundsObj != null)
+            //{
+            //    confiner3D.m_BoundingVolume = boundsObj;
+            //}
+            // Tự tìm bounds trong scene khi sang GameplayScene
+            var mapObj = GameObject.FindGameObjectWithTag("Map");
+            if (mapObj != null && mapObj.transform.childCount > 0)
+            {
+                var boundsObj = mapObj.transform.GetChild(0).GetComponent<BoxCollider>();
+                if (boundsObj != null)
+                {
+                    confiner3D.m_BoundingVolume = boundsObj;
+                }
+            }
         }
 
         return moveTcs.Task;

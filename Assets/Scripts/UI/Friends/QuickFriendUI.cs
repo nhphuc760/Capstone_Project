@@ -36,7 +36,7 @@ public class QuickFriendUI : MonoBehaviour, IPointerClickHandler
     {
         if (container.ContainsKey(args.userID)) return;
         var sprite = NetworkDataManager.Instance.GetAvatarUser(args.userID);
-        var img = CreateImage(sprite);
+        var img = CreateImage(sprite != null ? sprite : defaultAvatar);
         container.Add(args.userID, img);
     }
     void OnFriendRemoved(DataEvent.OnFriendRemoved args)
@@ -74,13 +74,16 @@ public class QuickFriendUI : MonoBehaviour, IPointerClickHandler
     {
         var presence = NetworkDataManager.Instance.GetPresenceUser(userID);
         var avt = NetworkDataManager.Instance.GetAvatarUser(userID);
-        if (presence.Status == OnlineStatus.Online)
+        if (presence == null) return;
+
+        if (container.TryGetValue(userID, out var img) && img != null)
         {
-            if (container.TryGetValue(userID, out var i))
-            {
-                i.sprite = avt;
-                i.transform.SetAsFirstSibling();
-            }
+            if (avt != null) img.sprite = avt;
+
+            if (presence.Status != OnlineStatus.Offline)
+                img.transform.SetAsFirstSibling();
+            else
+                img.transform.SetAsLastSibling();
         }
     }
 

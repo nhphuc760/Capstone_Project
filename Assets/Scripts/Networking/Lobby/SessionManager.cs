@@ -269,31 +269,45 @@ public class TwoPlayerLayoutStrategy : ILobbyLayoutStrategy
 {
     public Transform GetSpawnPoint(int playerIndex, Transform[] slots)
     {
-        return playerIndex switch
-        {
-            0 => slots[1], // Host -> Pos 2
-            1 => slots[2], // Client 1 -> Pos 3
-            _ => slots[1]
-        };
+        //return playerIndex switch
+        //{
+        //    //0 => slots[1], // Host -> Pos 2
+        //    //1 => slots[2], // Client 1 -> Pos 3
+        //    //_ => slots[1]
+        //};
+        if (slots == null || slots.Length == 0) return null;
+        int safeIndex = Mathf.Clamp(playerIndex, 0, slots.Length - 1);
+        return slots[safeIndex];
     }
 }
 
+//public class FourPlayerLayoutStrategy : ILobbyLayoutStrategy
+//{
+//    readonly bool _fillLeftFirst;
+//    public FourPlayerLayoutStrategy(bool fillLeftFirst = true)
+//    {
+//        _fillLeftFirst = fillLeftFirst;
+//    }
+//    public Transform GetSpawnPoint(int playerIndex, Transform[] slots)
+//    {
+//        return playerIndex switch
+//        {
+//            0 => slots[1], // Host -> Pos 2
+//            1 => slots[2], // Player 2 -> Pos 3
+//            2 => _fillLeftFirst ? slots[0] : slots[3], // Player 3 -> Pos 1 hoặc Pos 4
+//            3 => _fillLeftFirst ? slots[3] : slots[0], // Player 4 -> Pos 4 hoặc Pos 1
+//            _ => slots[0]
+//        };
+//    }
+//}
 public class FourPlayerLayoutStrategy : ILobbyLayoutStrategy
 {
-    readonly bool _fillLeftFirst;
-    public FourPlayerLayoutStrategy(bool fillLeftFirst = true)
-    {
-        _fillLeftFirst = fillLeftFirst;
-    }
+    public FourPlayerLayoutStrategy(bool fillLeftFirst = true) { }
+
     public Transform GetSpawnPoint(int playerIndex, Transform[] slots)
     {
-        return playerIndex switch
-        {
-            0 => slots[1], // Host -> Pos 2
-            1 => slots[2], // Player 2 -> Pos 3
-            2 => _fillLeftFirst ? slots[0] : slots[3], // Player 3 -> Pos 1 hoặc Pos 4
-            3 => _fillLeftFirst ? slots[3] : slots[0], // Player 4 -> Pos 4 hoặc Pos 1
-            _ => slots[0]
-        };
+        if (slots == null || slots.Length == 0) return null;
+        int safeIndex = Mathf.Clamp(playerIndex, 0, slots.Length - 1);
+        return slots[safeIndex]; // 0 -> Pos 1, 1 -> Pos 2, 2 -> Pos 3, 3 -> Pos 4
     }
 }
