@@ -4,57 +4,15 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBeforeUpdate
 {
     [SerializeField] NetworkPrefabRef playerPrefabs;
+    public static bool IsLoadingScene { get; private set; }
+
     NetworkInputData accumulatedInput;
     bool isReset = false;
-
-
-    private void Awake()
-    {
-    }
-    public void OnConnectedToServer(NetworkRunner runner)
-    {     
-        
-    }
-
-    public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
-    {
-        //string jsonToken = Encoding.UTF8.GetString(token);
-        //var connectionToken = JsonConvert.DeserializeObject<ConnectionToken>(jsonToken);
-        //RoomStatus status = RoomDatabaseManager.Instance.CurrentRoom.Status;
-        //if(status != RoomStatus.Waiting && status != RoomStatus.Ready)
-        //{
-        //    request.Refuse();
-        //    return;
-        //}
-        //else
-        //{
-        //    if (connectionToken != null)
-        //    {
-        //        request.Accept();
-        //        Debug.Log("Chấp nhận yêu cầu từ:  " + connectionToken.userID);
-        //    }
-        //}       
-    }
-
-    public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data)
-    {
-
-    }
-
-    public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
-    {
-
-    }
-
-    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
-    {
-
-    }
-
 
     public void BeforeUpdate()
     {
@@ -85,8 +43,9 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
         }
         accumulatedInput.button = new NetworkButtons(accumulatedInput.button.Bits | button.Bits);
     }
+
     public void OnInput(NetworkRunner runner, NetworkInput input)
-    {        
+    {
         input.Set(accumulatedInput);
         isReset = true;
     }
@@ -96,80 +55,94 @@ public class BasicSpawner : SimulationBehaviour, INetworkRunnerCallbacks, IBefor
         Debug.Log("InputMissing");
     }
 
-    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
-    {
-    }
 
-    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
+    public void OnSceneLoadStart(NetworkRunner runner)
     {
-    }
-
-    public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
-    {
-        //if (SessionManager.Ins != null && runner.IsServer)
-        //{
-        //    var token = runner.GetPlayerConnectionToken(player);
-        //    string jsonToken = Encoding.UTF8.GetString(token);
-        //    var obj = JsonConvert.DeserializeObject<ConnectionToken>(jsonToken);
-        //    SessionManager.Ins._userIDs.Add(player, obj.userID);
-        //}
-        if (runner.IsServer)
-        {
-            
-        }
-    }
-
-    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-    {
-    }
-
-    public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
-    {
-      
-    }
-
-    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
-    {      
-        EventBus<ReliableReceiveData>.Raise(new ReliableReceiveData { key = key, data = data.ToArray() });        
+        IsLoadingScene = true;
     }
 
     public void OnSceneLoadDone(NetworkRunner runner)
     {
+        IsLoadingScene = false;
+
+        if (!runner.IsServer || !IsGameplayScene()) return;
+
+        foreach (var player in runner.ActivePlayers)
+            SpawnPlayer(runner, player);
     }
 
-    public void OnSceneLoadStart(NetworkRunner runner)
+    public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
+        // Ở lobby: không spawn. Chỉ spawn cho người vào muộn khi đang ở gameplay.
+        if (runner.IsServer && !IsLoadingScene && IsGameplayScene())
+            SpawnPlayer(runner, player);
     }
 
-    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
+    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
+        if (!runner.IsServer) return;
+
+        if (runner.TryGetPlayerObject(player, out NetworkObject obj))
+        {
+            runner.Despawn(obj);
+            runner.SetPlayerObject(player, null);
+        }
+    }
+
+    void SpawnPlayer(NetworkRunner runner, PlayerRef player)
+    {
+        if (runner.TryGetPlayerObject(player, out _)) return; // tránh spawn trùng
+
+        // TODO: thay bằng spawn point thật của scene gameplay
+        Vector3 spawnPos = new Vector3(player.RawEncoded * 2f, 1f, 0f);
+
+        NetworkObject obj = runner.Spawn(playerPrefabs, spawnPos, Quaternion.identity, player);
+        runner.SetPlayerObject(player, obj);
+    }
+
+    bool IsGameplayScene()
+    {
+        int gameplayIndex = SceneUtility.GetBuildIndexByScenePath(SceneDatabase.GAMEPLAY);
+        return gameplayIndex >= 0 && SceneManager.GetActiveScene().buildIndex == gameplayIndex;
     }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
+        IsLoadingScene = false;
     }
 
-    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)
+  
+
+    public void OnConnectedToServer(NetworkRunner runner) { }
+
+    public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
+
+    public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+
+    public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
+
+    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+
+    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+
+    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+
+    public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+
+    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
     {
-
+        EventBus<ReliableReceiveData>.Raise(new ReliableReceiveData { key = key, data = data.ToArray() });
     }
 
-    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
-    {
-      
-    }
+    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
 
-   
+    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 
-
+    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
 }
-
 
 public struct ReliableReceiveData : IEvent
 {
     public ReliableKey key;
     public byte[] data;
-
 }
-
-

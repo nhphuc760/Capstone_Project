@@ -45,6 +45,7 @@ namespace SilentCastle.MonsterAI
 
         void Update()
         {
+            if (brain == null || !brain.IsSpawned) return;
             // Rời trạng thái Attack (bỏ chạy, chết...) thì huỷ trigger còn treo
             if (brain.StateId != MonsterStateId.Attack) animator.ResetTrigger(AttackTrig);
         }

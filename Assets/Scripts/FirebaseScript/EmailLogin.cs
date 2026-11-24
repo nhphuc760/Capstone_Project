@@ -8,13 +8,14 @@ using UnityEngine.UI;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Firebase.Database;
 
 public class EmailLogin : MonoBehaviour
 {
     [Header("Login")]
     [SerializeField] private TMP_InputField LoginEmail;
     [SerializeField] private TMP_InputField LoginPassword;
-
+    private bool isLoggingIn;
     [Header("Sign up")]
     [SerializeField] private TMP_InputField SignUpEmail;
     [SerializeField] private TMP_InputField SignUpPassword;
@@ -67,8 +68,8 @@ public class EmailLogin : MonoBehaviour
         if (emailSuggestionPanel != null)
             emailSuggestionPanel.SetActive(false);
 
-        if (rememberMeToggle != null)
-            rememberMeToggle.isOn = false;
+        //if (rememberMeToggle != null)
+        //    rememberMeToggle.isOn = false;
     }
 
     private void Update()
@@ -147,12 +148,12 @@ public class EmailLogin : MonoBehaviour
         if (SignUpPasswordConfirm != null) SignUpPasswordConfirm.text = "";
         if (forgotPasswordEmail != null) forgotPasswordEmail.text = "";
 
-        if (rememberMeToggle == null || !rememberMeToggle.isOn)
-        {
-            if (LoginEmail != null) LoginEmail.text = "";
-            if (LoginPassword != null) LoginPassword.text = "";
-        }
-
+        //if (rememberMeToggle == null || !rememberMeToggle.isOn)
+        //{
+        //    if (LoginEmail != null) LoginEmail.text = "";
+        //    if (LoginPassword != null) LoginPassword.text = "";
+        //}
+        LoadRememberedEmail();
         if (logTxt != null) logTxt.text = "";
         if (wrongEmailPasswordText != null) wrongEmailPasswordText.text = "";
     }
@@ -354,8 +355,10 @@ public class EmailLogin : MonoBehaviour
     // Log in
     public void LogIn()
     {
+        if (isLoggingIn) return;
         if (!checkValidation()) return;
 
+        isLoggingIn = true;
         //loadingScreen.SetActive(true);
 
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
@@ -363,82 +366,136 @@ public class EmailLogin : MonoBehaviour
         string password = LoginPassword.text;
 
         Credential credential = EmailAuthProvider.GetCredential(email, password);
-        auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(task => {
-            if (task.IsCanceled)
+        auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(async task => {
+            try
             {
-                Debug.Log("LogIn was canceled.");
-                return;
-            }
-            if (task.IsFaulted)
-            {
-                Debug.Log("LogIn encountered an error: " + task.Exception);
-
-                FirebaseException firebaseException =
-                    task.Exception.GetBaseException() as FirebaseException;
-
-                if (firebaseException != null)
+                if (task.IsCanceled)
                 {
-                    AuthError error = (AuthError)firebaseException.ErrorCode;
+                    Debug.Log("LogIn was canceled.");
+                    return;
+                }
+                if (task.IsFaulted)
+                {
+                    Debug.Log("LogIn encountered an error: " + task.Exception);
 
-                    switch (error)
+                    FirebaseException firebaseException =
+                        task.Exception.GetBaseException() as FirebaseException;
+
+                    if (firebaseException != null)
                     {
-                        case AuthError.WrongPassword:
-                            openEmailPasswordNotificationPanel("Incorrect password.");
-                            break;
+                        AuthError error = (AuthError)firebaseException.ErrorCode;
 
-                        case AuthError.InvalidEmail:
-                            openEmailPasswordNotificationPanel("Invalid email.");
-                            break;
+                        switch (error)
+                        {
+                            case AuthError.WrongPassword:
+                                openEmailPasswordNotificationPanel("Incorrect password.");
+                                break;
 
-                        case AuthError.UserNotFound:
-                            openEmailPasswordNotificationPanel("Account does not exist.");
-                            break;
+                            case AuthError.InvalidEmail:
+                                openEmailPasswordNotificationPanel("Invalid email.");
+                                break;
 
-                        case AuthError.InvalidCredential:
-                            openEmailPasswordNotificationPanel("Incorrect email or password.");
-                            break;
+                            case AuthError.UserNotFound:
+                                openEmailPasswordNotificationPanel("Account does not exist.");
+                                break;
 
-                        case AuthError.UserDisabled:
-                            openEmailPasswordNotificationPanel("This account has been disabled.");
-                            break;
+                            case AuthError.InvalidCredential:
+                                openEmailPasswordNotificationPanel("Incorrect email or password.");
+                                break;
 
-                        case AuthError.NetworkRequestFailed:
-                            openEmailPasswordNotificationPanel("Network error. Please try again.");
-                            break;
+                            case AuthError.UserDisabled:
+                                openEmailPasswordNotificationPanel("This account has been disabled.");
+                                break;
 
-                        default:
-                            openEmailPasswordNotificationPanel("Login failed. Please check your email and password.");
-                            break;
+                            case AuthError.NetworkRequestFailed:
+                                openEmailPasswordNotificationPanel("Network error. Please try again.");
+                                break;
+
+                            default:
+                                openEmailPasswordNotificationPanel("Login failed. Please check your email and password.");
+                                break;
+                        }
                     }
+                    else
+                    {
+                        openEmailPasswordNotificationPanel("Login failed.");
+                    }
+
+                    return;
+                }
+
+                //loadingScreen.SetActive(false);
+                AuthResult result = task.Result;
+                Debug.LogFormat("User logged in successfully: {0} ({1})",
+                    result.User.DisplayName, result.User.UserId);
+
+                if (result.User.IsEmailVerified)
+                {
+                    try
+                    {
+                        // Bật lại kết nối database nếu phiên trước vừa gọi GoOffline() lúc thoát/Stop Editor
+                        FirebaseDatabase.DefaultInstance.GoOnline();
+
+                        var userRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{result.User.UserId}");
+                        var userSnap = await userRef.GetValueAsync();
+
+                        if (userSnap.Exists && userSnap.HasChild("Presence/Status"))
+                        {
+                            int currentStatus = System.Convert.ToInt32(userSnap.Child("Presence/Status").Value);
+                            if (currentStatus != (int)OnlineStatus.Offline)
+                            {
+                                long lastActive = userSnap.HasChild("Session/LastActive")
+                                    ? System.Convert.ToInt64(userSnap.Child("Session/LastActive").Value)
+                                    : 0;
+
+                                bool isSessionStillAlive = false;
+                                if (lastActive > 0)
+                                {
+                                    // Lấy giờ server hiện tại để so sánh chuẩn xác, không phụ thuộc đồng hồ máy tính
+                                    var pingRef = userRef.Child("Session/PingCheck");
+                                    await pingRef.SetValueAsync(ServerValue.Timestamp);
+                                    var pingSnap = await pingRef.GetValueAsync();
+
+                                    if (pingSnap.Exists && pingSnap.Value != null)
+                                    {
+                                        long serverNow = System.Convert.ToInt64(pingSnap.Value);
+                                        // Nếu nhịp Heartbeat vẫn cập nhật trong vòng 25 giây gần nhất -> đang chơi thật ở nơi khác
+                                        isSessionStillAlive = (serverNow - lastActive) < 25000;
+                                    }
+                                }
+
+                                if (isSessionStillAlive)
+                                {
+                                    auth.SignOut();
+                                    openEmailPasswordNotificationPanel("This account is already logged in on another device.");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogWarning("Không kiểm tra được trạng thái online: " + ex.Message);
+                    }
+
+                    SaveRememberMe();
+                    emailSuggestion.SaveLogin(LoginEmail.text, LoginPassword.text);
+
+                    showLogMsg("Login successful!");
+                    SceneController.Instance.NewTransitionPlan()
+                                          .Load(new ParameterScene { Name = SceneDatabase.BOOTSTRAPONLINE })
+                                          .WithFadeIn()
+                                          .Perform().Forget();
+                    loginUI.SetActive(false);
                 }
                 else
                 {
-                    openEmailPasswordNotificationPanel("Login failed.");
+                    showLogMsg("please verify email");
                 }
-
-                return;
             }
-
-            //loadingScreen.SetActive(false);
-            AuthResult result = task.Result;
-            Debug.LogFormat("User logged in successfully: {0} ({1})",
-                result.User.DisplayName, result.User.UserId);
-
-            if (result.User.IsEmailVerified)
+            finally
             {
-                SaveRememberMe();
-                emailSuggestion.SaveLogin(LoginEmail.text, LoginPassword.text);
-
-                showLogMsg("Login successful!");
-                SceneController.Instance.NewTransitionPlan()
-                                      .Load(new ParameterScene { Name = SceneDatabase.BOOTSTRAPONLINE })
-                                      .WithFadeIn()
-                                      .Perform().Forget();
-                loginUI.SetActive(false);
-            }
-            else
-            {
-                showLogMsg("please verify email");
+                isLoggingIn = false;
             }
         });
     }
@@ -592,31 +649,54 @@ public class EmailLogin : MonoBehaviour
     #endregion
 
     #region remember me functionality
-    // Load the remembered email from PlayerPrefs and set it in the login email input field
     public void ToggleRememberMe()
     {
-        PlayerPrefs.SetInt(
-            "RememberMe",
-            rememberMeToggle.isOn ? 1 : 0
-        );
+        if (rememberMeToggle == null) return;
+
+        bool isRemember = rememberMeToggle.isOn;
+        PlayerPrefs.SetInt("RememberMe", isRemember ? 1 : 0);
+
+        if (!isRemember)
+        {
+            PlayerPrefs.DeleteKey("SavedEmail");
+            PlayerPrefs.DeleteKey("SavedPassword");
+        }
+        else if (LoginEmail != null && LoginPassword != null)
+        {
+            PlayerPrefs.SetString("SavedEmail", LoginEmail.text.Trim());
+            PlayerPrefs.SetString("SavedPassword", LoginPassword.text);
+        }
 
         PlayerPrefs.Save();
-        Debug.Log("Remember Me toggled: " + rememberMeToggle.isOn);
     }
 
     private void LoadRememberedEmail()
     {
         bool remember = PlayerPrefs.GetInt("RememberMe", 0) == 1;
 
-        rememberMeToggle.isOn = remember;
+        if (rememberMeToggle != null)
+            rememberMeToggle.SetIsOnWithoutNotify(remember);
+
+        if (remember)
+        {
+            if (LoginEmail != null)
+                LoginEmail.text = PlayerPrefs.GetString("SavedEmail", "");
+            if (LoginPassword != null)
+                LoginPassword.text = PlayerPrefs.GetString("SavedPassword", "");
+        }
+        else
+        {
+            if (LoginEmail != null) LoginEmail.text = "";
+            if (LoginPassword != null) LoginPassword.text = "";
+        }
     }
 
     private void SaveRememberMe()
     {
-        if (rememberMeToggle.isOn)
+        if (rememberMeToggle != null && rememberMeToggle.isOn)
         {
             PlayerPrefs.SetInt("RememberMe", 1);
-            PlayerPrefs.SetString("SavedEmail", LoginEmail.text);
+            PlayerPrefs.SetString("SavedEmail", LoginEmail.text.Trim());
             PlayerPrefs.SetString("SavedPassword", LoginPassword.text);
         }
         else
@@ -628,5 +708,5 @@ public class EmailLogin : MonoBehaviour
 
         PlayerPrefs.Save();
     }
-    #endregion 
+    #endregion
 }

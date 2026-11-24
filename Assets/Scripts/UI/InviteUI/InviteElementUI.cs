@@ -156,7 +156,7 @@ public class InviteElementUI : MonoBehaviour
         try
         {
             float timer = 0f;
-            float timeCount = 10f;
+            float timeCount = 30f;
             while (timer < timeCount)
             {
                 timer += Time.deltaTime;

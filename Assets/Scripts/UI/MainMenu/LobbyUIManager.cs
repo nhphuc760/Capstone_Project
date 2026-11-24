@@ -15,6 +15,7 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private TextMeshProUGUI txtRoomCode;
     [SerializeField] private Button btnCopyRoomCode;
     [SerializeField] private TextMeshProUGUI txtPlayerCount;
+    [SerializeField] private GameObject roomCodeContainer;
 
     [Header("Lobby Controls")]
     [SerializeField] private Button btnLeaveRoom;
@@ -23,6 +24,14 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkRunner activeRunner;
     private string currentCode = "";
 
+    public static bool IsSinglePlaySession(NetworkRunner runner)
+    {
+        if (runner == null || !runner.IsRunning)
+            return true;
+
+        return runner.GameMode == GameMode.Single
+               || (runner.SessionInfo.IsValid && runner.SessionInfo.MaxPlayers <= 1);
+    }
     private async void Start()
     {
         activeRunner = FindFirstObjectByType<NetworkRunner>();
@@ -70,6 +79,33 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
             }
         }
 
+        bool isSingle = IsSinglePlaySession(activeRunner);
+
+        if (isSingle)
+        {
+            currentCode = "";
+            if (txtPlayerCount != null)
+                txtPlayerCount.text = "Players: 1/1";
+
+            if (roomCodeContainer != null)
+                roomCodeContainer.SetActive(false);
+
+            if (txtRoomCode != null)
+                txtRoomCode.gameObject.SetActive(false);
+
+            if (btnCopyRoomCode != null)
+                btnCopyRoomCode.gameObject.SetActive(false);
+
+            return;
+        }
+
+        if (roomCodeContainer != null)
+            roomCodeContainer.SetActive(true);
+        if (txtRoomCode != null)
+            txtRoomCode.gameObject.SetActive(true);
+        if (btnCopyRoomCode != null)
+            btnCopyRoomCode.gameObject.SetActive(true);
+
         if (activeRunner != null && activeRunner.SessionInfo.IsValid)
         {
             currentCode = activeRunner.SessionInfo.Name;
@@ -115,6 +151,13 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
 
         if (RoomDatabaseManager.Instance != null)
             await RoomDatabaseManager.Instance.LeaveRoom();
+
+        // Đảm bảo trạng thái luôn trả về Online kể cả khi CurrentRoom đã null
+        if (NetworkDataManager.Instance != null)
+            await NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.Online);
+
+        if (activeRunner == null)
+            activeRunner = FindFirstObjectByType<NetworkRunner>();
 
         if (activeRunner != null)
             await activeRunner.Shutdown();

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using UnityEngine;
 using Util.Core;
 using System.Collections.Generic;
@@ -50,7 +52,8 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
     public TickTimer CountDownTimer { get; private set; }
 
     int PlayerCount = 1;
-
+    private readonly HashSet<PlayerRef> _spawnedPlayers = new();
+    private readonly List<Vector3> _usedSpawnPositions = new();
     public event Action<GameState> OnGameStateChanged;
 
     // Camera đã detach để spectator (không bị hủy cùng player)
@@ -84,12 +87,124 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
         }
 
         NavMeshBakeManager.Ins.BakeAll();
-        Runner.Spawn(playerPrefab, shopRef.transform.Find("SpawnPoint").position.RandomAround(1f), Quaternion.identity, Runner.LocalPlayer, (runner, obj) =>
+        //Runner.Spawn(playerPrefab, shopRef.transform.Find("SpawnPoint").position.RandomAround(1f), Quaternion.identity, Runner.LocalPlayer, (runner, obj) =>
+        //{
+        //    obj.name = Object.InputAuthority.ToString();
+        //    runner.SetPlayerObject(Runner.LocalPlayer, obj);
+        //});
+        _spawnedPlayers.Clear();
+        _usedSpawnPositions.Clear();
+
+        var activePlayers = Runner.ActivePlayers.ToList();
+        MaxPlayers = Mathf.Max(1, activePlayers.Count);
+        PlayerCount = 0;
+
+        foreach (var player in activePlayers)
         {
-            obj.name = Object.InputAuthority.ToString();
-            runner.SetPlayerObject(Runner.LocalPlayer, obj);
-        });
+            SpawnPlayerAtRandomMapPosition(player);
+        }
         SetState(GameState.WaitingForPlayers);
+    }
+    private void SpawnPlayerAtRandomMapPosition(PlayerRef player)
+    {
+        if (!HasStateAuthority || _spawnedPlayers.Contains(player))
+            return;
+
+        Vector3 spawnPos = GetRandomMapSpawnPosition();
+        _usedSpawnPositions.Add(spawnPos);
+        _spawnedPlayers.Add(player);
+
+        // Kiểm tra xem người chơi đã có sẵn NetworkPlayer mang từ LobbyScene sang chưa
+        NetworkObject existingPlayerObj = Runner.GetPlayerObject(player);
+        if (existingPlayerObj == null)
+        {
+            foreach (var np in FindObjectsByType<NetworkPlayer>(FindObjectsSortMode.None))
+            {
+                if (np.Object != null && np.Object.InputAuthority == player)
+                {
+                    existingPlayerObj = np.Object;
+                    Runner.SetPlayerObject(player, existingPlayerObj);
+                    break;
+                }
+            }
+        }
+
+        if (existingPlayerObj != null)
+        {
+            if (existingPlayerObj.TryGetComponent<SimpleKCC>(out var kcc))
+            {
+                kcc.enabled = true;
+                kcc.SetPosition(spawnPos);
+            }
+            else
+            {
+                existingPlayerObj.transform.position = spawnPos;
+            }
+
+            PlayerCount++;
+            Debug.Log($"[GameManager] Đã dịch chuyển người chơi {player} từ Lobby tới vị trí: {spawnPos}");
+            return;
+        }
+
+        // Chỉ spawn mới nếu chạy trực tiếp DungTestScene (không đi qua LobbyScene)
+        Runner.Spawn(playerPrefab, spawnPos, Quaternion.identity, player, (runner, obj) =>
+        {
+            obj.name = player.ToString();
+            runner.SetPlayerObject(player, obj);
+
+            if (obj.TryGetComponent<SimpleKCC>(out var kcc))
+            {
+                kcc.SetPosition(spawnPos);
+            }
+
+            if (LobbyCharacterSelector.SelectedByPlayer.TryGetValue(player, out int selectedCharIndex)
+                && obj.TryGetComponent<LobbyCharacterSelector>(out var selector))
+            {
+                selector.SelectedCharacterIndex = selectedCharIndex;
+            }
+        });
+
+        PlayerCount++;
+        Debug.Log($"[GameManager] Đã spawn mới người chơi {player} tại vị trí ngẫu nhiên trên map: {spawnPos}");
+    }
+    private Vector3 GetRandomMapSpawnPosition()
+    {
+        if (mapManager != null)
+        {
+            Bounds playerBounds = new Bounds(Vector3.zero, new Vector3(1.2f, 2f, 1.2f));
+            const float minPlayerSpacing = 2.5f;
+
+            for (int attempt = 0; attempt < 25; attempt++)
+            {
+                Vector3? candidate = mapManager.FindValidSpawnPositionInGreen(playerBounds, obstacleMap);
+                if (!candidate.HasValue) continue;
+
+                Vector3 pos = candidate.Value;
+                pos.y = 0f;
+
+                bool tooCloseToOtherPlayer = false;
+                foreach (var usedPos in _usedSpawnPositions)
+                {
+                    if (Vector3.Distance(pos, usedPos) < minPlayerSpacing)
+                    {
+                        tooCloseToOtherPlayer = true;
+                        break;
+                    }
+                }
+
+                if (!tooCloseToOtherPlayer)
+                    return pos;
+            }
+
+            // Fallback nếu map ít vùng Green: lấy ngẫu nhiên trong phạm vi mapWidth x mapHeight
+            return new Vector3(
+                UnityEngine.Random.Range(2f, Mathf.Max(3f, mapManager.mapWidth - 2f)),
+                0f,
+                UnityEngine.Random.Range(2f, Mathf.Max(3f, mapManager.mapHeight - 2f))
+            );
+        }
+
+        return SpawnPoint();
     }
 
     public override void FixedUpdateNetwork()
@@ -166,14 +281,18 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
 
     public void PlayerJoined(PlayerRef player)
     {
-        if (HasStateAuthority && Runner.LocalPlayer != player)
+        //if (HasStateAuthority && Runner.LocalPlayer != player)
+        //{
+        //    Runner.Spawn(playerPrefab, shopRef.transform.Find("SpawnPoint").position.RandomAround(1f), Quaternion.identity, player, (runner, obj) =>
+        //    {
+        //        obj.name = player.ToString();
+        //        runner.SetPlayerObject(player, obj);
+        //    });
+        //    PlayerCount++;
+        //}
+        if (HasStateAuthority && !_spawnedPlayers.Contains(player))
         {
-            Runner.Spawn(playerPrefab, shopRef.transform.Find("SpawnPoint").position.RandomAround(1f), Quaternion.identity, player, (runner, obj) =>
-            {
-                obj.name = player.ToString();
-                runner.SetPlayerObject(player, obj);
-            });
-            PlayerCount++;
+            SpawnPlayerAtRandomMapPosition(player);
         }
     }
 

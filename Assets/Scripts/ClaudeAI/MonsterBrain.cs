@@ -26,6 +26,7 @@ namespace SilentCastle.MonsterAI
         [Networked] public int Exp { get; set; }
 
         [Networked, OnChangedRender(nameof(EnemyStateChange))] public MonsterStateId StateId { get; set; }
+        public bool IsSpawned { get; private set; }
         [Networked] public NetworkBool IsRaging { get; set; }
         [Networked] public float Rage01 { get; set; }
         [Networked] public float DaylightBurn01 { get; set; }
@@ -92,6 +93,7 @@ namespace SilentCastle.MonsterAI
         // =====================================================================
         public override void Spawned()
         {
+            IsSpawned = true;
             Mover = GetComponent<MonsterMover>();
             Mover.SetAuthority(HasStateAuthority);
             if (!HasStateAuthority) return;
@@ -144,6 +146,7 @@ namespace SilentCastle.MonsterAI
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            IsSpawned = false;
             Health.OnDeath -= OnMonsterDeath;
             if (!HasStateAuthority || World == null) return;
             SetTarget(null);
@@ -168,7 +171,7 @@ namespace SilentCastle.MonsterAI
 
         public void ChangeState(MonsterStateId id)
         {
-            if (_despawning) return;
+            if (!IsSpawned || _despawning) return;
             _state?.Exit();
             StateId = id;
             if (!_states.TryGetValue(id, out _state)) { _state = CreateState(id); _states[id] = _state; }
@@ -440,7 +443,7 @@ namespace SilentCastle.MonsterAI
         /// <summary>Hệ thống damage của player gọi hàm này TRÊN HOST khi đánh trúng quái.</summary>
         public void TakeDamage(float amount, NetworkObject attacker)
         {
-            if (!HasStateAuthority || StateId == MonsterStateId.Dead || amount <= 0f) return;
+            if (!IsSpawned || !HasStateAuthority || StateId == MonsterStateId.Dead || amount <= 0f) return;
             EnemyHealth.TakeDamage(amount, attacker);
             if (!EnemyHealth.IsAlive)
                 Die(DeathCause.Killed);
@@ -448,7 +451,7 @@ namespace SilentCastle.MonsterAI
 
         public void Die(DeathCause cause)
         {
-            if (StateId == MonsterStateId.Dead) return;
+            if (!IsSpawned || StateId == MonsterStateId.Dead) return;
             _lastDeathCause = cause;
             ChangeState(MonsterStateId.Dead);
             RPC_Died((byte)cause);

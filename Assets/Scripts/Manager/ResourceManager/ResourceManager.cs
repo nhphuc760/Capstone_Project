@@ -37,22 +37,40 @@ public class ResourceManager : NetworkBehaviour
         else if (Ins != this) Destroy(gameObject);
     }
 
+    // public override void Spawned()
+    // {
+    //     if (mapManager == null)
+    //         mapManager = MapManager.Ins;
+
+    //     // Nếu MapManager đã sẵn sàng trước (thứ tự spawn khác nhau)
+    //     if (Object.HasStateAuthority)
+    //     {
+    //         InitializeResources();
+    //     }
+    //     if (!HasStateAuthority)
+    //     {
+    //         NavMeshBakeManager.Ins.BakeAll();
+    //     }
+    // }
     public override void Spawned()
     {
         if (mapManager == null)
             mapManager = MapManager.Ins;
 
-        // Nếu MapManager đã sẵn sàng trước (thứ tự spawn khác nhau)
-        if (Object.HasStateAuthority)
-        {
-            InitializeResources();
-        }
+        // Host đã gọi resourceManager.InitializeResources() tuần tự bên trong GameManager.InitialData()
+        // sau khi mapManager.GenerateMap() chạy xong, nên không gọi trùng ở đây nữa.
         if (!HasStateAuthority)
         {
-            NavMeshBakeManager.Ins.BakeAll();
+            BakeNavMeshWhenReadyAsync().Forget();
         }
     }
-
+    private async UniTaskVoid BakeNavMeshWhenReadyAsync()
+    {
+        await UniTask.WaitUntil(() => NavMeshBakeManager.Ins != null && MapManager.Ins != null);
+        await UniTask.Yield();
+        if (this == null) return;
+        NavMeshBakeManager.Ins.BakeAll();
+    }
     /// <summary>
     /// Khởi tạo resource nodes bằng thuật toán Poisson Disk Sampling gốc.
     /// Gọi sau khi MapManager.GenerateMap() đã xong.

@@ -180,6 +180,19 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         StartFusionSession(GameMode.Client, code).Forget();
     }
 
+    public void HostRoomByInvite(string roomCode)
+    {
+        if (isConnecting || string.IsNullOrWhiteSpace(roomCode)) return;
+        HideJoinInputBar();
+        StartFusionSession(GameMode.Host, roomCode.Trim().ToUpper()).Forget();
+    }
+
+    public void JoinRoomByInvite(string roomCode)
+    {
+        if (isConnecting || string.IsNullOrWhiteSpace(roomCode)) return;
+        HideJoinInputBar();
+        StartFusionSession(GameMode.Client, roomCode.Trim().ToUpper()).Forget();
+    }
     private async UniTaskVoid StartFusionSession(GameMode mode, string sessionName)
     {
         if (fusionBootstrap == null)
@@ -280,6 +293,10 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
 
             if (isReady)
             {
+                if (mode == GameMode.Host && RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
+                {
+                    RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready).Forget();
+                }
                 isConnecting = false;
                 return;
             }
@@ -365,7 +382,12 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         {
             if (isHost)
             {
-                Room room = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
+                //Room room = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
+                Room room = RoomDatabaseManager.Instance.CurrentRoom;
+                if (room == null || room.RoomName != roomCode)
+                {
+                    room = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
+                }
                 if (room != null)
                     await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomCode}").SetValueAsync(room.RoomID);
             }

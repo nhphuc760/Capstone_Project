@@ -1,10 +1,10 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using Cinemachine;
 using Fusion;
 using System.Collections;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class PlayerCameraController : NetworkBehaviour
 {
@@ -26,6 +26,12 @@ public class PlayerCameraController : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (!enabled || SceneManager.GetActiveScene().name.Contains("LobbyScene"))
+        {
+            DisableForSpectator();
+            return;
+        }
+
         if (!HasInputAuthority)
         {
             DisableForSpectator();
@@ -80,7 +86,7 @@ public class PlayerCameraController : NetworkBehaviour
     /// </summary>
     public void EnableForSpectator()
     {
-        if (virtualCamera == null)
+        if (!enabled || virtualCamera == null)
             return;
 
         CancelCurrentMove();
@@ -121,6 +127,9 @@ public class PlayerCameraController : NetworkBehaviour
         float transitionDuration = 1f,
         CancellationToken cancellationToken = default)
     {
+        if (!enabled)
+            return UniTask.CompletedTask;
+
         if (followTarget == null)
         {
             Debug.LogWarning("[PlayerCamera] followTarget chưa được gán!");
@@ -136,6 +145,8 @@ public class PlayerCameraController : NetworkBehaviour
         CancelCurrentMove();
 
         virtualCamera.Follow = followTarget;
+        //if (!enabled) return;
+        //if (confiner3D == null) return;
 
         Vector3 currentPosition = followTarget.position;
 
@@ -169,11 +180,26 @@ public class PlayerCameraController : NetworkBehaviour
             cancellationRegistration = cancellationToken.Register(
                 CancelCurrentMove
             );
+            //// Tự tìm bounds trong scene (ví dụ theo tag hoặc tên)
+            //var boundsObj = GameObject.FindGameObjectWithTag("Map").transform.GetChild(0).GetComponent<BoxCollider>();
+            //if (boundsObj != null)
+            //{
+            //    confiner3D.m_BoundingVolume = boundsObj;
+            //}
+            // Tự tìm bounds trong scene khi sang GameplayScene
+            //var mapObj = GameObject.FindGameObjectWithTag("Map");
+            //if (mapObj != null && mapObj.transform.childCount > 0)
+            //{
+            //    var boundsObj = mapObj.transform.GetChild(0).GetComponent<BoxCollider>();
+            //    if (boundsObj != null)
+            //    {
+            //        confiner3D.m_BoundingVolume = boundsObj;
+            //    }
+            //}
         }
 
         return moveTcs.Task;
     }
-
 
     public Camera DetachMainCameraForSpectator()
     {
@@ -192,7 +218,6 @@ public class PlayerCameraController : NetworkBehaviour
 
         Debug.Log("[PlayerCamera] Main Camera detached for Spectator.");
         return mainCamera;
-
     }
 
     /// <summary>
@@ -278,7 +303,7 @@ public class PlayerCameraController : NetworkBehaviour
 
     public void SetCameraBounds(Collider boundsCollider = null)
     {
-        if (confiner3D == null)
+        if (!enabled || confiner3D == null)
             return;
 
         if (boundsCollider == null)

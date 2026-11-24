@@ -1,10 +1,12 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using FischlWorks_FogWar;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using SilentCastle.MonsterAI;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 [Serializable]
 public struct NetworkResourcePlayer : INetworkStruct
@@ -51,6 +53,9 @@ public class GatherResult
 
 public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMonsterTarget
 {
+    private PlayerInputProvider _inputProvider;
+    private bool _isGameplayInitialized;
+
     [Flags]
     public enum PlayerState : byte
     {
@@ -107,13 +112,39 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
 
     public Vector3 Position => transform.position;
 
-    public bool IsAlive => Health.IsAlive;
+    public bool IsAlive => Health != null && Health.IsAlive;
 
-    public float Health01 => Health.HealthPercent;
+    public float Health01 => Health != null ? Health.HealthPercent : 1f;
 
     public float BodyRadius => 0.6f;
 
     public bool IsTargetable => IsAlive;
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (Object != null && Object.IsValid && scene.name != "LobbyScene")
+        {
+            InitializeGameplayDelayedAsync().Forget();
+        }
+    }
+
+    private async UniTaskVoid InitializeGameplayDelayedAsync()
+    {
+        // Đợi 2 frame để Photon Fusion hoàn tất nạp scene mới trước khi spawn Door và đăng ký hệ thống
+        await UniTask.DelayFrame(2);
+        if (this == null || Object == null || !Object.IsValid) return;
+        InitializeGameplayIfNeeded();
+    }
 
     public override void Spawned()
     {
@@ -121,8 +152,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         {
             Local = this;
         }
+
         // Chặn toàn bộ HUD, Camera gameplay và trọng lực khi đang ở LobbyScene
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
+        if (SceneManager.GetActiveScene().name == "LobbyScene")
         {
             if (cameraView != null) cameraView.gameObject.SetActive(false);
             if (CanvasOverlay != null) CanvasOverlay.SetActive(false);
@@ -131,36 +163,66 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
             gameObject.name = Object.InputAuthority.ToString();
             return;
         }
+
+        InitializeGameplayIfNeeded();
+    }
+
+    private void InitializeGameplayIfNeeded()
+    {
+        if (_isGameplayInitialized) return;
+        _isGameplayInitialized = true;
+
+        if (CanvasWorldSpace != null) CanvasWorldSpace.SetActive(true);
+
         if (!Object.HasInputAuthority)
         {
-            cameraView.gameObject.SetActive(false);
-            CanvasOverlay.SetActive(false);
+            if (cameraView != null) cameraView.gameObject.SetActive(false);
+            if (CanvasOverlay != null) CanvasOverlay.SetActive(false);
         }
-        controller.SetGravity(Physics.gravity.y * 2f);
+        else
+        {
+            if (cameraView != null) cameraView.gameObject.SetActive(true);
+            if (CanvasOverlay != null) CanvasOverlay.SetActive(true);
+        }
+
+        if (controller != null)
+        {
+            controller.enabled = true;
+            controller.SetGravity(Physics.gravity.y * 2f);
+        }
+
         gameObject.name = Object.InputAuthority.ToString();
         inventory ??= GetComponent<NetworkInventory>();
         Health ??= GetComponent<HealthComponent>();
         Stamina ??= GetComponent<StaminaComponent>();
         _stats ??= GetComponent<Stats>();
-        //Suggest Target
+
         suggestTarget ??= GetComponent<SuggestTarget>();
-        suggestTarget.enabled = true;
+        if (suggestTarget != null) suggestTarget.enabled = true;
+
         Health.Initialize(_stats);
         Stamina.Initialize(_stats);
         level = 1;
-        if(WorldContext.Instance != null)
+
+        if (WorldContext.Instance != null)
             WorldContext.Instance.Register(this);
 
-        if (HasInputAuthority)
+        if (Object.HasInputAuthority)
         {
-            //Subcribe Inventory Event
-            cameraView.tag = "MainCamera";
+            if (Runner.GetComponent<BasicSpawner>() == null)
+            {
+                _inputProvider = gameObject.GetComponent<PlayerInputProvider>() ?? gameObject.AddComponent<PlayerInputProvider>();
+                Runner.AddCallbacks(_inputProvider);
+                Runner.ProvideInput = true;
+            }
 
-            // Disable Stats WorldSpace
-            CanvasWorldSpace.GetComponentInChildren<PlayerHealthUI>().gameObject.SetActive(false);
-            CanvasWorldSpace.GetComponentInChildren<PlayerStaminaUI>().gameObject.SetActive(false);
-            //CanvasWorldSpace.gameObject.SetActive(false);
-
+            if (CanvasWorldSpace != null)
+            {
+                var healthUI = CanvasWorldSpace.GetComponentInChildren<PlayerHealthUI>(true);
+                if (healthUI != null) healthUI.gameObject.SetActive(false);
+                var staminaUI = CanvasWorldSpace.GetComponentInChildren<PlayerStaminaUI>(true);
+                if (staminaUI != null) staminaUI.gameObject.SetActive(false);
+            }
 
             var inventoryUI = GetComponentInChildren<InventoryUI>(includeInactive: true);
             if (inventoryUI != null)
@@ -169,65 +231,91 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
                 inventory.OnInventoryChanged += inventoryUI.OnInventoryChanged;
             }
 
+            foreach (Camera cam in FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            {
+                if (cam != cameraView && cam.CompareTag("MainCamera"))
+                {
+                    cam.gameObject.SetActive(false);
+                }
+            }
+
+            if (cameraView != null)
+            {
+                cameraView.gameObject.SetActive(true);
+                cameraView.tag = "MainCamera";
+            }
+
+            // Chỉ đăng ký Fog of War cho nhân vật của máy mình
+            fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
+            if (fogSpawner != null)
+            {
+                fogSpawner.RegisterPlayer(transform);
+            }
+            else
+            {
+                Debug.LogError("[FogWar] Cannot find csRevealerSpawner!");
+            }
         }
 
-        GameManager.Instance.RegisterCamera(Object.InputAuthority, cameraView);
+        if (GameManager.Instance != null)
+            GameManager.Instance.RegisterCamera(Object.InputAuthority, cameraView);
 
-        if (HasStateAuthority)
+        if (HasStateAuthority && doorPlayer == null && doorPrefab != default)
         {
             doorPlayer = Runner.Spawn(doorPrefab, inputAuthority: Object.InputAuthority).GetBehaviour<Door>();
             doorPlayer.RPC_SetActiveNetworked(false);
         }
-        //fog of war
-        fogSpawner = FindFirstObjectByType<csRevealerSpawner>();
-
-        if (fogSpawner != null)
-        {
-            fogSpawner.RegisterPlayer(transform);
-        }
-        else
-        {
-            Debug.LogError("[FogWar] Cannot find csRevealerSpawner!");
-        }
     }
-
-    private void Start()
-    {
-        transform.SetAsFirstSibling();
-    }
-
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
+        _isGameplayInitialized = false;
+
+        if (_inputProvider != null && runner != null)
+        {
+            runner.RemoveCallbacks(_inputProvider);
+            _inputProvider = null;
+        }
         if (fogSpawner != null)
         {
             fogSpawner.UnregisterPlayer();
         }
         if (WorldContext.Instance != null) WorldContext.Instance.Unregister(this);
 
-        GameManager.Instance.UnregisterCamera(Object.InputAuthority);
-
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.UnregisterCamera(Object.InputAuthority);
+        }
     }
 
+    private void OnApplicationQuit()
+    {
+        if (Object != null && Object.HasInputAuthority && Runner != null && Runner.IsRunning)
+        {
+            Runner.Shutdown();
+        }
+    }
 
     private void Update()
     {
-        // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
-            return;
+        // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene hoặc chưa init xong
+        if (SceneManager.GetActiveScene().name == "LobbyScene") return;
+        if (!_isGameplayInitialized) return;
 
-        //Test Killed Monster
+        // Killed Monster
         if (Input.GetKeyDown(KeyCode.K) && HasInputAuthority)
         {
-            FindAnyObjectByType<MonsterBrain>().GetComponent<ITakedamageable>().TakeDamage(50, Object);
+            var monster = FindAnyObjectByType<MonsterBrain>();
+            if (monster != null)
+                monster.GetComponent<ITakedamageable>().TakeDamage(50, Object);
         }
 
-        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
-        {
+        bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
+        if (Input.GetMouseButtonDown(1) && !pointerOverUI && Camera.main != null)
+        {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.collider.transform.root.TryGetComponent<ITooltipContext>(out var context))
                 {
@@ -240,13 +328,11 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
             }
         }
 
-
-        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+        if (Input.GetMouseButtonDown(0) && !pointerOverUI && Camera.main != null)
         {
             if (!string.IsNullOrEmpty(GetComponent<BuildSystem>().idStruct.Value)) return;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.transform.root.TryGetComponent<StructureBase>(out var structure) && (structure.Object.InputAuthority == Runner.LocalPlayer))
                 {
@@ -260,9 +346,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
             }
         }
 
-
-        //Cheat
-       
+        // Cheat
         if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             RPC_CheatResource();
@@ -271,11 +355,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
 
     public override void FixedUpdateNetwork()
     {
-        // Don't process input in the lobby scene
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene") return;
-
-
-        //if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        if (SceneManager.GetActiveScene().name == "LobbyScene") return;
+        if (!_isGameplayInitialized || _stats == null) return;
         if (Lock) return;
 
         _stats.Tick(Runner.DeltaTime);
@@ -283,7 +364,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         {
             if (!Health.IsAlive) return;
             Vector3 inputDirection = data.moveDirection.normalized;
-            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);                       
+            Vector3 moveDirection = inputDirection.normalized * _stats.Get(StatsType.MoveSpeed);
             if (data.button.WasPressed(previousInput.button, ButtonType.TestAddModify))
             {
                 if (!HasStateAuthority) return;
@@ -299,18 +380,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
                 };
                 AddModifier(modSpeed);
             }
-            previousInput = data;            
+            previousInput = data;
             controller.Move(moveDirection);
-
         }
-
-        //if (transform.position.y <= -10f)
-        //{
-        //    controller.SetPosition(Vector3.one);
-        //}
     }
-
-
 
     public override void Render()
     {
@@ -320,17 +393,15 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         {
             animator.SetBool("IsWalking", true);
             Quaternion targetRotation = Quaternion.LookRotation(previousInput.moveDirection);
-            model.localRotation = Quaternion.RotateTowards(model.localRotation, targetRotation , angularSpeed * Time.deltaTime);
+            model.localRotation = Quaternion.RotateTowards(model.localRotation, targetRotation, angularSpeed * Time.deltaTime);
         }
         else
         {
             animator.SetBool("IsWalking", false);
         }
-            model.localPosition = Vector3.zero;
-
-       
-
+        model.localPosition = Vector3.zero;
     }
+
     private void OnDestroy()
     {
         if (HasInputAuthority)
@@ -343,10 +414,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
                 {
                     inventory.OnInventoryChanged -= InventoryUI.OnInventoryChanged;
                 }
-            }         
+            }
         }
-    }   
-
+    }
 
     public void AddResource(int amount, ResourceType type)
     {
@@ -367,8 +437,8 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
                 resourcePlayer.Electric += amount;
                 break;
         }
-
     }
+
     public void AddResource(NetworkResourcePlayer resouces)
     {
         if (!HasStateAuthority) return;
@@ -378,9 +448,6 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         resourcePlayer.Electric += resouces.Electric;
     }
 
-
-    
-
     public void ComsumpResource(NetworkResourcePlayer resource)
     {
         if (!HasStateAuthority) return;
@@ -389,11 +456,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         this.resourcePlayer.GoldOre -= resource.GoldOre;
         this.resourcePlayer.Electric -= resource.Electric;
     }
-  
 
     public void TakeDamage(float amount, NetworkObject attacker)
     {
-
         Health?.TakeDamage(amount, attacker);
     }
 
@@ -415,17 +480,16 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         }
     }
 
-    //RPC calls
-
+    // RPC calls
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_CheatResource()
     {
         AddResource(new NetworkResourcePlayer
         {
-            Wood = 1000,
-            Stone = 1000,
-            GoldOre = 1000,
-            Electric = 1000,
+            Wood = 100,
+            Stone = 100,
+            GoldOre = 100,
+            Electric = 100,
         });
     }
 
@@ -433,12 +497,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
     {
         Health.TakeDamage(amount, attacker.Object);
     }
-    //IInteractable implementation
+
+    // IInteractable implementation
     #region Interactions
 
-
     #endregion
-
 }
-
-

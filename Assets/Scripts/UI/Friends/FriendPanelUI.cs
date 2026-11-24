@@ -1,88 +1,82 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 public class FriendPanelUI : MonoBehaviour
 {
     [SerializeField] RectTransform content;
     [SerializeField] FriendElementUI elementFriendPrefabs;
-    Dictionary<string, FriendElementUI> container = new();
 
+    private readonly Dictionary<string, FriendElementUI> container = new();
+    private EventBinding<DataEvent.OnFriendAdded> onFriendAdded;
+    private EventBinding<DataEvent.OnFriendRemoved> onFriendRemoved;
 
-    EventBinding<DataEvent.OnFriendAdded> onFriendAdded;
-    EventBinding<DataEvent.OnFriendRemoved> onFriendRemoved;
     private void Awake()
     {
         Initialize(NetworkDataManager.Instance.friendManager.GetFriends());
-        Debug.Log("List friend: " + NetworkDataManager.Instance.friendManager.FriendCount);
         onFriendAdded = new EventBinding<DataEvent.OnFriendAdded>(OnFriendAddedHandle);
         onFriendRemoved = new EventBinding<DataEvent.OnFriendRemoved>(OnFriendRemoveHandle);
         SubcribeEvent();
     }
-    
-    void OnFriendAddedHandle(DataEvent.OnFriendAdded args)
+
+    private void OnEnable()
     {
-        CreateElement(args.userID);
-    }
-    void OnFriendRemoveHandle(DataEvent.OnFriendRemoved args)
-    {
-        RemoveElement(args.userID);
+        Refesh();
     }
 
-    void OnFriendPresenceChanged(string userID)
+    private void OnFriendAddedHandle(DataEvent.OnFriendAdded args) => CreateElement(args.userID);
+    private void OnFriendRemoveHandle(DataEvent.OnFriendRemoved args) => RemoveElement(args.userID);
+
+    private void OnFriendPresenceChanged(string userID)
     {
-        Debug.Log("FriendPresence Changed");
-        if (container.TryGetValue(userID, out var user))
-        {
+        if (container.TryGetValue(userID, out var user) && user != null)
             user.UpdateUI();
-        }
-        
     }
-    
 
-    void Initialize(List<string> listFriends)
+    private void Initialize(List<string> listFriends)
     {
-        foreach (var i in listFriends)
-        {
-            CreateElement(i);
-        }
-    } 
+        foreach (var id in listFriends)
+            CreateElement(id);
+    }
 
     public void Refesh()
-    {       
-        foreach (var i in container.Values)
-        {
-            i.UpdateUI();
-        }
+    {
+        foreach (var item in container.Values)
+            if (item != null) item.UpdateUI();
     }
 
-    void CreateElement(string userID)
+    private void CreateElement(string userID)
     {
+        if (string.IsNullOrEmpty(userID) || container.ContainsKey(userID)) return;
+
         var ele = Instantiate(elementFriendPrefabs, content);
         ele.Init(userID);
         container.Add(userID, ele);
     }
-    void RemoveElement(string userID)
+
+    private void RemoveElement(string userID)
     {
         if (container.TryGetValue(userID, out FriendElementUI ele))
         {
-            Destroy(ele.gameObject);
+            container.Remove(userID);
+            if (ele != null)
+                Destroy(ele.gameObject);
         }
     }
-    private void OnDestroy()
-    {
-        DesubcribeEvent();
-    }
 
-    void SubcribeEvent()
+    private void OnDestroy() => DesubcribeEvent();
+
+    private void SubcribeEvent()
     {
         NetworkDataManager.Instance.friendManager.OnPresenceChanged += OnFriendPresenceChanged;
         EventBus<DataEvent.OnFriendAdded>.Register(onFriendAdded);
         EventBus<DataEvent.OnFriendRemoved>.Register(onFriendRemoved);
     }
-    void DesubcribeEvent()
+
+    private void DesubcribeEvent()
     {
-        NetworkDataManager.Instance.friendManager.OnPresenceChanged -= OnFriendPresenceChanged;
+        if (NetworkDataManager.Instance?.friendManager != null)
+            NetworkDataManager.Instance.friendManager.OnPresenceChanged -= OnFriendPresenceChanged;
+
         EventBus<DataEvent.OnFriendAdded>.Deregister(onFriendAdded);
         EventBus<DataEvent.OnFriendRemoved>.Deregister(onFriendRemoved);
     }
