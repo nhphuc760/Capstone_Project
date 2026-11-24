@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class DoorFortifyAction : InteractionAction
 {
     [SerializeField] ProgressUI ProgressUI;
-    [SerializeField] Sprite icon;
     private Door _door;
     private Door Door => _door != null ? _door : (_door = GetComponentInParent<Door>());
 
@@ -33,7 +32,7 @@ public class DoorFortifyAction : InteractionAction
 
         if(type == InteractionEventType.Begin)
         {
-            ProgressUI.UpdateIcon(icon);
+            ProgressUI.UpdateIcon(Presentation.Icon);
             ProgressUI.gameObject.SetActive(true);
         }       
         else if(type == InteractionEventType.End)

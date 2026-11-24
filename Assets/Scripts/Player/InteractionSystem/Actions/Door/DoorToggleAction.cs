@@ -22,6 +22,6 @@ public class DoorToggleAction : InteractionAction
     }
     public override void OnPerform(in Game.Interaction.InteractionContext ctx)
     {
-        Door.RPC_RequestTriggerDoor(!Door.IsOpen);
+        Door.RPC_RequestTriggerDoor(!Door.IsOpen, ctx.Player);
     }
 }

@@ -25,7 +25,7 @@ public class PlayerStatsUI : MonoBehaviour
         Lv.text = playerStats.GetBehaviour<NetworkPlayer>().Level.ToString();
         MoveSpeed.text = playerStats.Get(StatsType.MoveSpeed).ToString("F2");
         AttackSpeed.text = playerStats.Get(StatsType.AttackSpeed).ToString("F2");
-        Damage.text = playerStats.Get(StatsType.Damage).ToString();
+        Damage.text = playerStats.Get(StatsType.Damage).ToString("F2");
     }
 
     private void OnDestroy()

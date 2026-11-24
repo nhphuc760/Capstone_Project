@@ -61,7 +61,6 @@ namespace Game.Interaction
         public NetworkButtons PrevButtons { get; set; }
 
 
-        [Networked] public bool Lock { get; set; }
 
         // ---------- Events cho UI / Animator (client-side) ----------
         public event Action<InteractionEvent> Presented;
@@ -100,29 +99,16 @@ namespace Game.Interaction
 
         public override void Spawned()
         {
-            if (!enabled || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("LobbyScene"))
-                return;
             _seenState = State;
             _seenPerform = PerformCounter;
-            Lock = true;
-            GameManager.Instance.OnGameStateChanged += GameManager_StateChange;
         }
-
-        private void GameManager_StateChange(GameState state)
-        {
-            if (state == GameState.Playing && HasStateAuthority) Lock = false;
-        }
+       
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
-            if (GameManager.Instance != null)
-                GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
-
-            if (HasInputAuthority && _focusAction != null)
-            {
+            if (HasInputAuthority)
                 for (int s = 0; s < _focusAction.Length; s++)
                     if (_focusAction[s] != null) SetFocus(s, null, null);
-            }
         }
 
         // ================= Public API =================
@@ -175,9 +161,7 @@ namespace Game.Interaction
 
         public override void FixedUpdateNetwork()
         {
-            if (!enabled) return;
             if (!Object.HasStateAuthority) return;
-            if (Lock) return;
             TryReadButtons(out var buttons);
             var pressed = buttons.GetPressed(PrevButtons);
             PrevButtons = buttons;
@@ -374,7 +358,6 @@ namespace Game.Interaction
 
         public override void Render()
         {
-            if (!enabled) return;
             var st = State;
             if (_seenState == InteractionState.Idle && st != InteractionState.Idle)
             {

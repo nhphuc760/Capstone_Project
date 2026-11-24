@@ -26,7 +26,7 @@ public class DoorBreakAction : StructureBreakAction
 
     public override void OnPerform(in InteractionContext ctx)
     {
-        Door.RPC_RequestTriggerDoor(true);
+        Door.RPC_RequestTriggerDoor(true, ctx.Player);
         ctx.Get<StaminaComponent>().TryConsume(StaminaPerUse + Door.Level);
     }
 }

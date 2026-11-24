@@ -14,7 +14,7 @@ public class ProgressUI : MonoBehaviour
     public void UpdateIcon(Sprite icon)
     {
         if(Icon)
-            Icon.sprite = icon;
+            Icon.sprite = icon != null ? icon : null;
     }
 
 }

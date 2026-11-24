@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Fusion;
 using UnityEngine;
 
@@ -57,9 +57,9 @@ public class Turret : StructAttackBase
 
     public override string GetInfor()
     {
-        return $"Damage: {_structureStats.Get(StatsType.Damage)}\n" +
-            $"Range: {_structureStats.Get(StatsType.Range)}\n" +
-            $"Speed: {_structureStats.Get(StatsType.AttackSpeed)}";
+        return $"Sát thương: {_structureStats.Get(StatsType.Damage)}\n" +
+            $"Phạm vi: {_structureStats.Get(StatsType.Range)}\n" +
+            $"Tốc độ: {_structureStats.Get(StatsType.AttackSpeed)}";
     }
 
 

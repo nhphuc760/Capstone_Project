@@ -87,15 +87,23 @@ public class ShopManager : NetworkBehaviour
 
     void TriggerDamage(NetworkObject attacker)
     {
-        for (int i = 0; i < 8; i++)
+        if (!HasStateAuthority) return;
+
+        PlayerRef attackerRef = attacker.InputAuthority;
+        if (attackerRef == PlayerRef.None) return;
+
+        // Đã bị ban rồi thì bỏ qua
+        if (bannedLists.Contains(attackerRef)) return;
+
+        for (int i = 0; i < bannedLists.Length; i++)
         {
-            if (bannedLists[i] == null || bannedLists[i] == PlayerRef.None)
+            if (bannedLists[i] == PlayerRef.None)
             {
-                bannedLists.Set(i, attacker.InputAuthority);
+                bannedLists.Set(i, attackerRef);
                 break;
             }
         }
-    }   
+    }
 
     void OnDayStart()
     {
@@ -109,7 +117,7 @@ public class ShopManager : NetworkBehaviour
     
     void OnNightStart()
     {
-        if (HasStateAuthority) return;
+        if (!HasStateAuthority) return;
         RemovePlayerStillInside();
         playerInSide.Clear();
         RPC_SetActiveShop(false);
@@ -129,28 +137,39 @@ public class ShopManager : NetworkBehaviour
 
     void AddPlayerInsided()
     {
-        int i = 0;
+        int slot = 0;
         var colliders = Physics.OverlapBox(bounds.bounds.center, bounds.bounds.extents, Quaternion.identity);
-        for (int j = 0; j < colliders.Length; j ++)
+
+        for (int j = 0; j < colliders.Length && slot < playerInSide.Length; j++)
         {
-            if (colliders[i].transform.root.TryGetComponent<NetworkPlayer>(out var player))
+            if (colliders[j].transform.root.TryGetComponent<NetworkPlayer>(out var player))
             {
+                PlayerRef pRef = player.Object.InputAuthority;
+                if (pRef == PlayerRef.None) continue;
+                if (playerInSide.Contains(pRef)) continue; // tránh trùng
+
                 player.Health.OnTakeDamage += TriggerDamage;
-                playerInSide.Set(i, player.Object.InputAuthority);
-                i++;
+                playerInSide.Set(slot, pRef);
+                slot++;
             }
-        }       
+        }
     }
 
     void RemovePlayerStillInside()
     {
-        foreach (var i in playerInSide)
+        foreach (var pRef in playerInSide)
         {
-            if (i == null || i == PlayerRef.None) continue;
-            Runner.GetPlayerObject(i).GetBehaviour<NetworkPlayer>().Health.OnTakeDamage -= TriggerDamage;
+            if (pRef == PlayerRef.None) continue;
+
+            var playerObj = Runner.GetPlayerObject(pRef);
+            if (playerObj == null) continue;
+
+            var networkPlayer = playerObj.GetBehaviour<NetworkPlayer>();
+            if (networkPlayer != null)
+                networkPlayer.Health.OnTakeDamage -= TriggerDamage;
         }
-    }   
-    
+    }
+
 
     public void BuyItem(ItemShop itemShop)
     {

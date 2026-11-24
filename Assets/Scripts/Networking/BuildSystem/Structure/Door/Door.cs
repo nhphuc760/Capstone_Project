@@ -37,6 +37,12 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
 
     public bool IsTargetable => IsAlive && isActiveAndEnabled;
 
+
+
+
+    public event Action<bool, PlayerRef> OnDoorToggle;
+
+
     public void SetOutSideOppositeDoor(Vector3 pos)
     {
         if (HasStateAuthority)
@@ -82,17 +88,6 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
             NavMeshBakeManager.Ins.RequestBake();
 
         //GameOver on Object.InputAuthority
-
-    }
-
-
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
-        {
-            HealthDoor_OnDeath(Object);
-        }
 
     }
 
@@ -188,13 +183,14 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
     {
         string s = "";
 
-        s +=  $"HP: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth} \n";
-        s += $"Security: {Security}";
+        s +=  $"Máu: {HealthDoor.CurrentHealth}/{HealthDoor.MaxHealth} \n";
+        s += $"Cấp: {Level} \n";
+        s += $"Mức Bảo mật: {Security}";
         return s ;  
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RPC_RequestTriggerDoor(bool open)
+    public void RPC_RequestTriggerDoor(bool open, PlayerRef player = default)
     {
         if (open)
         {
@@ -207,6 +203,7 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
             GetComponentInChildren<Animator>().Play("Close");
         }
 
+        OnDoorToggle?.Invoke(open, player);
         IsOpen = open;
     }
 

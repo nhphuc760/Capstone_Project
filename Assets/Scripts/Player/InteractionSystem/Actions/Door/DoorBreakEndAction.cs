@@ -9,6 +9,7 @@ public class DoorBreakEndAction : StructureBreakAction
     {
         return "Phá";
     }
+   
 
 
     public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
@@ -33,8 +34,7 @@ public class DoorBreakEndAction : StructureBreakAction
             {
                 FailReason = "";
                 return false;
-            }
-            return true;
+            }           
         }
         return false;
     }

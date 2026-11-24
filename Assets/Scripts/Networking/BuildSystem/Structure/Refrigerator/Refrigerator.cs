@@ -36,7 +36,7 @@ public class Refrigerator : StructureBase
 
     public override string GetInfor()
     {
-        return $"Giảm tốc độ đánh của quái lên cửa {_structureStats.Get(StatsType.Value)}%";
+        return $"Hiệu ứng: {_structureStats.Get(StatsType.Value)}%";
     }
 
     public override void UpgradeLogic()

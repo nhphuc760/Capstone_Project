@@ -7,7 +7,6 @@ public class StructureBreakAction : InteractionAction
 {
     [SerializeField] protected ProgressUI ProgressUI;
     [SerializeField] protected StructureBase structureBase;
-    [SerializeField] protected Sprite icon;
     [SerializeField] protected int StaminaPerUse = 5;
     protected virtual void Awake()
     {
@@ -53,7 +52,7 @@ public class StructureBreakAction : InteractionAction
     {
         if (type == InteractionEventType.Begin)
         {
-            ProgressUI.UpdateIcon(icon);
+            ProgressUI.UpdateIcon(Presentation.Icon);
             ProgressUI.gameObject.SetActive(true);
         }
         else if (type == InteractionEventType.End)
