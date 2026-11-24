@@ -21,6 +21,12 @@ public class InviteSender
 
     public async void SendInvite(string receiverId)
     {
+        var activeRunner = UnityEngine.Object.FindAnyObjectByType<NetworkRunner>();
+        if (LobbyUIManager.IsSinglePlaySession(activeRunner))
+        {
+            Debug.LogWarning("[InviteSender] Đang ở chế độ Single Play, không thể gửi lời mời.");
+            return;
+        }
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         var currentRoom = RoomDatabaseManager.Instance.CurrentRoom;
         if (currentRoom == null)

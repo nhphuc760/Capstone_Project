@@ -76,13 +76,16 @@ public class FriendElementUI : MonoBehaviour
         //var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
         //return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
 
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
-            return true;
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "LobbyScene")
+        return false;
+
+        var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
+        if (LobbyUIManager.IsSinglePlaySession(activeRunner))
+            return false;
 
         if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
             return true;
 
-        var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
         return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
     }
 
@@ -103,7 +106,12 @@ public class FriendElementUI : MonoBehaviour
     public async void OnInviteClick()
     {
         if (isInviting || string.IsNullOrEmpty(userID)) return;
-
+        var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
+        if (LobbyUIManager.IsSinglePlaySession(activeRunner) || !IsLocalPlayerInLobby())
+        {
+            Debug.LogWarning("[FriendUI] Chế độ Single hoặc chưa vào phòng Multiplayer, không thể mời bạn bè!");
+            return;
+        }
         //if (RoomDatabaseManager.Instance == null || RoomDatabaseManager.Instance.CurrentRoom == null)
         if (!IsLocalPlayerInLobby())
         {
