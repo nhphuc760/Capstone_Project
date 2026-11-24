@@ -9124,6 +9124,7 @@ MonoBehaviour:
   txtRoomCode: {fileID: 1614493401}
   btnCopyRoomCode: {fileID: 0}
   txtPlayerCount: {fileID: 1677661544}
+  roomCodeContainer: {fileID: 0}
   btnLeaveRoom: {fileID: 1945581082}
   chooseTypeSceneName: ChooseType
 --- !u!114 &126555775
