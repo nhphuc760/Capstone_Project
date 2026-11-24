@@ -3721,6 +3721,8 @@ GameObject:
   - component: {fileID: 5550687586956063432}
   - component: {fileID: 4076327860458310933}
   - component: {fileID: 6148496610991257368}
+  - component: {fileID: 2205163480747497676}
+  - component: {fileID: 8007318029164384940}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3836,6 +3838,7 @@ MonoBehaviour:
   - {fileID: 5550687586956063432}
   - {fileID: 4076327860458310933}
   - {fileID: 6148496610991257368}
+  - {fileID: 2205163480747497676}
   - {fileID: 3210318161609772509}
   - {fileID: 6912120905335120596}
   - {fileID: 8893701886593952330}
@@ -4087,7 +4090,6 @@ MonoBehaviour:
   _ActiveDuration: 0
   _StartPosition: {x: 0, y: 0, z: 0}
   _PerformCounter: 0
-  _Lock: 0
   _focusInterval: 0.1
 --- !u!114 &1943368405509535366
 MonoBehaviour:
@@ -4173,6 +4175,39 @@ MonoBehaviour:
   _IsDead:
     _value: 0
   animator: {fileID: 6721125320261425079}
+--- !u!114 &2205163480747497676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d1cf5c900e43334192fd0161aa3ce34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyCharacterSelector
+  visualApplier: {fileID: 8007318029164384940}
+  selfArrow: {fileID: 8401731433122466246}
+  minimapIcon: {fileID: 4683746735206480036}
+  arrowBobAmplitude: 0.06
+  arrowBobFrequency: 1
+  _SelectedCharacterIndex: 0
+--- !u!114 &8007318029164384940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77020a117dd25d944a1810c930118ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVisualApplier
+  targetRenderer: {fileID: 7870886116827748439}
+  rootBone: {fileID: 2533260470969312404}
+  database: {fileID: 11400000, guid: 49710c1349eea204f88013659b7057b2, type: 2}
 --- !u!1 &2017936969440827881
 GameObject:
   m_ObjectHideFlags: 0
