@@ -10,15 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8e535356e1c3914d8db371e40b70fb9, type: 3}
-  m_Name: QuestSO
+  m_Name: FixedQuest-03
   m_EditorClassIdentifier: Assembly-CSharp::QuestSO
-  questID: QUEST_001
-  questName: Collect Resources
-  description: "Thu th\u1EADp "
-  objectives:
-  - objectiveID: COLLECT_WOOD
-    targetID: WOOD
-    description: Collect 10 Wood
-    type: 0
-    requiredAmount: 10
-    currentAmount: 0
+  questID: 
+  questName: 
+  description: 
+  questCategory: 0
+  objectives: []
+  rewardItems: []
+  rewardAmount: 1
