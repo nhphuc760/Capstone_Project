@@ -84,7 +84,14 @@ public class SessionManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
         if (_currentLocalPreview != null)
         {
-            _currentLocalPreview.gameObject.SetActive(false);
+            foreach (SkinnedMeshRenderer smr in _currentLocalPreview.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                smr.sharedMesh = null;
+                smr.sharedMaterials = System.Array.Empty<Material>();
+                Destroy(smr);
+            }
+            Destroy(_currentLocalPreview.gameObject);
+            _currentLocalPreview = null;
         }
     }
 

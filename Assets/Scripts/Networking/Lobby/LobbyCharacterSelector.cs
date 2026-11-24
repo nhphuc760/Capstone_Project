@@ -25,6 +25,7 @@ public class LobbyCharacterSelector : NetworkBehaviour
 
     private void Awake()
     {
+        PlayerPrefs.DeleteKey("SelectedCharacterIndex");
         CacheArrowOrigin();
         if (SceneManager.GetActiveScene().name.Contains("LobbyScene"))
         {
@@ -77,12 +78,6 @@ public class LobbyCharacterSelector : NetworkBehaviour
             if (selfArrow != null)
                 selfArrow.SetActive(Object.HasInputAuthority);
 
-            //if (GetComponent("SuggestTarget") is UnityEngine.Behaviour suggestTarget)
-            //    suggestTarget.enabled = false;
-
-            //if (GetComponent("DeathCountdownManager") is UnityEngine.Behaviour deathCountdown)
-            //    deathCountdown.enabled = false;
-
             if (TryGetComponent<Targetable>(out var targetable))
             {
                 targetable.SetActiveIndicator(false);
@@ -100,8 +95,7 @@ public class LobbyCharacterSelector : NetworkBehaviour
 
         if (Object.HasInputAuthority)
         {
-            int savedIndex = PlayerPrefs.GetInt("SelectedCharacterIndex", 0);
-            SelectCharacter(savedIndex);
+            SelectCharacter(isLobbyScene ? 0 : LocalSelectedIndex);
         }
 
         ApplyAndCache(SelectedCharacterIndex);
@@ -120,7 +114,6 @@ public class LobbyCharacterSelector : NetworkBehaviour
         if (!Object.HasInputAuthority) return;
 
         LocalSelectedIndex = index;
-        PlayerPrefs.SetInt("SelectedCharacterIndex", index);
 
         if (Object.HasStateAuthority)
             SelectedCharacterIndex = index;
@@ -144,5 +137,54 @@ public class LobbyCharacterSelector : NetworkBehaviour
         SelectedByPlayer[Object.InputAuthority] = index;
         if (visualApplier != null)
             visualApplier.ApplyCharacter(index);
+    }
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        SelectedByPlayer.Clear();
+        LocalSelectedIndex = 0;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (Object == null || !Object.IsValid) return;
+
+        bool isLobbyScene = scene.name.Contains("Lobby");
+        if (!isLobbyScene)
+        {
+            if (minimapIcon != null) minimapIcon.SetActive(true);
+            if (selfArrow != null) selfArrow.SetActive(false);
+
+            EnableGameplayBehaviours();
+            ApplyAndCache(SelectedCharacterIndex);
+        }
+    }
+
+    private void EnableGameplayBehaviours()
+    {
+        if (GetComponent("DeathCountdownManager") is UnityEngine.Behaviour deathCountdown)
+            deathCountdown.enabled = true;
+
+        if (GetComponent("InteractionController") is UnityEngine.Behaviour interactionCtrl)
+            interactionCtrl.enabled = true;
+
+        if (GetComponent("PlayerCameraController") is UnityEngine.Behaviour cameraCtrl)
+            cameraCtrl.enabled = true;
+
+        if (TryGetComponent<Targetable>(out var targetable))
+        {
+            targetable.enabled = true;
+            targetable.SetActiveIndicator(true);
+        }
     }
 }

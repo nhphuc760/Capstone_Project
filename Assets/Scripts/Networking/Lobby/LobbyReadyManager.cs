@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 {
+    public static bool IsGameStarting { get; private set; }
     public static string PendingDisconnectNotice { get; set; }
     [Header("Tham chiếu UI nút Play / Ready")]
     [SerializeField] private Button actionButton;
@@ -24,16 +25,19 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     [SerializeField] private bool allowPlayWhenAlone = true;
 
     [Header("Màu sắc trạng thái nút")]
-    [SerializeField] private Color activePlayColor = new Color32(74, 217, 145, 255);     
-    [SerializeField] private Color disabledPlayColor = new Color32(44, 53, 64, 255);     
-    [SerializeField] private Color clientNotReadyColor = new Color32(242, 184, 75, 255); 
-    [SerializeField] private Color clientReadyColor = new Color32(74, 217, 145, 255);    
+    [SerializeField] private Color activePlayColor = new Color32(74, 217, 145, 255);
+    [SerializeField] private Color disabledPlayColor = new Color32(44, 53, 64, 255);
+    [SerializeField] private Color clientNotReadyColor = new Color32(242, 184, 75, 255);
+    [SerializeField] private Color clientReadyColor = new Color32(74, 217, 145, 255);
 
-    [SerializeField] private Color activeTextColor = new Color32(15, 25, 20, 255);       
-    [SerializeField] private Color disabledTextColor = new Color32(130, 145, 160, 255);  
+    [SerializeField] private Color activeTextColor = new Color32(15, 25, 20, 255);
+    [SerializeField] private Color disabledTextColor = new Color32(130, 145, 160, 255);
 
     [Networked]
     private PlayerRef OriginalHost { get; set; }
+
+    [Networked]
+    private NetworkBool IsStartingGame { get; set; }
 
     [Networked, Capacity(4)]
     private NetworkDictionary<PlayerRef, NetworkBool> ReadyStates => default;
@@ -41,10 +45,13 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     private Image buttonBackground;
     private string lastVisualSignature = "";
     private bool _startedAsHost;
+    private bool _isTransitioningToGameplay;
     private HostDisconnectWatcher _disconnectWatcher;
 
     private void Awake()
     {
+        IsGameStarting = false;
+
         if (actionButton != null)
         {
             buttonBackground = actionButton.GetComponent<Image>();
@@ -69,10 +76,11 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     private void OnDestroy()
     {
+        IsGameStarting = false;
+
         if (actionButton != null)
             actionButton.onClick.RemoveListener(OnActionButtonClicked);
 
-        // Nếu Client tự bấm Leave chủ động (không phải do Host thoát), dọn Watcher theo LobbyScene
         if (_disconnectWatcher != null && !_disconnectWatcher.IsLeaving)
         {
             Destroy(_disconnectWatcher.gameObject);
@@ -126,7 +134,8 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        if (!_startedAsHost && _disconnectWatcher != null)
+        //if (!_startedAsHost && _disconnectWatcher != null)
+        if (!_startedAsHost && !_isTransitioningToGameplay && !IsStartingGame && _disconnectWatcher != null)
         {
             _disconnectWatcher.ForceTriggerLeave("LobbyManager bị despawn do Host rời phòng.");
         }
@@ -150,7 +159,8 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
             ReadyStates.Remove(player);
         }
 
-        if (!_startedAsHost && OriginalHost != PlayerRef.None && player == OriginalHost && _disconnectWatcher != null)
+        //if (!_startedAsHost && OriginalHost != PlayerRef.None && player == OriginalHost && _disconnectWatcher != null)
+        if (!_startedAsHost && !_isTransitioningToGameplay && !IsStartingGame && OriginalHost != PlayerRef.None && player == OriginalHost && _disconnectWatcher != null)
         {
             _disconnectWatcher.ForceTriggerLeave("Host đã rời khỏi phòng.");
             return;
@@ -163,12 +173,14 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     public override void Render()
     {
         if (_disconnectWatcher != null && _disconnectWatcher.IsLeaving) return;
+        if (_isTransitioningToGameplay || IsStartingGame) return;
         RefreshButtonVisuals(forceUpdate: false);
     }
 
     private void OnActionButtonClicked()
     {
         if (_disconnectWatcher != null && _disconnectWatcher.IsLeaving) return;
+        if (_isTransitioningToGameplay || IsStartingGame) return;
 
         if (Runner == null || !Runner.IsRunning || Object == null || !Object.IsValid)
         {
@@ -184,6 +196,8 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                     Debug.Log("[Lobby - Host/Single] Phòng đang có 1 mình -> Đủ điều kiện bấm PLAY vào game!");
                 else
                     Debug.Log($"[Lobby - Host] Tất cả thành viên ({readyClients}/{totalClients}) đã READY! Đủ điều kiện bấm PLAY vào game (Tổng {totalPlayers} người).");
+
+                StartMatchTransitionAsync().Forget();
             }
             else
             {
@@ -199,6 +213,68 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         RPC_SetPlayerReady(Runner.LocalPlayer, nextReady);
     }
 
+    private async UniTaskVoid StartMatchTransitionAsync()
+    {
+        if (!HasStateAuthority || _isTransitioningToGameplay) return;
+
+        int gameplayBuildIndex = SceneUtility.GetBuildIndexByScenePath(SceneDatabase.GAMEPLAY);
+        if (gameplayBuildIndex < 0)
+        {
+            Debug.LogError($"[Lobby] Không tìm thấy scene '{SceneDatabase.GAMEPLAY}' trong Build Settings!");
+            return;
+        }
+
+        _isTransitioningToGameplay = true;
+        IsStartingGame = true;
+        IsGameStarting = true;
+
+        if (actionButton != null)
+            actionButton.interactable = false;
+        if (actionButtonText != null)
+        {
+            actionButtonText.text = "STARTING...";
+            actionButtonText.color = disabledTextColor;
+        }
+        if (buttonBackground != null)
+            buttonBackground.color = disabledPlayColor;
+
+        RPC_NotifyTransitionToGameplay();
+
+        // Đợi RPC đổi nhân vật hoàn tất, sau đó hủy hẳn SkinnedMeshRenderer của LobbyScene và chờ 2 frame để MainThreadCleanup chạy xong trước khi nạp scene mới
+        await UniTask.Delay(150, ignoreTimeScale: true);
+        ReleaseLobbySceneSkinnedMeshes();
+        await UniTask.DelayFrame(2);
+
+        if (Runner == null || !Runner.IsRunning) return;
+
+        Debug.Log($"[Lobby] Host đang chuyển cả phòng sang scene '{SceneDatabase.GAMEPLAY}' (BuildIndex: {gameplayBuildIndex})...");
+        Runner.LoadScene(SceneRef.FromIndex(gameplayBuildIndex));
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_NotifyTransitionToGameplay()
+    {
+        _isTransitioningToGameplay = true;
+        IsGameStarting = true;
+        ReleaseLobbySceneSkinnedMeshes();
+
+        if (_disconnectWatcher != null)
+        {
+            _disconnectWatcher.MarkTransitioningToGameplay();
+            Destroy(_disconnectWatcher.gameObject);
+            _disconnectWatcher = null;
+        }
+
+        if (actionButton != null)
+            actionButton.interactable = false;
+        if (actionButtonText != null)
+        {
+            actionButtonText.text = "LOADING...";
+            actionButtonText.color = disabledTextColor;
+        }
+        if (buttonBackground != null)
+            buttonBackground.color = disabledPlayColor;
+    }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     private void RPC_SetPlayerReady(PlayerRef player, NetworkBool isReady)
@@ -300,8 +376,14 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         private Color _disabledTextColor;
         private Button _leaveButton;
         private string _targetSceneName;
+        private bool _isTransitioningToGameplay;
 
         public bool IsLeaving { get; private set; }
+
+        public void MarkTransitioningToGameplay()
+        {
+            _isTransitioningToGameplay = true;
+        }
 
         public void Initialize(
             NetworkRunner runner,
@@ -329,7 +411,7 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
         private void Update()
         {
-            if (IsLeaving) return;
+            if (IsLeaving || _isTransitioningToGameplay) return;
 
             bool runnerDisconnected = _runner == null || !_runner.IsRunning;
             bool lobbyDestroyed = _lobbyNetworkObject == null || !_lobbyNetworkObject.IsValid;
@@ -343,10 +425,9 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 
         public void ForceTriggerLeave(string reason)
         {
-            if (IsLeaving) return;
+            if (IsLeaving || _isTransitioningToGameplay) return;
             IsLeaving = true;
             LobbyReadyManager.PendingDisconnectNotice = "Host has left the room";
-            // Giữ Watcher sống qua lúc chuyển cảnh để dọn dẹp EventSystem & LoadingOverlay ở ChooseType
             DontDestroyOnLoad(gameObject);
 
             Debug.LogWarning($"[Lobby] {reason} Đang đưa người chơi về {_targetSceneName}...");
@@ -368,7 +449,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
         {
             try
             {
-                // 1. Thử dùng luồng thoát phòng có sẵn của Btn_LeaveRoom
                 if (_leaveButton != null)
                 {
                     try
@@ -382,7 +462,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                     }
                 }
 
-                // 2. Chờ tối đa 1.2s xem luồng của Btn_LeaveRoom đã tự chuyển sang ChooseType chưa
                 float elapsed = 0f;
                 while (elapsed < 1.2f && SceneManager.GetActiveScene().name != _targetSceneName)
                 {
@@ -390,7 +469,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                     elapsed += Time.unscaledDeltaTime;
                 }
 
-                // 3. Nếu chưa chuyển được (do Runner đã tắt từ trước), chủ động dọn và tải thẳng ChooseType
                 if (SceneManager.GetActiveScene().name != _targetSceneName)
                 {
                     if (SceneController.Instance != null)
@@ -418,7 +496,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                     await SceneManager.LoadSceneAsync(_targetSceneName, LoadSceneMode.Single);
                 }
 
-                // 4. Đợi 1 frame sau khi ChooseType kích hoạt rồi mở khóa hoàn toàn input & UI
                 await UniTask.Yield();
                 RestoreChooseTypeInteractivity();
 
@@ -447,7 +524,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            // Giữ duy nhất 1 EventSystem (ưu tiên thuộc SceneController) để tránh kẹt chuột
             EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             EventSystem primaryEs = SceneController.Instance != null
                 ? SceneController.Instance.GetComponentInChildren<EventSystem>(true)
@@ -470,7 +546,6 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
                 primaryEs.enabled = true;
             }
 
-            // Giữ duy nhất 1 AudioListener
             AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             AudioListener primaryListener = Camera.main != null ? Camera.main.GetComponent<AudioListener>() : null;
             if (primaryListener == null && listeners.Length > 0)
@@ -503,6 +578,22 @@ public class LobbyReadyManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
             {
                 if (img.color.a <= 0.05f)
                     img.raycastTarget = false;
+            }
+        }
+    }
+    private void ReleaseLobbySceneSkinnedMeshes()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.IsValid() || !activeScene.name.Contains("Lobby")) return;
+
+        foreach (GameObject rootObj in activeScene.GetRootGameObjects())
+        {
+            foreach (SkinnedMeshRenderer smr in rootObj.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (smr == null) continue;
+                smr.sharedMesh = null;
+                smr.sharedMaterials = Array.Empty<Material>();
+                Destroy(smr);
             }
         }
     }

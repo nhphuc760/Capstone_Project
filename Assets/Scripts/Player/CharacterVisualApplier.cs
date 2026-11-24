@@ -15,6 +15,7 @@ public class CharacterVisualApplier : MonoBehaviour
             database = Resources.Load<CharacterDatabase>("CharacterDatabase");
 
         CacheBoneMap();
+        ApplyCharacter(0);
     }
 
     private void CacheBoneMap()
@@ -34,7 +35,13 @@ public class CharacterVisualApplier : MonoBehaviour
             database = Resources.Load<CharacterDatabase>("CharacterDatabase");
 
         CharacterVisualData data = database != null ? database.GetCharacter(index) : null;
-        if (data == null || targetRenderer == null || data.bodyMesh == null) return;
+        if (data == null || targetRenderer == null) return;
+
+        if (data.bodyMesh == null)
+        {
+            Debug.LogWarning($"[CharacterVisualApplier] Nhân vật ở index {index} ({data.characterName}) đang bị trống Body Mesh trong CharacterDatabase!");
+            return;
+        }
 
         CacheBoneMap();
 
@@ -51,6 +58,9 @@ public class CharacterVisualApplier : MonoBehaviour
             }
             targetRenderer.bones = remappedBones;
         }
+
+        if (rootBone != null)
+            targetRenderer.rootBone = rootBone;
 
         targetRenderer.sharedMesh = data.bodyMesh;
         if (data.materials != null && data.materials.Length > 0)

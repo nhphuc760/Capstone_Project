@@ -115,14 +115,14 @@ namespace Game.Interaction
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
-            GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
-            if (HasInputAuthority)
-                for (int s = 0; s < _focusAction.Length; s++)
-                    if (_focusAction[s] != null) SetFocus(s, null, null);
-            if (!enabled) return;
-
             if (GameManager.Instance != null)
                 GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
+
+            if (HasInputAuthority && _focusAction != null)
+            {
+                for (int s = 0; s < _focusAction.Length; s++)
+                    if (_focusAction[s] != null) SetFocus(s, null, null);
+            }
         }
 
         // ================= Public API =================

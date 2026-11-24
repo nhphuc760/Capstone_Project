@@ -24,10 +24,7 @@ public class LobbyCharacterArrowUI : MonoBehaviour
 
     private void Start()
     {
-        _currentIndex = PlayerPrefs.GetInt("SelectedCharacterIndex", 0);
-
-        if (database != null && database.characters.Count > 0)
-            _currentIndex = Mathf.Clamp(_currentIndex, 0, database.characters.Count - 1);
+        _currentIndex = 0;
 
         if (prevButton != null)
             prevButton.onClick.AddListener(OnClickPrev);
@@ -37,7 +34,14 @@ public class LobbyCharacterArrowUI : MonoBehaviour
 
         RefreshDisplay();
     }
-
+    private void Update()
+    {
+        if (LobbyReadyManager.IsGameStarting)
+        {
+            if (prevButton != null && prevButton.interactable) prevButton.interactable = false;
+            if (nextButton != null && nextButton.interactable) nextButton.interactable = false;
+        }
+    }
     private void OnDestroy()
     {
         if (prevButton != null) prevButton.onClick.RemoveListener(OnClickPrev);
@@ -46,6 +50,7 @@ public class LobbyCharacterArrowUI : MonoBehaviour
 
     public void OnClickPrev()
     {
+        if (LobbyReadyManager.IsGameStarting) return;
         if (database == null || database.characters.Count == 0) return;
 
         int count = database.characters.Count;
@@ -55,6 +60,7 @@ public class LobbyCharacterArrowUI : MonoBehaviour
 
     public void OnClickNext()
     {
+        if (LobbyReadyManager.IsGameStarting) return;
         if (database == null || database.characters.Count == 0) return;
 
         int count = database.characters.Count;
@@ -78,15 +84,9 @@ public class LobbyCharacterArrowUI : MonoBehaviour
             }
         }
 
-        Debug.Log($"[CharSelect] Index={_currentIndex} | FoundSelector={_localSelector != null}");
-
         if (_localSelector != null)
         {
             _localSelector.SelectCharacter(_currentIndex);
-        }
-        else
-        {
-            PlayerPrefs.SetInt("SelectedCharacterIndex", _currentIndex);
         }
     }
 

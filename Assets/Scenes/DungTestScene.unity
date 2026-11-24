@@ -248,7 +248,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &176376807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &253789827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2743,9 +2743,6 @@ MonoBehaviour:
   dayHour: 6
   nightHour: 18
   startDayTime: 15
-  _CurrentTimeOfDay: 0
-  _IsDaytime:
-    _value: 0
 --- !u!114 &1789580425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2862,7 +2859,7 @@ MonoBehaviour:
   playerPrefab:
     RawGuidValue: 8491258c41850ad448118363fb1dfe8d
   waitingTimer: 5
-  MaxPlayers: 1
+  MaxPlayers: 4
   eliminatedUI: {fileID: 979553608}
   winUI: {fileID: 886136155}
   cameraSwitcher: {fileID: 979553612}
@@ -2991,7 +2988,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1811326733
 MonoBehaviour:
   m_ObjectHideFlags: 0

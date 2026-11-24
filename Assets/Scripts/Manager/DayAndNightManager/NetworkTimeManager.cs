@@ -14,8 +14,18 @@ public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
     public float dayHour = 6f; //bắt đầu sáng vào lúc 6h
     public float nightHour = 18f; //bắt đầu tối vào lúc 18h
     public float startDayTime = 12;
-    [Networked] public float CurrentTimeOfDay { get; private set; } // Current time in seconds
-    [Networked] public NetworkBool IsDaytime { get; private set; } // True if it's daytime, false if it's nighttime
+
+    // [FIX] Code cũ: đọc thẳng property [Networked] -> lỗi nếu đọc trước khi Spawned()
+    //[Networked] public float CurrentTimeOfDay { get; private set; } // Current time in seconds
+    //[Networked] public NetworkBool IsDaytime { get; private set; } // True if it's daytime, false if it's nighttime
+
+    // [FIX] Dữ liệu mạng thật sự (chỉ dùng được sau Spawned)
+    [Networked] float NetTimeOfDay { get; set; }
+    [Networked] NetworkBool NetIsDaytime { get; set; }
+    bool _isSpawned;
+    // [FIX] Property public giữ nguyên tên cũ, an toàn khi chưa Spawned
+    public float CurrentTimeOfDay => _isSpawned ? NetTimeOfDay : startDayTime; // Current time in seconds
+    public bool IsDaytime => _isSpawned ? (bool)NetIsDaytime : true; // True if it's daytime, false if it's nighttime
 
     public bool IsNight => !IsDaytime;
 
@@ -23,33 +33,47 @@ public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
 
     public override void Spawned()
     {
+        _isSpawned = true; // [FIX]
         if (HasStateAuthority) // Chỉ Server mới khởi tạo thời gian
         {
-            CurrentTimeOfDay = startDayTime; // Bắt đầu game vào lúc 12h trưa
-            IsDaytime = true;
+            // [FIX] CurrentTimeOfDay = startDayTime; // Bắt đầu game vào lúc 12h trưa
+            // [FIX] IsDaytime = true;
+            NetTimeOfDay = startDayTime; // Bắt đầu game vào lúc 12h trưa
+            NetIsDaytime = true;
         }
     }
+
+    // [FIX] Thêm mới
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        _isSpawned = false;
+    }
+
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
         if (GameManager.Instance.CurrentState != GameState.Playing) return;
 
-        CurrentTimeOfDay += (Runner.DeltaTime / cycleDuration) * 24f;
-        CurrentTimeOfDay %= 24f;
+        // [FIX] CurrentTimeOfDay += (Runner.DeltaTime / cycleDuration) * 24f;
+        // [FIX] CurrentTimeOfDay %= 24f;
+        NetTimeOfDay += (Runner.DeltaTime / cycleDuration) * 24f;
+        NetTimeOfDay %= 24f;
         CheckDayNightEvents();
     }
     private void CheckDayNightEvents()
     {
         if (IsDaytime && (CurrentTimeOfDay >= nightHour || CurrentTimeOfDay < dayHour))
         {
-            IsDaytime = false;
+            // [FIX] IsDaytime = false;
+            NetIsDaytime = false;
             HandleNight();
             OnNightStart?.Invoke(); // Gọi event spawn quái
             Debug.Log("Trời tối");
         }
         else if (!IsDaytime && (CurrentTimeOfDay >= dayHour && CurrentTimeOfDay < nightHour))
         {
-            IsDaytime = true;
+            // [FIX] IsDaytime = true;
+            NetIsDaytime = true;
             HandleDay();
             OnDayStart?.Invoke(); // Gọi event dọn dẹp quái
             Debug.Log("Sáng rồi");

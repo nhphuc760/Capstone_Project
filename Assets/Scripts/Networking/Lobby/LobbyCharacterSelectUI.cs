@@ -24,9 +24,7 @@ public class LobbyCharacterSelectUI : MonoBehaviour
             database = Resources.Load<CharacterDatabase>("CharacterDatabase");
 
         BuildCharacterSlots();
-
-        int savedIndex = PlayerPrefs.GetInt("SelectedCharacterIndex", 0);
-        UpdateHighlight(savedIndex);
+        UpdateHighlight(0);
     }
 
     private void BuildCharacterSlots()
@@ -68,6 +66,8 @@ public class LobbyCharacterSelectUI : MonoBehaviour
 
     public void OnSelectCharacter(int index)
     {
+        if (LobbyReadyManager.IsGameStarting) return;
+
         if (_localSelector == null || _localSelector.Object == null || !_localSelector.Object.IsValid)
         {
             foreach (var selector in FindObjectsByType<LobbyCharacterSelector>(FindObjectsSortMode.None))
