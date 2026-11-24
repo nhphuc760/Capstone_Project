@@ -100,6 +100,8 @@ namespace Game.Interaction
 
         public override void Spawned()
         {
+            if (!enabled || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("LobbyScene"))
+                return;
             _seenState = State;
             _seenPerform = PerformCounter;
             Lock = true;
@@ -113,7 +115,10 @@ namespace Game.Interaction
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
-            GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
+            if (!enabled) return;
+
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnGameStateChanged -= GameManager_StateChange;
         }
 
         // ================= Public API =================
@@ -166,6 +171,7 @@ namespace Game.Interaction
 
         public override void FixedUpdateNetwork()
         {
+            if (!enabled) return;
             if (!Object.HasStateAuthority) return;
             if (Lock) return;
             TryReadButtons(out var buttons);
@@ -364,6 +370,7 @@ namespace Game.Interaction
 
         public override void Render()
         {
+            if (!enabled) return;
             var st = State;
             if (_seenState == InteractionState.Idle && st != InteractionState.Idle)
             {

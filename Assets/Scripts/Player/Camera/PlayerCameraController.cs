@@ -13,6 +13,12 @@ public class PlayerCameraController : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (!enabled || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Lobby"))
+        {
+            if (virtualCamera != null)
+                virtualCamera.enabled = false;
+            return;
+        }
         // Chỉ local player mới được điều khiển camera
         if (HasInputAuthority == false)
         {
@@ -56,6 +62,7 @@ public class PlayerCameraController : NetworkBehaviour
     /// </summary>
     public void SetCameraBounds(Collider boundsCollider = null)
     {
+        if (!enabled) return;
         if (confiner3D == null) return;
 
         if (boundsCollider != null)
@@ -64,11 +71,21 @@ public class PlayerCameraController : NetworkBehaviour
         }
         else
         {
-            // Tự tìm bounds trong scene (ví dụ theo tag hoặc tên)
-            var boundsObj = GameObject.FindGameObjectWithTag("Map").transform.GetChild(0).GetComponent<BoxCollider>();
-            if (boundsObj != null)
+            //// Tự tìm bounds trong scene (ví dụ theo tag hoặc tên)
+            //var boundsObj = GameObject.FindGameObjectWithTag("Map").transform.GetChild(0).GetComponent<BoxCollider>();
+            //if (boundsObj != null)
+            //{
+            //    confiner3D.m_BoundingVolume = boundsObj;
+            //}
+            // Tự tìm bounds trong scene khi sang GameplayScene
+            var mapObj = GameObject.FindGameObjectWithTag("Map");
+            if (mapObj != null && mapObj.transform.childCount > 0)
             {
-                confiner3D.m_BoundingVolume = boundsObj;
+                var boundsObj = mapObj.transform.GetChild(0).GetComponent<BoxCollider>();
+                if (boundsObj != null)
+                {
+                    confiner3D.m_BoundingVolume = boundsObj;
+                }
             }
         }
 
