@@ -6,7 +6,7 @@ namespace SilentCastle.MonsterAI
     [CreateAssetMenu(menuName = "SilentCastle/Targeting Profile")]
     public class TargetingProfile : ScriptableObject
     {
-        public float aggroRadiusOutside = 50f;   // player ngoài thành trong bán kính này mới bị coi là mục tiêu
+        public float aggroRadiusOutside = 50f;   // player lộ diện trong bán kính này mới bị coi là mục tiêu
 
         [Header("Điểm số")]
         public float distanceWeight = 1f;        // trừ điểm theo mét
@@ -24,5 +24,14 @@ namespace SilentCastle.MonsterAI
         [Header("Đánh giá lại")]
         public float reevalInterval = 2f;
         public float reevalJitter = 0.7f;
+
+        [Header("Phản ứng nhanh (có mục tiêu ưu tiên cao hơn xuất hiện)")]
+        public float urgentCheckInterval = 0.25f;   // tần suất kiểm tra rẻ: "có player lộ diện khi mình đang đánh cửa?"
+        public int maxChasersPerPlayer = 3;         // 1 player không kéo được cả bầy; quái dư quay về đánh cửa
+
+        [Header("Chống bị lợi dụng (lật mục tiêu liên tục)")]
+        public int flipLimit = 3;                   // đổi LOẠI mục tiêu (Gate <-> Player) quá số lần này trong flipWindow...
+        public float flipWindowSeconds = 10f;
+        public float flipLockSeconds = 8f;          // ...thì bị khoá, không đổi loại nữa trong khoảng này
     }
 }

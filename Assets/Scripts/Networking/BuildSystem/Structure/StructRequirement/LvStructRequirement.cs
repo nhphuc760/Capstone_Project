@@ -14,6 +14,7 @@ public class LvStructRequirement : RequirementDefinition
         {
             definition = this,
             structManager = services.structureManager,
+            playerRef = services.player.Object.InputAuthority,            
         };
     }
     public override string ToString()

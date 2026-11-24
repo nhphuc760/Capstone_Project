@@ -19,7 +19,7 @@ public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
 
     public bool IsNight => !IsDaytime;
 
-    public float SecondsUntilDawn => TimeRemainingToDayTime();
+    public float SecondsUntilDawn => IsNight ?  TimeRemainingToDayTime() : 0;
 
     public override void Spawned()
     {
@@ -32,6 +32,8 @@ public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
+        if (GameManager.Instance.CurrentState != GameState.Playing) return;
+
         CurrentTimeOfDay += (Runner.DeltaTime / cycleDuration) * 24f;
         CurrentTimeOfDay %= 24f;
         CheckDayNightEvents();
@@ -90,7 +92,6 @@ public class NetworkTimeManager : NetworkBehaviour, IDayNightProvider
     {
         if (HasStateAuthority)
         {
-            monster.GetBehaviour<AIController>().RPC_ResetState();
             RPC_VisibleMonster(false);
         }
     }

@@ -29,7 +29,9 @@ namespace SilentCastle.MonsterAI
         public abstract bool IsAlive { get; }
         public abstract float Health01 { get; }
 
-        public bool IsTargetable => true;
+        // SỬA: trước đây luôn trả true => cửa đã vỡ / player đã chết vẫn bị nhắm.
+        // Giờ mặc định = IsAlive; lớp con có thể override thêm (vd: player đang bất tử, đang hồi sinh...).
+        public virtual bool IsTargetable => IsAlive;
 
         /// <summary>
         /// Được gọi trên host. Nếu máu player do client sở hữu (Shared mode), hãy gửi RPC

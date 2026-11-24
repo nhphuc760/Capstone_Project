@@ -61,6 +61,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
     public static NetworkPlayer Local { get; private set; }
 
     [Networked] public NetworkString<_32> Name { get; private set; } = default;
+    [Networked] public bool Lock { get; set; }
 
     public HealthComponent Health { get; private set; }
     public StaminaComponent Stamina { get; private set; }
@@ -148,7 +149,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         Stamina.Initialize(_stats);
         level = 1;
         if(WorldContext.Instance != null)
-        WorldContext.Instance.Register(this);
+            WorldContext.Instance.Register(this);
 
         if (HasInputAuthority)
         {
@@ -170,6 +171,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
 
         }
 
+        GameManager.Instance.RegisterCamera(Object.InputAuthority, cameraView);
 
         if (HasStateAuthority)
         {
@@ -197,6 +199,9 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
             fogSpawner.UnregisterPlayer();
         }
         if (WorldContext.Instance != null) WorldContext.Instance.Unregister(this);
+
+        GameManager.Instance.UnregisterCamera(Object.InputAuthority);
+
     }
 
 
@@ -205,6 +210,13 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene")
             return;
+
+        //Killed Monster
+        if (Input.GetKeyDown(KeyCode.K) && HasInputAuthority)
+        {
+            FindAnyObjectByType<MonsterBrain>().GetComponent<ITakedamageable>().TakeDamage(50, Object);
+        }
+
         if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
         {
 
@@ -231,10 +243,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                if (hit.transform.root.TryGetComponent<StructureBase>(out var context) && context.Object.InputAuthority == Object.InputAuthority)
+                if (hit.transform.root.TryGetComponent<StructureBase>(out var structure) && (structure.Object.InputAuthority == Runner.LocalPlayer))
                 {
                     Debug.Log(hit.transform.root.name);
-                    StructureUI.Show(context);
+                    StructureUI.Show(structure);
                 }
                 else
                 {
@@ -256,6 +268,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
     {
         // Don't process input in the lobby scene
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LobbyScene") return;
+
+
+        //if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        if (Lock) return;
 
         _stats.Tick(Runner.DeltaTime);
         if (GetInput(out NetworkInputData data))
@@ -381,13 +397,17 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         if (HasStateAuthority)
         {
             _stats.AddModifier(mod);
+            Debug.Log(JsonUtility.ToJson(mod));
         }
     }
 
     public void RemoveModifier(int _id)
     {
         if (HasStateAuthority)
+        {
+            Debug.Log("Remove by" + _id);
             _stats.RemoveModifierByID(_id);
+        }
     }
 
     //RPC calls

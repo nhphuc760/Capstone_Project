@@ -6,12 +6,13 @@ public class PromtInteractUI : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI Promt;
     [SerializeField] Image Icon;
-
+    [SerializeField] Camera _cam;
 
 
     private void LateUpdate()
     {
-        transform.rotation = Quaternion.LookRotation((transform.position - Camera.main.transform.position).normalized);
+        if (_cam == null) _cam = Camera.main;
+        if (_cam != null) transform.forward = _cam.transform.forward;
     }
 
 

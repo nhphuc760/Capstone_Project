@@ -127,6 +127,11 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
         
     }
 
+    /// <summary>
+    /// Hiển thị thông tin trong ToolTip Screen
+    /// </summary>
+    /// <returns></returns>
+
     public abstract string GetInfor();
 
     public abstract void UpgradeLogic();
@@ -138,7 +143,7 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
         CheckMetResult result = CanUpgrade();
         if (!result.Success)
         {
-            Debug.LogWarning($"[StructureBase] Không thể nâng cấp: {result.Message} ({result.Reason})");
+            RPC_StructureUINotification(result.Message);
             return;
         }
         Upgrade();
@@ -147,9 +152,10 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void RPC_RequireDestroy()
     {
+        var inforDes = GetResourceDestroy();
+        Runner.GetPlayerObject(Object.InputAuthority).GetBehaviour<NetworkPlayer>().AddResource(inforDes.resources);
         IBuildStategy stategy =  StructureManager.Ins.GetStrategyBuild(StructureDataSO._id, Object.InputAuthority);
         stategy.Destroy(Runner, Object);
-
     }
 
     public void AddModifier(Modifier mod)
@@ -164,6 +170,11 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
             _structureStats.RemoveModifierByID( _id);
     }
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public string GetContent() => GetInfor();
         
     public virtual string GetInforUpgrade()
@@ -248,6 +259,12 @@ public abstract class StructureBase : NetworkBehaviour, IAffector, ITooltipConte
 
         toString = s;
         return halfResouce;
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    public void RPC_StructureUINotification(string message)
+    {
+        NotificationManager.Ins.ShowNotification(message);
     }
 
 }

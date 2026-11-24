@@ -40,8 +40,10 @@ MonoBehaviour:
         Stats:
           stats:
             _serializedList:
-            - Key: 10
+            - Key: 9
               Value: 0.85
+            - Key: 4
+              Value: 6
             - Key: 1
               Value: 12
             - Key: 5
@@ -63,8 +65,10 @@ MonoBehaviour:
         Stats:
           stats:
             _serializedList:
-            - Key: 10
+            - Key: 9
               Value: 1
+            - Key: 4
+              Value: 6
             - Key: 5
               Value: 6
             - Key: 1
@@ -78,8 +82,10 @@ MonoBehaviour:
         Stats:
           stats:
             _serializedList:
-            - Key: 10
+            - Key: 9
               Value: 1.2
+            - Key: 4
+              Value: 7
             - Key: 1
               Value: 28
             - Key: 5
@@ -105,11 +111,13 @@ MonoBehaviour:
         Stats:
           stats:
             _serializedList:
-            - Key: 10
+            - Key: 9
               Value: 0.7
             - Key: 1
               Value: 4
             - Key: 5
+              Value: 5
+            - Key: 4
               Value: 5
         upgradeRequirement:
         - rid: 2680167812576575566
@@ -136,8 +144,10 @@ MonoBehaviour:
         Stats:
           stats:
             _serializedList:
-            - Key: 10
+            - Key: 9
               Value: 0.8
+            - Key: 4
+              Value: 5.5
             - Key: 1
               Value: 7
             - Key: 5

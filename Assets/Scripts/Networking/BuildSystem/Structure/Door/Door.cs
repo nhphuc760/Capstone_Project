@@ -1,4 +1,6 @@
-﻿using Fusion;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using Fusion;
 using Game.Interaction;
 using SilentCastle.MonsterAI;
 using UnityEngine;
@@ -75,14 +77,76 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
         HealthDoor.OnDeath -= HealthDoor_OnDeath;
         if (WorldContext.Instance)
             WorldContext.Instance.Unregister(this);
+
+        if (HasStateAuthority && NavMeshBakeManager.Ins != null)
+            NavMeshBakeManager.Ins.RequestBake();
+
+        //GameOver on Object.InputAuthority
+
     }
+
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && HasInputAuthority)
+        {
+            HealthDoor_OnDeath(Object);
+        }
+
+    }
+
 
     private void HealthDoor_OnDeath(NetworkObject obj)
     {
-        Debug.Log("Destroy Door");
-        StructureManager.Ins?.DestroyStructure(Object);
+        EndGame();
     }
 
+
+    public void EndGame()
+    {
+        // Chỉ StateAuthority mới được quyết định despawn
+        if (Object.HasStateAuthority == false)
+            return;
+
+        PlayerRef owner = Object.InputAuthority;
+
+        // Gửi RPC cho tất cả client (đặc biệt là owner) để xử lý visual + UI
+        RPC_OnDoorDeath(owner, transform.position);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_OnDoorDeath(PlayerRef owner, Vector3 doorPosition)
+    {
+        // 1. Nếu đây là local player sở hữu Door → Zoom camera về vị trí Door
+        if (Runner.LocalPlayer == owner)
+        {
+            HandleLocalPlayerEliminated(doorPosition);
+        }
+    }
+
+    private async void HandleLocalPlayerEliminated(Vector3 doorPosition)
+    {
+        // Lấy camera controller của player
+        var playerObj = Runner.GetPlayerObject(Runner.LocalPlayer);
+        if (playerObj == null) return;
+
+        var camCtrl = playerObj.GetComponentInChildren<PlayerCameraController>();
+        if (camCtrl != null)
+        {
+            // Zoom view về vị trí Door
+            camCtrl.MoveToView(doorPosition, 2f);
+        }
+
+        // Đợi camera zoom xong
+        await UniTask.Delay(TimeSpan.FromSeconds(2f + 0.1f));
+
+        // 2. Báo GameManager xử lý despawn + UI
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPlayerEliminated(Runner.LocalPlayer);
+        }
+    }
     public override void UpgradeLogic()
     {
         if (HasStateAuthority)
@@ -161,6 +225,10 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
     {
         HealthDoor.TakeDamage(amount, attacker.Object);
     }
+   
+
+
+  
 }
 
 

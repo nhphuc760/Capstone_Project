@@ -6,7 +6,6 @@ public enum StatsType: byte
     Damage,
     Health,
     Stamina,
-    Force,
     Range,
     HealthRegenInterval, //Thời gian hồi giá trị
     StaminaRegenInterval,//Thời gian hồi giá trị
@@ -15,6 +14,7 @@ public enum StatsType: byte
     AttackSpeed, //Số đòn đánh trong 1s
     Value,
     Speed,
+    FleeHpThreshold
 }
 
 [Serializable]

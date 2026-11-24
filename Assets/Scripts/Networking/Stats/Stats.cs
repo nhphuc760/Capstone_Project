@@ -113,6 +113,7 @@ public class Stats : NetworkBehaviour
         if (markDirty)
         {
             UpdateCached();
+            Debug.Log("DirtyChange");
             DirtyChanged?.Invoke();
         }
     }

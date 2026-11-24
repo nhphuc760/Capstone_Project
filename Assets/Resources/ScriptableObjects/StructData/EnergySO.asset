@@ -26,11 +26,11 @@ MonoBehaviour:
   prefabs: {fileID: 7588526742645363919, guid: 5f1e874e08f7d294080bc2159d4c7dc3, type: 3}
   levels:
   - rid: 2672765665595359367
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
-  - rid: -2
+  - rid: 2672765957201199199
+  - rid: 2672765957201199200
+  - rid: 2672765957201199201
+  - rid: 2672765957201199202
+  - rid: 2672765957201199203
   - rid: -2
   - rid: -2
   - rid: -2
@@ -61,6 +61,46 @@ MonoBehaviour:
         Stone: 0
         Gold: 0
         Electric: 0
+    - rid: 2672765957201199199
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList: []
+        upgradeRequirement: []
+    - rid: 2672765957201199200
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList: []
+        upgradeRequirement: []
+    - rid: 2672765957201199201
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList: []
+        upgradeRequirement: []
+    - rid: 2672765957201199202
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList: []
+        upgradeRequirement: []
+    - rid: 2672765957201199203
+      type: {class: StructLevelData, ns: , asm: Assembly-CSharp}
+      data:
+        Level: 0
+        Stats:
+          stats:
+            _serializedList: []
+        upgradeRequirement: []
     - rid: 2680167812576575568
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
       data:

@@ -18,7 +18,6 @@ namespace SilentCastle.MonsterAI
             _agent.autoBraking = false;
             _agent.angularSpeed = 540f;
             _agent.acceleration = 40f;
-            Debug.Log("ISOnNavMesh" + _agent.isOnNavMesh);
         }
 
         public void SetAuthority(bool hasAuthority) => _agent.enabled = hasAuthority;
@@ -31,7 +30,6 @@ namespace SilentCastle.MonsterAI
         {
             if (!Ready) return;
             _agent.isStopped = false;
-            Debug.Log("Agent Set destination");
             _agent.SetDestination(position);
         }
 

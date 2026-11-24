@@ -12,21 +12,18 @@ namespace SilentCastle.MonsterAI
     {
         [Header("Level & Exp")]
         public int startLevel = 1;
-        public int maxLevel = 10;
-        public float baseExpToNext = 40f;
-        public float expGrowth = 1.35f;
-        public float expPerHit = 5f;
-        public float expPerKill = 25f;
+        public int baseExp = 30;
+        public int modFactor = 20;
         [Range(0f, 1f)] public float levelUpHealPercent = 0.25f;
 
-        [Header("Chỉ số theo level")]
-        public float baseMaxHp = 300f;
+        [Header("Chỉ số theo level (index 0 = level 1)")]
+        public StatsBase[] statsByLevel;
+
+        public int MaxLevel => statsByLevel.Length;
+        public StatsBase GetStats(int lvl) => statsByLevel[Mathf.Clamp(lvl - 1, 0, statsByLevel.Length - 1)];
         public float hpGrowth = 1.2f;              // nhân mỗi level
-        public float baseDamage = 12f;
         public float damageGrowth = 1.15f;
-        public float baseMoveSpeed = 3.2f;
         public float moveSpeedPerLevel = 0.15f;    // cộng mỗi level
-        public float baseAttackInterval = 1.6f;
         public float attackIntervalGrowth = 0.96f; // nhân mỗi level (nhỏ hơn 1 = đánh nhanh dần)
         public float minAttackInterval = 0.5f;
         public float attackRange = 1.8f;
@@ -61,16 +58,21 @@ namespace SilentCastle.MonsterAI
         public List<MonsterSkillDef> skills = new List<MonsterSkillDef>();
 
         // ---- công thức theo level ----
-        public float MaxHp(int lvl) => baseMaxHp * Mathf.Pow(hpGrowth, lvl - 1);
-        public float Damage(int lvl) => baseDamage * Mathf.Pow(damageGrowth, lvl - 1);
-        public float MoveSpeed(int lvl) => baseMoveSpeed + moveSpeedPerLevel * (lvl - 1);
-        public float AttackInterval(int lvl) =>
+        public float MaxHp(float baseHealth, int lvl) => baseHealth * Mathf.Pow(hpGrowth, lvl - 1);
+        public float Damage(float baseDamage, int lvl) => baseDamage * Mathf.Pow(damageGrowth, lvl - 1);
+        public float MoveSpeed(float baseMoveSpeed, int lvl) => baseMoveSpeed + moveSpeedPerLevel * (lvl - 1);
+        public float AttackInterval(float baseAttackInterval, int lvl) =>
             Mathf.Max(minAttackInterval, baseAttackInterval * Mathf.Pow(attackIntervalGrowth, lvl - 1));
-        public float ExpToNext(int lvl) => baseExpToNext * Mathf.Pow(expGrowth, lvl - 1);
+        /// <summary>
+        /// lv1 = 30, lv2 = 50, truyền vào lv hiện tại
+        /// </summary>
+        /// <param name="lvl"></param>
+        /// <returns></returns>
+        public int ExpToNext(int lvl) => baseExp + modFactor * (lvl - 1);
 
         public float FleeThreshold01(int lvl)
         {
-            float t = maxLevel <= 1 ? 1f : Mathf.Clamp01((lvl - 1) / (float)(maxLevel - 1));
+            float t = MaxLevel <= 1 ? 1f : Mathf.Clamp01((lvl - 1) / (float)(MaxLevel - 1));
             return Mathf.Lerp(fleeHpAtLevel1, fleeHpAtMaxLevel, t);
         }
     }

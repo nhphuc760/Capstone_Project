@@ -11,12 +11,17 @@ public class DoorBreakAction : StructureBreakAction
 
     public override bool OnCanInteract(in InteractionContext ctx, out string FailReason)
     {
-        if (_door.IsOpen)
+        if (!base.OnCanInteract(ctx, out FailReason))
+        {
+            return false;
+        }
+
+        if (Door.IsOpen)
         {
             FailReason = null;
             return false;
-        }
-        return base.OnCanInteract(ctx, out FailReason);
+        }   
+        return true;
     }
 
     public override void OnPerform(in InteractionContext ctx)
