@@ -248,7 +248,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &176376807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &253789827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -870,7 +870,7 @@ MonoBehaviour:
   nightMusic: {fileID: 8300000, guid: a9e6f495709708e4c85ee2e37de36432, type: 3}
   tradingMusic: {fileID: 8300000, guid: 6b91ec04924f1e94884e1eb350de74e9, type: 3}
   shopMusic: {fileID: 8300000, guid: cf84ccdcc2f713e4596d6ae27f59e459, type: 3}
-  musicVolume: 0.1
+  musicVolume: 0.05
   fadeDuration: 1.5
 --- !u!82 &783421737
 AudioSource:
@@ -885,7 +885,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.1
+  m_Volume: 0.05
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -1379,7 +1379,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -3105,7 +3105,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1811326733
 MonoBehaviour:
   m_ObjectHideFlags: 0
