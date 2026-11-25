@@ -186,7 +186,7 @@ namespace SilentCastle.MonsterAI
                 if (t != null && t.IsTargetable && B.IsInAttackRange(t, 1.5f) && B.CanDamage(t))
                 {
                     float dmg = B.Damage;
-                    t.ReceiveDamage(dmg, B);
+                    t.ReceiveDamage(t.Kind == TargetKind.Player ?  dmg * 2 : dmg, B);
                     B.RegisterHit(t, dmg);                        // exp + tích nộ
                 }
             }

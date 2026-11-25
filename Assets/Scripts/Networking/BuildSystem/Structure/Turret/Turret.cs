@@ -10,6 +10,7 @@ public class Turret : StructAttackBase
     [SerializeField] Bullet bulletPrefab;
     [SerializeField] LayerMask EnemyMask;
     [SerializeField] float angularSpeed = 10f;
+    [SerializeField] AudioClip fireSFX;
     Transform Target;
     public override void Spawned()
     {
