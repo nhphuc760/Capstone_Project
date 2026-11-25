@@ -19,7 +19,8 @@ public enum GameState : byte
 public class GameManager : NetworkBehaviour, IPlayerJoined
 {
     public static GameManager Instance { get; private set; }
-
+    [Header("Player Spawn")]
+    [SerializeField] private float spawnRadiusAroundShop = 1.5f;
     [Header("References")]
     [SerializeField] GameObject gameOverUI;
     [SerializeField] NetworkObject shopRef;
@@ -112,16 +113,16 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
         }
         SetState(GameState.WaitingForPlayers);
     }
-    private void SpawnPlayerAtRandomMapPosition(PlayerRef player)
+   private void SpawnPlayerAtRandomMapPosition(PlayerRef player)
     {
         if (!HasStateAuthority || _spawnedPlayers.Contains(player))
             return;
 
-        Vector3 spawnPos = GetRandomMapSpawnPosition();
+        Vector3 spawnPos = GetShopSpawnPosition();
         _usedSpawnPositions.Add(spawnPos);
         _spawnedPlayers.Add(player);
 
-        // Kiểm tra xem người chơi đã có sẵn NetworkPlayer mang từ LobbyScene sang chưa
+        // Dùng lại nhân vật đã spawn sẵn từ LobbyScene nếu có
         NetworkObject existingPlayerObj = Runner.GetPlayerObject(player);
         if (existingPlayerObj == null)
         {
@@ -149,11 +150,11 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
             }
 
             PlayerCount++;
-            Debug.Log($"[GameManager] Đã dịch chuyển người chơi {player} từ Lobby tới vị trí: {spawnPos}");
+            Debug.Log($"[GameManager] Đã đưa người chơi {player} tới SpawnPoint của Shop: {spawnPos}");
             return;
         }
 
-        // Chỉ spawn mới nếu chạy trực tiếp DungTestScene (không đi qua LobbyScene)
+        // Spawn mới nếu chạy trực tiếp DungTestScene
         Runner.Spawn(playerPrefab, spawnPos, Quaternion.identity, player, (runner, obj) =>
         {
             obj.name = player.ToString();
@@ -172,7 +173,7 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
         });
 
         PlayerCount++;
-        Debug.Log($"[GameManager] Đã spawn mới người chơi {player} tại vị trí ngẫu nhiên trên map: {spawnPos}");
+        Debug.Log($"[GameManager] Đã spawn người chơi {player} quanh SpawnPoint của Shop: {spawnPos}");
     }
     private Vector3 GetRandomMapSpawnPosition()
     {
@@ -302,10 +303,45 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
             SpawnPlayerAtRandomMapPosition(player);
         }
     }
+    private Vector3 GetShopSpawnPosition()
+    {
+        if (shopRef != null)
+        {
+            Transform spawnPoint = shopRef.transform.Find("SpawnPoint");
+            Vector3 center = spawnPoint != null ? spawnPoint.position : shopRef.transform.position;
+            float targetY = spawnPoint != null ? spawnPoint.position.y : 0f;
 
+            // Thử tối đa 15 lần để các thành viên trong phòng không đứng đè lên nhau
+            for (int i = 0; i < 15; i++)
+            {
+                Vector3 candidate = center.RandomAround(spawnRadiusAroundShop);
+                candidate.y = targetY;
+
+                bool tooClose = false;
+                foreach (var usedPos in _usedSpawnPositions)
+                {
+                    if (Vector3.Distance(candidate, usedPos) < 0.8f)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (!tooClose)
+                    return candidate;
+            }
+
+            Vector3 fallback = center.RandomAround(spawnRadiusAroundShop);
+            fallback.y = targetY;
+            return fallback;
+        }
+
+        return Vector3.zero;
+    }
     public Vector3 SpawnPoint()
     {
-        return shopRef.transform.Find("SpawnPoint").position.RandomAround(1f);
+        // return shopRef.transform.Find("SpawnPoint").position.RandomAround(1f);
+        return GetShopSpawnPosition();
     }
 
     public void ShowGameOver()
