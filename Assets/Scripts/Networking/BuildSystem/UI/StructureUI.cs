@@ -16,6 +16,13 @@ public class StructureUI : MonoBehaviour
     [SerializeField] Button DestroyButton;
     [SerializeField] Canvas canvas;
     [SerializeField] float showDuration = 5f;
+    [SerializeField] AudioClip DestroyStructure;
+    [SerializeField] AudioClip UpgradeStructure;
+    [SerializeField] ParticleSystem upgradeVFX;
+
+
+    [SerializeField] float volume = 1f;
+
     CancellationTokenSource cts;
 
     private void OnEnable()
@@ -103,6 +110,16 @@ public class StructureUI : MonoBehaviour
         if (checkUpdateResult.Success)
         {
             m_Structure.RPC_RequireUpgrade();
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX3D(UpgradeStructure, m_Structure.transform.position, volume);
+
+            //Playe upgradeVFX
+            if (upgradeVFX != null) 
+            {
+                upgradeVFX.transform.position = m_Structure.transform.position; 
+                upgradeVFX.Play();            
+            }
+
             Hide();
         }
         else
@@ -112,7 +129,9 @@ public class StructureUI : MonoBehaviour
     }
     public void DestroyAction()
     {
-        Hide();
         m_Structure.RPC_RequireDestroy();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX3D(DestroyStructure, m_Structure.transform.position, volume);
+        Hide();
     }
 }

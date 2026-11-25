@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class DoorFortifyAction : InteractionAction
 {
     [SerializeField] ProgressUI ProgressUI;
+    [SerializeField] AudioClip lockAudio;
+    [SerializeField] float volume = 1f;
     private Door _door;
     private Door Door => _door != null ? _door : (_door = GetComponentInParent<Door>());
 
@@ -40,7 +42,11 @@ public class DoorFortifyAction : InteractionAction
             
             ProgressUI.gameObject.SetActive(false);
           
-        }       
+        } else if(type == InteractionEventType.Perform)
+        {
+            if (AudioManager.Instance)
+                AudioManager.Instance.PlaySFX3D(lockAudio, transform.position, volume);
+        }
     }
 
 

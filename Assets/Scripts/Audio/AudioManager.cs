@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -97,6 +98,17 @@ public class AudioManager : MonoBehaviour
         uiSource.PlayOneShot(clip, volumeScale);
     }
 
+
+
+    public void PlayOneShot(AudioClip clip, float volume = 1f)
+    {
+        if (clip == null || _sfxPool.Count == 0) return;
+
+        AudioSource src = _sfxPool[_poolIndex];
+        _poolIndex = (_poolIndex + 1) % _sfxPool.Count;
+        src.PlayOneShot(clip, volume);
+    }
+
     public void PlaySFX3D(AudioClip[] clips, Vector3 worldPosition, float volume = 1f, float pitchVariance = 0.08f)
     {
         if (clips == null || clips.Length == 0 || _sfxPool.Count == 0) return;
@@ -112,5 +124,24 @@ public class AudioManager : MonoBehaviour
         src.volume = volume;
         src.clip = chosenClip;
         src.Play();
+    }
+
+    public void PlaySFX3D(AudioClip clip, Vector3 worldPosition, float volume = 1f, float pitchVariance = 0.08f, bool loop = false)
+    {
+        if (clip == null || _sfxPool.Count == 0) return;
+       
+        AudioSource src = _sfxPool[_poolIndex];
+        _poolIndex = (_poolIndex + 1) % _sfxPool.Count;
+        src.loop = loop;
+        src.transform.position = worldPosition;
+        src.pitch = Random.Range(1f - pitchVariance, 1f + pitchVariance);
+        src.volume = volume;
+        src.clip = clip;
+        src.Play();
+    }
+    public void StopLoop(AudioClip clip)
+    {
+        var src = _sfxPool.Where(x => x.clip == clip).FirstOrDefault();
+        src?.Stop();
     }
 }

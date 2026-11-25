@@ -25,12 +25,29 @@ public class ItemToolKitUse : NetworkBehaviour
             Debug.Log( "Amount Use" + ctx.ConsumeAmount);
             inventory.RemoveItem(itemSO.ItemId, ctx.ConsumeAmount);
         }
+
+        RPC_PlayVisible(hotBarIndex);
+
         return true;
 
     }
 
 
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    void RPC_PlayVisible(int hotBarIndex)
+    {
+        if(hotBarIndex >= NetworkInventory.HotbarCapacity) return;
+        var itemSO = inventory.GetHotbarItemData(hotBarIndex);
+        if (itemSO == null || itemSO.Components.Count == 0) return;
 
+        var ctx = MakeContext(hotBarIndex);
+
+        foreach (var i in itemSO.Components)
+        {
+            i?.PlayVisible(ctx, Object.HasInputAuthority);
+        }
+
+    }
 
 
 

@@ -20,6 +20,11 @@ namespace SilentCastle.MonsterAI
     {
         [SerializeField] protected MonsterDefinition definition;
         [SerializeField] HealthComponent Health;
+
+        [Header("SFX")]
+        [SerializeField] AudioClip attackHitSound;
+        [SerializeField] AudioClip upLevelSound;
+        [SerializeField] float volume = 1f;
         public HealthComponent EnemyHealth => Health;
         // ---- Trạng thái đồng bộ cho client (UI, VFX, animation) ----
         [Networked] public int Level { get; set; }
@@ -422,7 +427,14 @@ namespace SilentCastle.MonsterAI
         public void RegisterHit(IMonsterTarget t, float damage)
         {
             GainExp(1);
+            RPC_MonsterAttackHit();
             for (int i = 0; i < _skills.Count; i++) _skills[i].OnDealtDamage(t, damage);
+        }
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        void RPC_MonsterAttackHit()
+        {
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX3D(attackHitSound, transform.position, volume);
         }
 
         public void GainExp(int amount)
@@ -485,6 +497,12 @@ namespace SilentCastle.MonsterAI
         public void RPC_PlayAttack(NetworkId targetId, float animSpeed)
         {
             transform.GetChild(0).localPosition = Vector3.zero;
+            NetworkObject obj = Runner.FindObject(targetId);
+            var dir =( obj.transform.position - transform.position).normalized;
+            dir.y = 0f;
+
+            transform.GetChild(0).rotation = Quaternion.LookRotation(dir);
+
             AttackPlayed?.Invoke(targetId, animSpeed);
         }
 
@@ -492,7 +510,12 @@ namespace SilentCastle.MonsterAI
         public void RPC_CancelAttack() => AttackCanceled?.Invoke();
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        public void RPC_LevelUp(int newLevel) => LevelUpPlayed?.Invoke(newLevel);
+        public void RPC_LevelUp(int newLevel)
+        {
+            LevelUpPlayed?.Invoke(newLevel);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX3D(upLevelSound, transform.position, volume);
+        }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         public void RPC_Died(byte cause) => DiedPlayed?.Invoke((DeathCause)cause);

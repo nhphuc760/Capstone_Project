@@ -36,6 +36,10 @@ namespace Game.Interaction
         [SerializeField] ItemSO thuocno;
         [SerializeField] int requireAmount;
 
+        [Header("SFX")]
+        [SerializeField] AudioClip fireCanon;
+        [SerializeField] float volume = 1f;
+
         [Header("Debug")]
         [Tooltip("Chưa có inventory: bật = coi như luôn có đạn")]
         [SerializeField] private bool _debugAssumeHasAmmo = true;
@@ -65,7 +69,6 @@ namespace Game.Interaction
                 FailReason = "";
                 return false;
             }
-
 
             return true;
         }
@@ -98,7 +101,6 @@ namespace Game.Interaction
             }
             else if (type == InteractionEventType.End)
             {
-
                 _aimView.Hide();
             }
         }
@@ -142,7 +144,7 @@ namespace Game.Interaction
 
             if (!TryConsumeAmmo(ctx))
             {
-                Debug.Log("[Cannon] Không có đạn pháo trong inventory", this);
+                RPC_Notification("Hết đạn !");
                 return;
             }
 
@@ -212,6 +214,16 @@ namespace Game.Interaction
                 if (d.sqrMagnitude > 0.001f) _barrel.rotation = Quaternion.LookRotation(d);
             }
             if (_muzzleVfx != null) _muzzleVfx.Play();
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX3D(fireCanon, transform.position, volume);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+        void RPC_Notification(string message)
+        {
+            if(NotificationManager.Ins != null)
+                NotificationManager.Ins.ShowNotification(message);
         }
     }
 }

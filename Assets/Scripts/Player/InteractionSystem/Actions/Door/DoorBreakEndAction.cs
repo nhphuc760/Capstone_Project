@@ -1,10 +1,14 @@
 ﻿using System.Linq;
 using Game.Interaction;
+using UnityEngine;
 
 public class DoorBreakEndAction : StructureBreakAction
 {
     private Door _door;
     private Door Door => _door != null ? _door : (_door = GetComponentInParent<Door>());
+
+
+
     public override string GetPrompt(in InteractionContext ctx)
     {
         return "Phá";
@@ -39,6 +43,10 @@ public class DoorBreakEndAction : StructureBreakAction
         return false;
     }
   
+
+
+
+
 
     public override void OnPerform(in InteractionContext ctx)
     {

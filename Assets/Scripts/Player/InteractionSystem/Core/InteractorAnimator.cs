@@ -33,14 +33,19 @@ namespace Game.Interaction
         private void OnEnable() { if (_controller != null) _controller.Presented += OnPresented; }
         private void OnDisable() { if (_controller != null) _controller.Presented -= OnPresented; }
 
+        InteractionPresentation _cached;
         private void OnPresented(InteractionEvent e)
         {
-            if (_animator == null || e.Action == null) return;
-            var p = e.Action.Presentation;
+            if (_animator == null) return;
+
+            if (e.Action != null) _cached = e.Action.Presentation;   // check kiểu Unity, chỉ cập nhật khi còn sống
+            var p = _cached;
+            if (p == null) return;
 
             switch (e.Type)
             {
                 case InteractionEventType.Begin:
+                    if (e.Action == null) return;
                     SetSpeed(e.Action.GetAnimationSpeed(e.Context));   // set TRƯỚC khi Play để chạy đúng tốc độ từ frame 0
                     if (!string.IsNullOrEmpty(p.BeginState))
                     {
@@ -56,6 +61,7 @@ namespace Game.Interaction
                     break;
 
                 case InteractionEventType.Perform:
+                    if(e.Action == null) return;
                     SetSpeed(e.Action.GetAnimationSpeed(e.Context));
                     // Press không có Begin/End nên phát one-shot ở đây
                     if (e.Action.Mode == InteractionMode.Press)
@@ -64,7 +70,7 @@ namespace Game.Interaction
 
                 case InteractionEventType.End:
                     _pendingLoop = 0;
-                    if (!string.IsNullOrEmpty(p.EndState))
+                    if (p != null && !string.IsNullOrEmpty(p.EndState))
                     {
                         int h = Animator.StringToHash(p.EndState);
                         if (_endBlend > 0f) _animator.CrossFadeInFixedTime(h, _endBlend, _layer);

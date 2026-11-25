@@ -50,8 +50,6 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
 
 
 
-    public event Action<ResourceNode> OnDepleted;
-    public event Action<ResourceNode> OnRegenerated;
     public event Action<int, int> OnAmountChanged;
 
 
@@ -76,28 +74,9 @@ public class ResourceNode : NetworkBehaviour, ITooltipContext
         if (IsDepleted) return 0;
         int requested = Mathf.RoundToInt(amountPerGather * Mathf.Max(0f, efficiencyMultiplier));
         int actual = Mathf.Min(requested, CurrentAmount);
-        CurrentAmount -= actual;
-        if (CurrentAmount <= 0)
-        {
-            if (HasStateAuthority)
-                Runner.Despawn(Object);
-            OnDepleted?.Invoke(this);
-        }
+        CurrentAmount -= actual;               
         return actual;
-    }
-
-
-    public void RegenerateOneWave()
-    {
-        if (CurrentAmount >= maxAmount) return;
-        bool wasDepleted = IsDepleted;
-        int regenAmount = Mathf.RoundToInt(maxAmount * regenRatePerWave);
-        CurrentAmount = Mathf.Min(maxAmount, CurrentAmount + regenAmount);
-        if (wasDepleted && CurrentAmount > 0)
-        {
-            OnRegenerated?.Invoke(this);
-        }
-    }
+    }    
 
 
     void OnAmountChange()

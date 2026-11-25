@@ -61,6 +61,28 @@ namespace Game.Interaction
         public NetworkButtons PrevButtons { get; set; }
 
 
+        private InteractionAction _activeActionCache;     
+
+        private void EndTargetLost()
+        {
+            var action = _activeActionCache;
+            if (action != null)
+            {
+                // target có thể đã bị Despawn (Unity object == null), nên context phải chịu được Target null
+                var ctx = new InteractionContext
+                {
+                    Interactor = this,
+                    Target = null,
+                    ItemHold = CurrentTool,
+                    Elapsed = Elapsed(),
+                    Progress01 = 0f
+                };
+                action.OnEnd(ctx, InteractionEndReason.TargetLost);
+            }
+            _activeActionCache = null;
+            State = InteractionState.Idle;
+        }
+
 
         // ---------- Events cho UI / Animator (client-side) ----------
         public event Action<InteractionEvent> Presented;
@@ -194,6 +216,7 @@ namespace Game.Interaction
         {
             ActiveTarget = target.Object.Id;
             ActiveActionIndex = action.Index;
+            _activeActionCache = action;
             ActiveSlot = (byte)slot;
             StartTick = Runner.Tick.Raw;
             StartPosition = transform.position;
@@ -227,7 +250,7 @@ namespace Game.Interaction
 
         private void TickHolding(NetworkButtons buttons, bool cancel)
         {
-            if (!TryGetActive(out var target, out var action)) { State = InteractionState.Idle; return; }
+            if (!TryGetActive(out var target, out var action)) { EndTargetLost(); return; }
 
             float elapsed = Elapsed();
             float p = ActiveDuration > 0f ? Mathf.Clamp01(elapsed / ActiveDuration) : 0f;
@@ -272,7 +295,7 @@ namespace Game.Interaction
 
         private void TickSession(NetworkButtons pressed, bool cancel)
         {
-            if (!TryGetActive(out var target, out var action)) { State = InteractionState.Idle; return; }
+            if (!TryGetActive(out var target, out var action)) { EndTargetLost(); return; }
 
             var ctx = MakeContext(target, Elapsed(), 0f);
 
@@ -385,12 +408,17 @@ namespace Game.Interaction
 
         private void Raise(InteractionEventType type)
         {
-            if (!TryGetActive(out var t, out var a)) return;
+            bool alive = TryGetActive(out var t, out var a);
+            if (!alive) 
+            { 
+             if (type != InteractionEventType.End) return;   // End vẫn phải đi tiếp
+            }
             float e = Elapsed();
             var ctx = MakeContext(t, e, ActiveDuration > 0f ? Mathf.Clamp01(e / ActiveDuration) : 0f);
             bool local = Object.HasInputAuthority;
-            a.OnPresentation(type, ctx, local);
-            Presented?.Invoke(new InteractionEvent(type, ctx, a, local));
+
+            if (alive) a.OnPresentation(type, ctx, local);   // Action chết thì bỏ qua hook của nó
+            Presented?.Invoke(new InteractionEvent(type, ctx, alive ? a : null, local));
         }
 
         private void UpdateFocus()

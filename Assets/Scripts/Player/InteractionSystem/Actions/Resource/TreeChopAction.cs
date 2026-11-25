@@ -17,7 +17,7 @@ public class TreeChopAction : GatherAction
     protected override void OnDepleted(in InteractionContext ctx)
     {
         // TODO: Runner.Spawn(logPrefab, ...) hoặc cộng gỗ vào inventory
-    }
+    }   
 
     protected override void OnHitPresentation(in InteractionContext ctx, bool isLocal)
     {

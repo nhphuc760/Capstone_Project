@@ -4,8 +4,7 @@ using UnityEngine;
 public class DoorToggleAction : InteractionAction
 {
     private Door _door;
-    private Door Door => _door != null ? _door : (_door = GetComponentInParent<Door>());
-
+    private Door Door => _door != null ? _door : (_door = GetComponentInParent<Door>());    
 
 
     public override string GetPrompt(in InteractionContext ctx)

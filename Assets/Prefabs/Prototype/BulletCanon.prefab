@@ -122,7 +122,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39625a0ed3cbf00449b27f67b8f8e03c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.CannonShell
-  _speed: 14
+  _speed: 8
   _minFlightTime: 0.6
   _maxFlightTime: 3
   _arcHeightPerMeter: 0.35
@@ -134,6 +134,8 @@ MonoBehaviour:
     m_Bits: 200
   _impactVfxPrefab: {fileID: 467751860875805754, guid: 7c6d9bb9c8994364dbe5ba2e32dd4d13, type: 3}
   _impactVfxLifetime: 3
+  explosionSound: {fileID: 8300000, guid: 7b781f41c8af62345bfde156e753adee, type: 3}
+  volume: 1
   _StartPos: {x: 0, y: 0, z: 0}
   _TargetPos: {x: 0, y: 0, z: 0}
   _StartTick: 0

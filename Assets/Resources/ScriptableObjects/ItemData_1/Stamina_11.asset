@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Stamina_11
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
   itemId: 11
-  itemName: Potion
+  itemName: "Thu\u1ED1c gi\u1EA3m \u0111au"
   description: "H\u1ED3i 10 \u0111\u01A1n v\u1ECB th\u1EC3 l\u1EF1c"
   itemType: 1
   icon: {fileID: -449015534, guid: fcf30f23d4ac983439a9055b88a24947, type: 3}
@@ -35,3 +35,4 @@ MonoBehaviour:
       type: {class: RaiseStamina, ns: , asm: Assembly-CSharp}
       data:
         Amount: 10
+        clip: {fileID: 8300000, guid: 44abaa0ed4f789646a088eb00582467e, type: 3}

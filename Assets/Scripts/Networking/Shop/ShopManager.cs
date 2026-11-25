@@ -10,6 +10,8 @@ public class ShopManager : NetworkBehaviour
     [SerializeField] SnowmanNPC npcShop;
     [SerializeField] ItemShopDatabase shopItemDatabase;
 
+    [SerializeField] AuctionManager auctionManager;
+
     public IconTMP iconTMP;
 
     [OnChangedRender(nameof(OnBannedListChanged))]
@@ -111,7 +113,7 @@ public class ShopManager : NetworkBehaviour
         bannedLists.Clear();
         AddPlayerInsided();
         RPC_SetActiveShop(true);
-
+        auctionManager.StartAuctionSession(GameManager.Instance.DayNightManager != null ? GameManager.Instance.DayNightManager.TimeRemainingToDayTime() : 60f);
     }
 
     
@@ -121,6 +123,7 @@ public class ShopManager : NetworkBehaviour
         RemovePlayerStillInside();
         playerInSide.Clear();
         RPC_SetActiveShop(false);
+        auctionManager.EndAuctionSession();
         //Add item trading
     }
 

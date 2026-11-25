@@ -8,6 +8,8 @@ using UnityEngine;
 public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
 {
 
+    [SerializeField] float volume = 1f;
+    [SerializeField] AudioClip doorToggle;
     [HideInInspector]
     [Networked]
     public Vector3 OutideOppositeDoor { get; private set; }
@@ -36,7 +38,6 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
     public float BodyRadius => 0f;
 
     public bool IsTargetable => IsAlive && isActiveAndEnabled;
-
 
 
 
@@ -202,7 +203,8 @@ public class Door : StructureBase, ITakedamageable, IOwnable, IMonsterTarget
             //đóng
             GetComponentInChildren<Animator>().Play("Close");
         }
-
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX3D(doorToggle, transform.position, 1f);
         OnDoorToggle?.Invoke(open, player);
         IsOpen = open;
     }

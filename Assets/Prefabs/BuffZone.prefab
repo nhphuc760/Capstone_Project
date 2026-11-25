@@ -132,6 +132,8 @@ MonoBehaviour:
   powerBuff: 20
   timeActive: 10
   meshRenderer: {fileID: 4897292167932485663}
+  buffZoneSound: {fileID: 8300000, guid: 697a99347767c884b951ef085650ec56, type: 3}
+  volume: 1
 --- !u!114 &1992652443111074067
 MonoBehaviour:
   m_ObjectHideFlags: 0

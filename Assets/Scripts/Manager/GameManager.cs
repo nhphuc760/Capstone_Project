@@ -54,6 +54,13 @@ public class GameManager : NetworkBehaviour, IPlayerJoined
     int PlayerCount = 1;
     private readonly HashSet<PlayerRef> _spawnedPlayers = new();
     private readonly List<Vector3> _usedSpawnPositions = new();
+
+
+
+
+    public NetworkTimeManager DayNightManager => dayNightManager;
+
+
     public event Action<GameState> OnGameStateChanged;
 
     // Camera đã detach để spectator (không bị hủy cùng player)

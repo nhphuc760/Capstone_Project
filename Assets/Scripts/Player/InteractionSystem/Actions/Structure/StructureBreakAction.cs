@@ -8,6 +8,11 @@ public class StructureBreakAction : InteractionAction
     [SerializeField] protected ProgressUI ProgressUI;
     [SerializeField] protected StructureBase structureBase;
     [SerializeField] protected int StaminaPerUse = 5;
+
+    [Header("SFX")]
+    [SerializeField] AudioClip destroyClip;
+    [SerializeField] float volume = 1f;
+
     protected virtual void Awake()
     {
         structureBase = GetComponentInParent<StructureBase>();
@@ -58,6 +63,14 @@ public class StructureBreakAction : InteractionAction
         else if (type == InteractionEventType.End)
         {
             ProgressUI.gameObject.SetActive(false);
+        } else if (type == InteractionEventType.Perform)
+        {
+            if (isLocal)
+            {
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlaySFX3D(destroyClip, transform.position, volume);
+            }
+
         }
     }
 }

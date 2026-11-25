@@ -35,9 +35,9 @@ namespace Game.Interaction
         // ---------- Logic ----------
         public override bool OnCanInteract(in InteractionContext ctx, out string reason)
         {
-            if (Node == null && Node.IsDepleted)
+            if (Node.IsDepleted)
             {
-                reason = null;
+                reason = "Tài nguyên đã cạn kiệt";
                 return false;
             }
                return CanHarvest(ctx, out reason);
@@ -47,6 +47,12 @@ namespace Game.Interaction
         {
             failReason = null;
             return true;
+        }
+
+        public override void OnEnd(in InteractionContext ctx, InteractionEndReason reason)
+        {
+            if (Node.IsDepleted)
+                Runner.Despawn(Node.Object);
         }
 
         public override void OnPerform(in InteractionContext ctx)

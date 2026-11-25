@@ -37,6 +37,8 @@ namespace Game.Interaction
         [Tooltip("Tuỳ chọn: prefab VFX nổ thường (KHÔNG phải NetworkObject), sinh ở mọi client khi đạn despawn")]
         [SerializeField] private GameObject _impactVfxPrefab;
         [SerializeField, Min(0f)] private float _impactVfxLifetime = 3f;
+        [SerializeField] AudioClip explosionSound;
+        [SerializeField] float volume = 1f;
 
         // ---------- Networked ----------
         [Networked] public Vector3 StartPos { get; set; }
@@ -118,21 +120,7 @@ namespace Game.Interaction
             Debug.Log($"[Shell] NỔ tại {point} (bán kính {_explosionRadius}m, người bắn={Shooter})", this);
 
             _hitObjects.Clear();
-            var cols = Physics.OverlapSphere(point, _explosionRadius, _hitLayers);
-
-            //foreach (var i in cols) 
-            //{
-            //    if(i.transform.root.TryGetComponent<NetworkObject>(out var obj))
-            //    {
-            //        if (obj.HasInputAuthority) continue;
-            //        if(obj.TryGetComponent<ITakedamageable>(out var takedamageable))
-            //        {
-            //            takedamageable.TakeDamage(_damage, Object);
-            //        }
-            //    }
-            //}
-
-
+            var cols = Physics.OverlapSphere(point, _explosionRadius, _hitLayers);            
 
             for (int i = 0; i < cols.Length; i++)
             {
@@ -144,6 +132,10 @@ namespace Game.Interaction
                 }
                 // TODO: gây sát thương / đẩy lùi / phá cửa... cho 'no' ở đây
             }
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX3D(explosionSound, point, volume);
+
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)

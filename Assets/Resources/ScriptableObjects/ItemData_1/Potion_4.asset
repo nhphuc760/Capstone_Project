@@ -35,3 +35,4 @@ MonoBehaviour:
       type: {class: RaiseHealth, ns: , asm: Assembly-CSharp}
       data:
         Amount: 10
+        clip: {fileID: 8300000, guid: 45370e7d93436554c8351f97e0f56acf, type: 3}

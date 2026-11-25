@@ -21,4 +21,11 @@ public abstract class ItemComponent
     /// <summary>Khi item rời inventory (bỏ, dùng hết).</summary>
     public virtual void OnLost(ItemContext ctx) { }
     public virtual void Validate(ItemSO owner) { }
+
+    /// <summary>
+    /// Dùng cho mọi Peer
+    /// </summary>
+    /// <param name="ctx"></param>
+    public virtual void PlayVisible(ItemContext ctx, bool isLocal) { }
+
 }

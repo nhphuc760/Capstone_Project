@@ -376,7 +376,7 @@ MonoBehaviour:
     Icon: {fileID: 0}
     BeginState: 
     LoopState: Mining
-    EndState: 
+    EndState: Idle
   _clip:
     ClipLength: 0.967
     TotalFrames: 29
@@ -536,6 +536,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
   _focusPoint: {fileID: 3550587154139744074}
   _defaultRange: 2.5
+  _promt: {fileID: 0}
 --- !u!1 &6927031108999867372
 GameObject:
   m_ObjectHideFlags: 0

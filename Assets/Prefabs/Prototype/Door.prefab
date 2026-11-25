@@ -915,6 +915,8 @@ MonoBehaviour:
   _IsUpgradeable:
     _value: 0
   StructureDataSO: {fileID: 11400000, guid: 1ba19995b6da3a54fa7cd982f8950ee7, type: 2}
+  volume: 1
+  doorToggle: {fileID: 8300000, guid: 534143cbb2d85b84b98bb27257782b5a, type: 3}
   _OutideOppositeDoor: {x: 0, y: 0, z: 0}
   _HasInitialized:
     _value: 0
@@ -1187,9 +1189,11 @@ MonoBehaviour:
     Prompt: "Kh\xF3a b\u1EA3o m\u1EADt"
     Icon: {fileID: 21300000, guid: a91e4271be3fe1e4598b0d1f3347afa8, type: 3}
     BeginState: 
-    LoopState: 
+    LoopState: Dismantle
     EndState: 
   ProgressUI: {fileID: 3592443864361486263}
+  lockAudio: {fileID: 8300000, guid: 1a786352d139c8e418517c439b810b71, type: 3}
+  volume: 1
 --- !u!1 &6515579033888805127
 GameObject:
   m_ObjectHideFlags: 0

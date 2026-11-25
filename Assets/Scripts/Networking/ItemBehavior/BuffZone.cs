@@ -9,7 +9,9 @@ public class BuffZone : NetworkBehaviour
     [SerializeField] public float powerBuff = 20;
     [SerializeField] public float timeActive = 10;
     [SerializeField] MeshRenderer meshRenderer;
-
+    [Header("SFX")]
+    [SerializeField] AudioClip buffZoneSound;
+    [SerializeField] float volume = 1f;
     Dictionary<IAffector, List<int>> objInZone = new Dictionary<IAffector, List<int>>();
     [Networked] TickTimer timer { get; set; }
 
@@ -27,6 +29,9 @@ public class BuffZone : NetworkBehaviour
         {
             meshRenderer.material = debuff;
         }
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX3D(buffZoneSound, transform.position, volume, loop: true);
+
     }
 
     public override void FixedUpdateNetwork()
@@ -47,6 +52,9 @@ public class BuffZone : NetworkBehaviour
                 keyValue.Key.RemoveModifier(i);
             }
         }
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopLoop(buffZoneSound);
+
     }
 
     private void OnTriggerEnter(Collider other)

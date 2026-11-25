@@ -5,7 +5,6 @@ using Fusion;
 using UnityEngine;
 using Util.Core;
 using System.Linq;
-using Ookii.Dialogs;
 public class BuildSystem : NetworkBehaviour
 {
     MeshFilter[] meshFilters;
@@ -24,6 +23,9 @@ public class BuildSystem : NetworkBehaviour
     [SerializeField] NetworkInventory _inventory;
 
 
+    [Header("SFX")]
+    [SerializeField] AudioClip buildPlacement;
+    [SerializeField] float volume = 1f;
     [Networked, OnChangedRender(nameof(OnIdStructChange))] public NetworkString<_8> idStruct { get; private set; }
 
     [SerializeField] int wallAmount = 30;
@@ -92,16 +94,12 @@ public class BuildSystem : NetworkBehaviour
         if (Input.GetMouseButtonDown(0) && _curStructureSO != null)
         {
             // Request build
+                RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
             if (buildValidationResult.Success)
             {
-
-                RPC_BuildRequest(_curStructureSO._id, _cellPos, previewRot);
-            }
-            else
-            {
-                NotificationManager.Ins.ShowNotification(buildValidationResult.Message, 2);
-                buildFailReason?.Invoke(buildValidationResult);
-            }
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlaySFX3D(buildPlacement, _cellPos, volume);
+            }           
         }
 
         if (Input.GetMouseButtonDown(1))

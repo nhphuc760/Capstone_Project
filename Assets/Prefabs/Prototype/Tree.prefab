@@ -782,7 +782,7 @@ MonoBehaviour:
   resourceType: 0
   requiredTool: 1
   maxAmount: 300
-  amountPerGather: 10
+  amountPerGather: 30
   staminaCostPerGather: 5
   holdDuration: 3
   animator: {fileID: 6703749943848583857}
@@ -904,3 +904,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Interactable
   _focusPoint: {fileID: 6007682004136614036}
   _defaultRange: 2.5
+  _promt: {fileID: 0}

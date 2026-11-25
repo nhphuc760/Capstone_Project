@@ -36,6 +36,9 @@ public class AuctionManager : NetworkBehaviour
     {
         auctionToken = new EventBinding<ReliableReceiveData>(OnReliableReceiveData);
         EventBus<ReliableReceiveData>.Register(auctionToken);
+
+
+
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
@@ -52,7 +55,7 @@ public class AuctionManager : NetworkBehaviour
         {
             if (HasStateAuthority)
             {
-                StartAuctionSession(auctionDatabaseItem.auctionDatabase.Except(historySession.Select(x => x.ItemAuctionInfo)).RandomElement(), 60);
+                StartAuctionSession(60f);
             }
         }
     }
@@ -78,9 +81,10 @@ public class AuctionManager : NetworkBehaviour
     }
 
 
-    void StartAuctionSession(ItemAuctionInfo item, float seconds)
+    public void StartAuctionSession(float seconds)
     {
         if (!HasStateAuthority) return;
+        var item = auctionDatabaseItem.auctionDatabase.Except(historySession.Select(x => x.ItemAuctionInfo)).RandomElement();
         curSession = new AuctionSession(this, item);
         curSession.OnHistoryTradingAdded += CurSession_OnHistoryTradingChanged;
         RemainingTime = TickTimer.CreateFromSeconds(Runner, seconds);
@@ -101,9 +105,10 @@ public class AuctionManager : NetworkBehaviour
         RPC_OnAddedTradingEvents(onAdded.wood, onAdded.stone, onAdded.gold, onAdded.Player, data);
     }
 
-    void EndAuctionSession()
+    public void EndAuctionSession()
     {
         if (!HasStateAuthority) return;
+        if (curSession == null) return;
         curSession.OnHistoryTradingAdded -= CurSession_OnHistoryTradingChanged;
         curSession.EndSession();       
         if (curSession.Winner.Player == PlayerRef.None) return; // Không ai đấu giá

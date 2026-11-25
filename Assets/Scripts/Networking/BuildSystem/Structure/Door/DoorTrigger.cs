@@ -53,7 +53,8 @@ public class DoorTrigger : MonoBehaviour
             //Chỉ quan tâm vị trí
             if(StructureManager.Ins.IsInsideEnclosedZone(netObj.InputAuthority, affector.transform.position, false))
             {
-                AddBuff(affector.GetComponent<IAffector>(), affector.InputAuthority == netObj.InputAuthority);
+                if(!objInZone.ContainsKey(affector.GetComponent<IAffector>()))
+                    AddBuff(affector.GetComponent<IAffector>(), affector.InputAuthority == netObj.InputAuthority);
             }
             else
             {
