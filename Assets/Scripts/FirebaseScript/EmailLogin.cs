@@ -155,87 +155,178 @@ public class EmailLogin : MonoBehaviour
     }
 
     #region sign up
+    private bool isSigningUp;
+
     public void SignUp()
     {
+        if (isSigningUp) return;
+        if (!CheckSignUpValidation()) return;
+
+        isSigningUp = true;
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
-        string email = SignUpEmail.text;
+        string email = SignUpEmail.text.Trim();
         string password = SignUpPassword.text;
 
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
         {
-            if (task.IsCanceled)
+            try
             {
-                Debug.LogError("SignUp was canceled.");
-                return;
-            }
-            if (task.IsFaulted)
-            {
-                Debug.LogError("SignUp encountered an error: " + task.Exception);
-                return;
-            }
+                if (task.IsCanceled)
+                {
+                    openEmailPasswordNotificationPanel("Sign up was canceled.");
+                    return;
+                }
 
-            AuthResult result = task.Result;
-            Debug.LogFormat("User signed up successfully: {0} ({1})",
-                result.User.DisplayName, result.User.UserId);
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("SignUp encountered an error: " + task.Exception);
+                    FirebaseException firebaseException = task.Exception?.GetBaseException() as FirebaseException;
 
-            SignUpEmail.text = "";
-            SignUpPassword.text = "";
-            SignUpPasswordConfirm.text = "";
+                    if (firebaseException != null)
+                    {
+                        AuthError error = (AuthError)firebaseException.ErrorCode;
+                        switch (error)
+                        {
+                            case AuthError.EmailAlreadyInUse:
+                                openEmailPasswordNotificationPanel("This email is already registered.");
+                                break;
+                            case AuthError.InvalidEmail:
+                                openEmailPasswordNotificationPanel("Invalid email format.");
+                                break;
+                            case AuthError.WeakPassword:
+                                openEmailPasswordNotificationPanel("Password must be at least 6 characters.");
+                                break;
+                            case AuthError.NetworkRequestFailed:
+                                openEmailPasswordNotificationPanel("Network error. Please try again.");
+                                break;
+                            default:
+                                openEmailPasswordNotificationPanel("Sign up failed. Please check your information.");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        openEmailPasswordNotificationPanel("Sign up failed.");
+                    }
+                    return;
+                }
 
-            if (result.User.IsEmailVerified)
-            {
-                showLogMsg("Sign up successful! Please log in.");
+                AuthResult result = task.Result;
+                FirebaseUser newUser = result.User;
+                Debug.LogFormat("User signed up successfully: {0} ({1})", newUser.DisplayName, newUser.UserId);
+
+                if (SignUpEmail != null) SignUpEmail.text = "";
+                if (SignUpPassword != null) SignUpPassword.text = "";
+                if (SignUpPasswordConfirm != null) SignUpPasswordConfirm.text = "";
+
+                // Chỉ chuyển về loginUI sau khi tạo tài khoản thành công
+                if (signUpUI != null) signUpUI.SetActive(false);
+                if (loginUI != null) loginUI.SetActive(true);
+
+                if (newUser.IsEmailVerified)
+                {
+                    openEmailPasswordNotificationPanel("Sign up successful! Please log in.");
+                }
+                else
+                {
+                    openNotificationPanel();
+                    SendEmailVerificationAndSignOutAsync(newUser).Forget();
+                }
             }
-            else
+            finally
             {
-                openNotificationPanel();
-                SendEmailVerification(result.User);
+                isSigningUp = false;
             }
         });
-
-        signUpUI.SetActive(false);
-        loginUI.SetActive(true);
     }
 
-    public void SendEmailVerification(FirebaseUser targetUser = null)
+    private bool CheckSignUpValidation()
     {
-        StartCoroutine(SendEmailVerificationAsync(targetUser));
-    }
-
-    IEnumerator SendEmailVerificationAsync(FirebaseUser targetUser = null)
-    {
-        FirebaseUser user = targetUser ?? FirebaseAuth.DefaultInstance.CurrentUser;
-        if (user != null)
+        if (SignUpEmail == null || string.IsNullOrWhiteSpace(SignUpEmail.text))
         {
-            var sendEmailTask = user.SendEmailVerificationAsync();
-            yield return new WaitUntil(() => sendEmailTask.IsCompleted);
+            openEmailPasswordNotificationPanel("Please enter your email.");
+            return false;
+        }
 
-            if (sendEmailTask.Exception != null)
+        string email = SignUpEmail.text.Trim();
+        if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            openEmailPasswordNotificationPanel("Invalid email format.");
+            return false;
+        }
+
+        if (SignUpPassword == null || string.IsNullOrEmpty(SignUpPassword.text))
+        {
+            openEmailPasswordNotificationPanel("Please enter your password.");
+            return false;
+        }
+
+        if (SignUpPassword.text.Length < 6)
+        {
+            openEmailPasswordNotificationPanel("Password must be at least 6 characters.");
+            return false;
+        }
+
+        if (SignUpPasswordConfirm != null && SignUpPassword.text != SignUpPasswordConfirm.text)
+        {
+            openEmailPasswordNotificationPanel("Passwords do not match.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void SendEmailVerification()
+    {
+        SendEmailVerificationAndSignOutAsync(FirebaseAuth.DefaultInstance.CurrentUser).Forget();
+    }
+
+    private async UniTaskVoid SendEmailVerificationAndSignOutAsync(FirebaseUser targetUser)
+    {
+        try
+        {
+            if (targetUser != null)
             {
-                print("Email send error");
+                await targetUser.SendEmailVerificationAsync();
+                Debug.Log("Verification email sent successfully.");
             }
-            else
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Email verification send error: " + ex.Message);
+        }
+        finally
+        {
+            // Đăng xuất phiên tạm sau khi gửi xong link xác thực để tránh lưu token chưa kích hoạt trên máy
+            if (FirebaseAuth.DefaultInstance.CurrentUser != null &&
+                targetUser != null &&
+                FirebaseAuth.DefaultInstance.CurrentUser.UserId == targetUser.UserId)
             {
-                print("Email sent successfully");
+                FirebaseAuth.DefaultInstance.SignOut();
             }
         }
     }
 
     public void closeNotificationPanel()
     {
-        emailVerificationPanel.SetActive(false);
+        if (emailVerificationPanel != null)
+            emailVerificationPanel.SetActive(false);
     }
 
     private void openNotificationPanel()
     {
-        emailVerificationPanel.SetActive(true);
-        showLogMsg("Please verify your email before logging in. A verification email has been sent to your email address.");
+        if (emailVerificationPanel != null)
+            emailVerificationPanel.SetActive(false);
+
+        openEmailPasswordNotificationPanel(
+            "A verification link has been sent to your email. Please check your inbox (or Spam) and verify before logging in."
+        );
     }
 
     public void openLoginPanel()
     {
-        signUpUI.SetActive(false);
-        loginUI.SetActive(true);
+        if (signUpUI != null) signUpUI.SetActive(false);
+        if (loginUI != null) loginUI.SetActive(true);
     }
     #endregion
 
@@ -435,7 +526,8 @@ public class EmailLogin : MonoBehaviour
                 }
                 else
                 {
-                    showLogMsg("please verify email");
+                    auth.SignOut();
+                    openEmailPasswordNotificationPanel("Your email is not verified yet. Please click the verification link sent to your email before logging in.");
                 }
             }
             finally
@@ -464,17 +556,15 @@ public class EmailLogin : MonoBehaviour
 
     private void showLogMsg(string message)
     {
-        if (logTxt != null && wrongEmailPasswordText != null)
-        {
+        if (logTxt != null)
             logTxt.text = message;
-            wrongEmailPasswordText.text = message;
-        }
-        else
-        {
-            Debug.Log(message);
-        }
-    }
 
+        if (wrongEmailPasswordText != null)
+            wrongEmailPasswordText.text = message;
+
+        if (logTxt == null && wrongEmailPasswordText == null)
+            Debug.Log(message);
+    }
     public void closeEmailPasswordNotificationPanel()
     {
         emailPasswordNotificationPanel.SetActive(false);
