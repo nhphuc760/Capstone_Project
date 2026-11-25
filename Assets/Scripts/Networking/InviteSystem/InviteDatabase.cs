@@ -20,28 +20,29 @@ public static class InviteDatabase
         return !inviteSnapshot.Exists;
     }
 
-    public static Action ListenIncoming(Action<string, Invite> callback)
+    public static Action ListenIncoming(string receiverUserID, Action<string, Invite> callback)
     {
-        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/Invites");
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{receiverUserID}/Invites");
 
-        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) =>
+        void HandleSnapshot(DataSnapshot snapshot)
         {
-            if (!args.Snapshot.Exists) return;
-            Invite invite = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
-            callback(args.Snapshot.Key, invite);
-        };
+            if (snapshot == null || !snapshot.Exists) return;
+            string raw = snapshot.GetRawJsonValue();
+            if (string.IsNullOrEmpty(raw)) return;
+            try
+            {
+                Invite invite = JsonConvert.DeserializeObject<Invite>(raw);
+                callback?.Invoke(snapshot.Key, invite);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[InviteDatabase] Lỗi parse Incoming Invite: {ex.Message}");
+            }
+        }
 
-        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) =>
-        {
-            if (!args.Snapshot.Exists) return;
-            Invite invite = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
-            callback(args.Snapshot.Key, invite);
-        };
-
-        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) =>
-        {
-            callback(args.Snapshot.Key, null);
-        };
+        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) => HandleSnapshot(args.Snapshot);
+        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) => HandleSnapshot(args.Snapshot);
+        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) => callback?.Invoke(args.Snapshot.Key, null);
 
         @ref.ChildAdded += handleChildAdded;
         @ref.ChildChanged += handleChildChanged;
@@ -52,7 +53,6 @@ public static class InviteDatabase
             @ref.ChildAdded -= handleChildAdded;
             @ref.ChildChanged -= handleChildChanged;
             @ref.ChildRemoved -= handleChildRemoved;
-            Debug.Log("[Firebase] Đã ngắt lắng nghe Incoming Invites.");
         };
     }
 
@@ -63,9 +63,9 @@ public static class InviteDatabase
 
         EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
         {
-            if (!e.Snapshot.Exists) return;
+            if (e.Snapshot == null || !e.Snapshot.Exists || e.Snapshot.Value == null) return;
             int statusValue = Convert.ToInt32(e.Snapshot.Value);
-            callback((InviteStatus)statusValue);
+            UniTask.Post(() => callback?.Invoke((InviteStatus)statusValue));
         };
 
         statusRef.ValueChanged += changeHandle;
@@ -73,13 +73,12 @@ public static class InviteDatabase
         return () =>
         {
             statusRef.ValueChanged -= changeHandle;
-            Debug.Log($"[Firebase] Đã ngừng lắng nghe phản hồi tại Users/{receiverID}/Invites/{senderID}");
         };
     }
 
-    public static async UniTask UpdateStatus(string senderID, InviteStatus status)
+    public static async UniTask UpdateStatus(string receiverUserID, string senderID, InviteStatus status)
     {
-        string path = $"Users/{FirebaseManager.UserID}/Invites/{senderID}/Status";
+        string path = $"Users/{receiverUserID}/Invites/{senderID}/Status";
         await FirebaseManager.RealtimeDB.SetValue(path, (int)status);
     }
 
@@ -98,7 +97,7 @@ public static class InviteDatabase
         EventHandler<ValueChangedEventArgs> handle = null;
         handle = (sender, e) =>
         {
-            if (!e.Snapshot.Exists) return;
+            if (e.Snapshot == null || !e.Snapshot.Exists || e.Snapshot.Value == null) return;
 
             var roomStatus = (RoomStatus)Convert.ToInt32(e.Snapshot.Value);
             if (roomStatus == RoomStatus.Ready)
@@ -120,7 +119,6 @@ public static class InviteDatabase
         countDown.Start().OnExpired(() =>
         {
             statusRef.ValueChanged -= handle;
-            Debug.LogWarning($"[Lobby] Đợi khởi tạo phòng {roomID} quá thời gian (Timeout).");
             tcs.TrySetResult(RoomStatus.Error);
         });
 
@@ -169,28 +167,29 @@ public static class InviteDatabase
         return !snapshot.Exists;
     }
 
-    public static Action ListenIncomingJoinRequests(Action<string, Invite> callback)
+    public static Action ListenIncomingJoinRequests(string hostUserID, Action<string, Invite> callback)
     {
-        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}/JoinRequests");
+        var @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{hostUserID}/JoinRequests");
 
-        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) =>
+        void HandleSnapshot(DataSnapshot snapshot)
         {
-            if (!args.Snapshot.Exists) return;
-            Invite req = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
-            callback(args.Snapshot.Key, req);
-        };
+            if (snapshot == null || !snapshot.Exists) return;
+            string raw = snapshot.GetRawJsonValue();
+            if (string.IsNullOrEmpty(raw)) return;
+            try
+            {
+                Invite req = JsonConvert.DeserializeObject<Invite>(raw);
+                callback?.Invoke(snapshot.Key, req);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[InviteDatabase] Lỗi parse JoinRequest: {ex.Message}");
+            }
+        }
 
-        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) =>
-        {
-            if (!args.Snapshot.Exists) return;
-            Invite req = JsonConvert.DeserializeObject<Invite>(args.Snapshot.GetRawJsonValue());
-            callback(args.Snapshot.Key, req);
-        };
-
-        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) =>
-        {
-            callback(args.Snapshot.Key, null);
-        };
+        EventHandler<ChildChangedEventArgs> handleChildAdded = (sender, args) => HandleSnapshot(args.Snapshot);
+        EventHandler<ChildChangedEventArgs> handleChildChanged = (sender, args) => HandleSnapshot(args.Snapshot);
+        EventHandler<ChildChangedEventArgs> handleChildRemoved = (sender, args) => callback?.Invoke(args.Snapshot.Key, null);
 
         @ref.ChildAdded += handleChildAdded;
         @ref.ChildChanged += handleChildChanged;
@@ -204,29 +203,9 @@ public static class InviteDatabase
         };
     }
 
-    public static Action ListenJoinRequestReply(string hostID, string requesterID, Action<InviteStatus> callback)
+    public static async UniTask AcceptJoinRequestWithRoomCode(string hostUserID, string requesterID, string liveRoomCode)
     {
-        DatabaseReference statusRef = FirebaseManager.RealtimeDB.reference
-            .Child($"Users/{hostID}/JoinRequests/{requesterID}/Status");
-
-        EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
-        {
-            if (!e.Snapshot.Exists) return;
-            int statusValue = Convert.ToInt32(e.Snapshot.Value);
-            callback((InviteStatus)statusValue);
-        };
-
-        statusRef.ValueChanged += changeHandle;
-
-        return () =>
-        {
-            statusRef.ValueChanged -= changeHandle;
-        };
-    }
-
-    public static async UniTask AcceptJoinRequestWithRoomCode(string requesterID, string liveRoomCode)
-    {
-        string basePath = $"Users/{FirebaseManager.UserID}/JoinRequests/{requesterID}";
+        string basePath = $"Users/{hostUserID}/JoinRequests/{requesterID}";
         if (!string.IsNullOrEmpty(liveRoomCode))
         {
             await FirebaseManager.RealtimeDB.SetValue($"{basePath}/RoomCode", liveRoomCode);
@@ -241,10 +220,21 @@ public static class InviteDatabase
 
         EventHandler<ValueChangedEventArgs> changeHandle = (sender, e) =>
         {
-            if (!e.Snapshot.Exists) return;
-            Invite req = JsonConvert.DeserializeObject<Invite>(e.Snapshot.GetRawJsonValue());
-            if (req != null)
-                callback(req.Status, req.RoomCode);
+            if (e.Snapshot == null || !e.Snapshot.Exists) return;
+            string raw = e.Snapshot.GetRawJsonValue();
+            if (string.IsNullOrEmpty(raw)) return;
+            try
+            {
+                Invite req = JsonConvert.DeserializeObject<Invite>(raw);
+                if (req != null)
+                {
+                    UniTask.Post(() => callback?.Invoke(req.Status, req.RoomCode));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[InviteDatabase] Lỗi parse JoinRequest Reply: {ex.Message}");
+            }
         };
 
         reqRef.ValueChanged += changeHandle;
@@ -255,9 +245,9 @@ public static class InviteDatabase
         };
     }
 
-    public static async UniTask UpdateJoinRequestStatus(string requesterID, InviteStatus status)
+    public static async UniTask UpdateJoinRequestStatus(string hostUserID, string requesterID, InviteStatus status)
     {
-        string path = $"Users/{FirebaseManager.UserID}/JoinRequests/{requesterID}/Status";
+        string path = $"Users/{hostUserID}/JoinRequests/{requesterID}/Status";
         await FirebaseManager.RealtimeDB.SetValue(path, (int)status);
     }
 

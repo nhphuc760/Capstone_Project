@@ -20,56 +20,52 @@ public class InviteReceiver
 
     private void ListenIncoming()
     {
-        unsubscribeIncoming = InviteDatabase.ListenIncoming((senderID, invite) =>
+        unsubscribeIncoming = InviteDatabase.ListenIncoming(myId, (senderID, invite) =>
         {
-            // Trường hợp đối phương xóa/hủy lời mời (hoặc hết hạn) -> Firebase bắn sự kiện child removed
-            if (invite == null)
-            {
-                RemoveInvite(senderID);
-                return;
-            }
-
-            if (inviteReceived.ContainsKey(senderID))
-            {
-                Debug.Log($"[Receiver] Cập nhật lời mời từ {senderID}");
-                Invite old = inviteReceived[senderID];
-                inviteReceived[senderID] = invite;
-                manager.SyncPendingInvite(senderID, invite);
-                EventBus<InviteEvent.OnUpdateInviteArgs>.Raise(new InviteEvent.OnUpdateInviteArgs { 
-                    senderID = senderID,
-                    OldValue = old,
-                    NewValue = invite
-                });
-            }
-            else
-            {
-                Debug.Log($"[Receiver] Nhận lời mời mới từ {senderID}");
-                inviteReceived.Add(senderID, invite);
-                manager.SyncPendingInvite(senderID, invite);
-
-                EventBus<InviteEvent.OnAddInviteArgs>.Raise(new InviteEvent.OnAddInviteArgs
-                {
-                    senderID = senderID,
-                });
-            }
-
-            // Thiết lập hoặc gia hạn thời gian tự hủy lời mời
-            if (countDowns.TryGetValue(senderID, out CountDownTimer timer))
-            {
-                timer.RestartTimer();
-            }
-            else
-            {
-                CountDownTimer countDown = new CountDownTimer(30);
-                countDown.Start().OnExpired(() =>
-                {
-                    Debug.Log($"[Receiver] Lời mời từ {senderID} đã hết hạn.");
-                    InviteDatabase.RemoveInvite(myId, senderID).Forget();
-                    RemoveInvite(senderID);
-                });
-                countDowns[senderID] = countDown;
-            }
+            UniTask.Post(() => HandleIncomingOnMainThread(senderID, invite));
         });
+    }
+
+    private void HandleIncomingOnMainThread(string senderID, Invite invite)
+    {
+        if (invite == null)
+        {
+            RemoveInvite(senderID);
+            return;
+        }
+
+        if (invite.Status != InviteStatus.Pending)
+            return;
+
+        if (inviteReceived.ContainsKey(senderID))
+        {
+            RemoveInvite(senderID);
+        }
+
+        inviteReceived[senderID] = invite;
+        manager.SyncPendingInvite(senderID, invite);
+
+        Debug.Log($"[Receiver] Nhận lời mời từ {senderID} (RoomCode: {invite.RoomCode})");
+        EventBus<InviteEvent.OnAddInviteArgs>.Raise(new InviteEvent.OnAddInviteArgs
+        {
+            senderID = senderID,
+        });
+
+        if (countDowns.TryGetValue(senderID, out CountDownTimer timer))
+        {
+            timer.RestartTimer();
+        }
+        else
+        {
+            CountDownTimer countDown = new CountDownTimer(30);
+            countDown.Start().OnExpired(() =>
+            {
+                Debug.Log($"[Receiver] Lời mời từ {senderID} đã hết hạn.");
+                InviteDatabase.RemoveInvite(myId, senderID).Forget();
+                RemoveInvite(senderID);
+            });
+            countDowns[senderID] = countDown;
+        }
     }
 
     public void RemoveInvite(string senderID)
@@ -80,7 +76,6 @@ public class InviteReceiver
             EventBus<InviteEvent.OnRemoveInviteArgs>.Raise(new InviteEvent.OnRemoveInviteArgs { senderID = senderID });
         }
 
-        // Dừng đếm ngược ngay lập tức khi xóa để tránh kích hoạt Callback cũ
         if (countDowns.TryGetValue(senderID, out CountDownTimer timer))
         {
             timer.Stop();

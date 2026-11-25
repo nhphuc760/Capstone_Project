@@ -22,11 +22,10 @@ public class EmailLogin : MonoBehaviour
     [SerializeField] private TMP_InputField SignUpPasswordConfirm;
 
     [Header("Extra")]
-    //public GameObject loadingScreen;
     [SerializeField] private Toggle rememberMeToggle;
 
     [Header("UI")]
-    [SerializeField] private GameObject loginRootPanel; // Kéo object cha LoginPanel vào đây (nếu để trống sẽ tự lấy gameObject hiện tại)
+    [SerializeField] private GameObject loginRootPanel;
     [SerializeField] private TextMeshProUGUI logTxt, wrongEmailPasswordText;
     [SerializeField] private GameObject loginUI, signUpUI, emailVerificationPanel, emailPasswordNotificationPanel;
 
@@ -67,14 +66,10 @@ public class EmailLogin : MonoBehaviour
         LoadRememberedEmail();
         if (emailSuggestionPanel != null)
             emailSuggestionPanel.SetActive(false);
-
-        //if (rememberMeToggle != null)
-        //    rememberMeToggle.isOn = false;
     }
 
     private void Update()
     {
-        // 1. Click chuột ra ngoài khung báo lỗi thì tự tắt
         if (emailPasswordNotificationPanel != null
             && emailPasswordNotificationPanel.activeSelf
             && Time.frameCount > panelOpenedFrame
@@ -87,7 +82,6 @@ public class EmailLogin : MonoBehaviour
             }
         }
 
-        // 2. Nhấn ESC để lùi từng lớp từ trong ra ngoài
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             HandleEscapeBack();
@@ -98,7 +92,6 @@ public class EmailLogin : MonoBehaviour
     {
         LastEscConsumedFrame = Time.frameCount;
 
-        // Ưu tiên tắt các popup thông báo hoặc bảng gợi ý email trước
         if (emailPasswordNotificationPanel != null && emailPasswordNotificationPanel.activeSelf)
         {
             closeEmailPasswordNotificationPanel();
@@ -117,7 +110,6 @@ public class EmailLogin : MonoBehaviour
             return;
         }
 
-        // Đang ở Forgot Password hoặc Sign Up -> quay về màn hình Login chính
         if (forgotPasswordPanel != null && forgotPasswordPanel.activeSelf)
         {
             CloseForgotPasswordPanel();
@@ -130,7 +122,6 @@ public class EmailLogin : MonoBehaviour
             return;
         }
 
-        // Đang ở màn hình Login chính -> đóng toàn bộ LoginPanel
         CloseEntireLoginPanel();
     }
 
@@ -148,11 +139,6 @@ public class EmailLogin : MonoBehaviour
         if (SignUpPasswordConfirm != null) SignUpPasswordConfirm.text = "";
         if (forgotPasswordEmail != null) forgotPasswordEmail.text = "";
 
-        //if (rememberMeToggle == null || !rememberMeToggle.isOn)
-        //{
-        //    if (LoginEmail != null) LoginEmail.text = "";
-        //    if (LoginPassword != null) LoginPassword.text = "";
-        //}
         LoadRememberedEmail();
         if (logTxt != null) logTxt.text = "";
         if (wrongEmailPasswordText != null) wrongEmailPasswordText.text = "";
@@ -168,19 +154,13 @@ public class EmailLogin : MonoBehaviour
             target.SetActive(false);
     }
 
-    #region  sign up
-    // Sign up
+    #region sign up
     public void SignUp()
     {
-        //loadingScreen.SetActive(true);
-
-        // Create a new user with email and password
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
         string email = SignUpEmail.text;
         string password = SignUpPassword.text;
-        string confirmPassword = SignUpPasswordConfirm.text;
 
-        // Check if the email and password fields are not empty
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled)
@@ -194,8 +174,6 @@ public class EmailLogin : MonoBehaviour
                 return;
             }
 
-            // Sign up successful
-            //loadingScreen.SetActive(false);
             AuthResult result = task.Result;
             Debug.LogFormat("User signed up successfully: {0} ({1})",
                 result.User.DisplayName, result.User.UserId);
@@ -211,7 +189,7 @@ public class EmailLogin : MonoBehaviour
             else
             {
                 openNotificationPanel();
-                SendEmailVerification();
+                SendEmailVerification(result.User);
             }
         });
 
@@ -219,15 +197,14 @@ public class EmailLogin : MonoBehaviour
         loginUI.SetActive(true);
     }
 
-    //Email Confirmation 
-    public void SendEmailVerification()
+    public void SendEmailVerification(FirebaseUser targetUser = null)
     {
-        StartCoroutine(SendEmailVerificationAsync());
+        StartCoroutine(SendEmailVerificationAsync(targetUser));
     }
 
-    IEnumerator SendEmailVerificationAsync()
+    IEnumerator SendEmailVerificationAsync(FirebaseUser targetUser = null)
     {
-        FirebaseUser user = FirebaseAuth.DefaultInstance.CurrentUser;
+        FirebaseUser user = targetUser ?? FirebaseAuth.DefaultInstance.CurrentUser;
         if (user != null)
         {
             var sendEmailTask = user.SendEmailVerificationAsync();
@@ -236,93 +213,6 @@ public class EmailLogin : MonoBehaviour
             if (sendEmailTask.Exception != null)
             {
                 print("Email send error");
-                FirebaseException firebaseException = sendEmailTask.Exception.GetBaseException() as FirebaseException;
-                AuthError error = (AuthError)firebaseException.ErrorCode;
-
-                switch (error)
-                {
-                    case AuthError.None: break;
-                    case AuthError.Unimplemented: break;
-                    case AuthError.Failure: break;
-                    case AuthError.InvalidCustomToken: break;
-                    case AuthError.CustomTokenMismatch: break;
-                    case AuthError.InvalidCredential: break;
-                    case AuthError.UserDisabled: break;
-                    case AuthError.AccountExistsWithDifferentCredentials: break;
-                    case AuthError.OperationNotAllowed: break;
-                    case AuthError.EmailAlreadyInUse: break;
-                    case AuthError.RequiresRecentLogin: break;
-                    case AuthError.CredentialAlreadyInUse: break;
-                    case AuthError.InvalidEmail: break;
-                    case AuthError.WrongPassword: break;
-                    case AuthError.TooManyRequests: break;
-                    case AuthError.UserNotFound: break;
-                    case AuthError.ProviderAlreadyLinked: break;
-                    case AuthError.NoSuchProvider: break;
-                    case AuthError.InvalidUserToken: break;
-                    case AuthError.UserTokenExpired: break;
-                    case AuthError.NetworkRequestFailed: break;
-                    case AuthError.InvalidApiKey: break;
-                    case AuthError.AppNotAuthorized: break;
-                    case AuthError.UserMismatch: break;
-                    case AuthError.WeakPassword: break;
-                    case AuthError.NoSignedInUser: break;
-                    case AuthError.ApiNotAvailable: break;
-                    case AuthError.ExpiredActionCode: break;
-                    case AuthError.InvalidActionCode: break;
-                    case AuthError.InvalidMessagePayload: break;
-                    case AuthError.InvalidPhoneNumber: break;
-                    case AuthError.MissingPhoneNumber: break;
-                    case AuthError.InvalidRecipientEmail: break;
-                    case AuthError.InvalidSender: break;
-                    case AuthError.InvalidVerificationCode: break;
-                    case AuthError.InvalidVerificationId: break;
-                    case AuthError.MissingVerificationCode: break;
-                    case AuthError.MissingVerificationId: break;
-                    case AuthError.MissingEmail: break;
-                    case AuthError.MissingPassword: break;
-                    case AuthError.QuotaExceeded: break;
-                    case AuthError.RetryPhoneAuth: break;
-                    case AuthError.SessionExpired: break;
-                    case AuthError.AppNotVerified: break;
-                    case AuthError.AppVerificationFailed: break;
-                    case AuthError.CaptchaCheckFailed: break;
-                    case AuthError.InvalidAppCredential: break;
-                    case AuthError.MissingAppCredential: break;
-                    case AuthError.InvalidClientId: break;
-                    case AuthError.InvalidContinueUri: break;
-                    case AuthError.MissingContinueUri: break;
-                    case AuthError.KeychainError: break;
-                    case AuthError.MissingAppToken: break;
-                    case AuthError.MissingIosBundleId: break;
-                    case AuthError.NotificationNotForwarded: break;
-                    case AuthError.UnauthorizedDomain: break;
-                    case AuthError.WebContextAlreadyPresented: break;
-                    case AuthError.WebContextCancelled: break;
-                    case AuthError.DynamicLinkNotActivated: break;
-                    case AuthError.Cancelled: break;
-                    case AuthError.InvalidProviderId: break;
-                    case AuthError.WebInternalError: break;
-                    case AuthError.WebStorateUnsupported: break;
-                    case AuthError.TenantIdMismatch: break;
-                    case AuthError.UnsupportedTenantOperation: break;
-                    case AuthError.InvalidLinkDomain: break;
-                    case AuthError.RejectedCredential: break;
-                    case AuthError.PhoneNumberNotFound: break;
-                    case AuthError.InvalidTenantId: break;
-                    case AuthError.MissingClientIdentifier: break;
-                    case AuthError.MissingMultiFactorSession: break;
-                    case AuthError.MissingMultiFactorInfo: break;
-                    case AuthError.InvalidMultiFactorSession: break;
-                    case AuthError.MultiFactorInfoNotFound: break;
-                    case AuthError.AdminRestrictedOperation: break;
-                    case AuthError.UnverifiedEmail: break;
-                    case AuthError.SecondFactorAlreadyEnrolled: break;
-                    case AuthError.MaximumSecondFactorCountExceeded: break;
-                    case AuthError.UnsupportedFirstFactor: break;
-                    case AuthError.EmailChangeNeedsVerification: break;
-                    default: break;
-                }
             }
             else
             {
@@ -331,7 +221,6 @@ public class EmailLogin : MonoBehaviour
         }
     }
 
-    //Email verification notification panel
     public void closeNotificationPanel()
     {
         emailVerificationPanel.SetActive(false);
@@ -343,7 +232,6 @@ public class EmailLogin : MonoBehaviour
         showLogMsg("Please verify your email before logging in. A verification email has been sent to your email address.");
     }
 
-    //Login panel
     public void openLoginPanel()
     {
         signUpUI.SetActive(false);
@@ -352,21 +240,20 @@ public class EmailLogin : MonoBehaviour
     #endregion
 
     #region log in
-    // Log in
     public void LogIn()
     {
         if (isLoggingIn) return;
         if (!checkValidation()) return;
 
         isLoggingIn = true;
-        //loadingScreen.SetActive(true);
 
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
         string email = LoginEmail.text;
         string password = LoginPassword.text;
 
         Credential credential = EmailAuthProvider.GetCredential(email, password);
-        auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(async task => {
+        auth.SignInAndRetrieveDataWithCredentialAsync(credential).ContinueWithOnMainThread(async task =>
+        {
             try
             {
                 if (task.IsCanceled)
@@ -424,62 +311,120 @@ public class EmailLogin : MonoBehaviour
                     return;
                 }
 
-                //loadingScreen.SetActive(false);
                 AuthResult result = task.Result;
+                string userId = result.User.UserId;
                 Debug.LogFormat("User logged in successfully: {0} ({1})",
-                    result.User.DisplayName, result.User.UserId);
+                    result.User.DisplayName, userId);
 
                 if (result.User.IsEmailVerified)
                 {
+                    // Khóa cố định UserID cho cửa sổ này ngay lập tức để tránh cửa sổ ParrelSync khác ghi đè
+                    FirebaseManager.SetUserID(userId);
+
+                    string mySessionId = System.Guid.NewGuid().ToString("N");
+                    bool blockedByOtherDevice = false;
+
                     try
                     {
-                        // Bật lại kết nối database nếu phiên trước vừa gọi GoOffline() lúc thoát/Stop Editor
                         FirebaseDatabase.DefaultInstance.GoOnline();
 
-                        var userRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{result.User.UserId}");
-                        var userSnap = await userRef.GetValueAsync();
+                        var userRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{userId}");
+                        var sessionRef = userRef.Child("Session");
 
-                        if (userSnap.Exists && userSnap.HasChild("Presence/Status"))
+                        var pingRef = userRef.Child($"SessionPing/{mySessionId}");
+                        await pingRef.SetValueAsync(ServerValue.Timestamp);
+                        var pingSnap = await pingRef.GetValueAsync();
+                        long serverNow = (pingSnap.Exists && pingSnap.Value != null)
+                            ? System.Convert.ToInt64(pingSnap.Value)
+                            : System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                        _ = pingRef.RemoveValueAsync();
+
+                        var currentSessionSnap = await sessionRef.GetValueAsync();
+                        if (currentSessionSnap.Exists && currentSessionSnap.HasChild("ActiveSessionId"))
                         {
-                            int currentStatus = System.Convert.ToInt32(userSnap.Child("Presence/Status").Value);
-                            if (currentStatus != (int)OnlineStatus.Offline)
+                            string existingId = currentSessionSnap.Child("ActiveSessionId").Value?.ToString();
+                            long lastActive = 0;
+                            if (currentSessionSnap.HasChild("LastActive") && currentSessionSnap.Child("LastActive").Value != null)
                             {
-                                long lastActive = userSnap.HasChild("Session/LastActive")
-                                    ? System.Convert.ToInt64(userSnap.Child("Session/LastActive").Value)
-                                    : 0;
+                                System.Int64.TryParse(currentSessionSnap.Child("LastActive").Value.ToString(), out lastActive);
+                            }
 
-                                bool isSessionStillAlive = false;
-                                if (lastActive > 0)
-                                {
-                                    // Lấy giờ server hiện tại để so sánh chuẩn xác, không phụ thuộc đồng hồ máy tính
-                                    var pingRef = userRef.Child("Session/PingCheck");
-                                    await pingRef.SetValueAsync(ServerValue.Timestamp);
-                                    var pingSnap = await pingRef.GetValueAsync();
-
-                                    if (pingSnap.Exists && pingSnap.Value != null)
-                                    {
-                                        long serverNow = System.Convert.ToInt64(pingSnap.Value);
-                                        // Nếu nhịp Heartbeat vẫn cập nhật trong vòng 25 giây gần nhất -> đang chơi thật ở nơi khác
-                                        isSessionStillAlive = (serverNow - lastActive) < 25000;
-                                    }
-                                }
-
-                                if (isSessionStillAlive)
-                                {
-                                    auth.SignOut();
-                                    openEmailPasswordNotificationPanel("This account is already logged in on another device.");
-                                    return;
-                                }
+                            if (!string.IsNullOrEmpty(existingId)
+                                && existingId != mySessionId
+                                && lastActive > 0
+                                && (serverNow - lastActive) < 30000)
+                            {
+                                FirebaseManager.ClearUserID();
+                                auth.SignOut();
+                                openEmailPasswordNotificationPanel("This account is already logged in on another device.");
+                                return;
                             }
                         }
+
+                        await sessionRef.RunTransaction(mutableData =>
+                        {
+                            blockedByOtherDevice = false;
+
+                            if (mutableData.Value != null && mutableData.HasChild("ActiveSessionId"))
+                            {
+                                string existingId = mutableData.Child("ActiveSessionId").Value?.ToString();
+                                long lastActive = 0;
+                                if (mutableData.HasChild("LastActive") && mutableData.Child("LastActive").Value != null)
+                                {
+                                    System.Int64.TryParse(mutableData.Child("LastActive").Value.ToString(), out lastActive);
+                                }
+
+                                if (!string.IsNullOrEmpty(existingId)
+                                    && existingId != mySessionId
+                                    && lastActive > 0
+                                    && (serverNow - lastActive) < 30000)
+                                {
+                                    blockedByOtherDevice = true;
+                                    return TransactionResult.Abort();
+                                }
+                            }
+
+                            mutableData.Value = new Dictionary<string, object>
+                            {
+                                ["ActiveSessionId"] = mySessionId,
+                                ["LastActive"] = ServerValue.Timestamp,
+                                ["DeviceName"] = SystemInfo.deviceName
+                            };
+                            return TransactionResult.Success(mutableData);
+                        });
+
+                        if (blockedByOtherDevice)
+                        {
+                            FirebaseManager.ClearUserID();
+                            auth.SignOut();
+                            openEmailPasswordNotificationPanel("This account is already logged in on another device.");
+                            return;
+                        }
+
+                        await sessionRef.OnDisconnect().RemoveValue();
+                        await userRef.Child("Presence/Status").OnDisconnect().SetValue((int)OnlineStatus.Offline);
+
+                        AccountSessionGuard.StartSession(userId, mySessionId);
                     }
                     catch (System.Exception ex)
                     {
-                        Debug.LogWarning("Không kiểm tra được trạng thái online: " + ex.Message);
+                        FirebaseManager.ClearUserID();
+                        auth.SignOut();
+                        if (blockedByOtherDevice)
+                        {
+                            openEmailPasswordNotificationPanel("This account is already logged in on another device.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Không thể xác thực phiên đăng nhập: " + ex.Message);
+                            openEmailPasswordNotificationPanel("Unable to verify session. Please check your connection and try again.");
+                        }
+                        return;
                     }
 
                     SaveRememberMe();
-                    emailSuggestion.SaveLogin(LoginEmail.text, LoginPassword.text);
+                    if (emailSuggestion != null)
+                        emailSuggestion.SaveLogin(LoginEmail.text, LoginPassword.text);
 
                     showLogMsg("Login successful!");
                     SceneController.Instance.NewTransitionPlan()
@@ -517,7 +462,6 @@ public class EmailLogin : MonoBehaviour
         return true;
     }
 
-    // Display a message to the user in the UI log text
     private void showLogMsg(string message)
     {
         if (logTxt != null && wrongEmailPasswordText != null)
@@ -531,7 +475,6 @@ public class EmailLogin : MonoBehaviour
         }
     }
 
-    //wrong email or password notification panel
     public void closeEmailPasswordNotificationPanel()
     {
         emailPasswordNotificationPanel.SetActive(false);
@@ -544,7 +487,6 @@ public class EmailLogin : MonoBehaviour
         showLogMsg(message);
     }
 
-    //Sign up panel
     public void openSignUpPanel()
     {
         signUpUI.SetActive(true);
@@ -559,7 +501,6 @@ public class EmailLogin : MonoBehaviour
             return;
 
         string email = forgotPasswordEmail.text.Trim();
-
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
 
         auth.SendPasswordResetEmailAsync(email).ContinueWithOnMainThread(task =>
@@ -610,7 +551,6 @@ public class EmailLogin : MonoBehaviour
             }
 
             openEmailPasswordNotificationPanel("If the email is registered, you will receive a password reset email shortly.");
-
             CloseForgotPasswordPanel();
         });
     }
@@ -709,4 +649,99 @@ public class EmailLogin : MonoBehaviour
         PlayerPrefs.Save();
     }
     #endregion
+}
+
+public class AccountSessionGuard : MonoBehaviour
+{
+    private static AccountSessionGuard _instance;
+
+    private string _userId;
+    private string _sessionId;
+    private DatabaseReference _lastActiveRef;
+    private float _heartbeatTimer;
+    private bool _isActive;
+
+    public static void StartSession(string userId, string sessionId)
+    {
+        if (_instance == null)
+        {
+            var go = new GameObject("AccountSessionGuard");
+            DontDestroyOnLoad(go);
+            _instance = go.AddComponent<AccountSessionGuard>();
+        }
+
+        _instance.Bind(userId, sessionId);
+    }
+
+    public static void ClearLocalSession()
+    {
+        if (_instance != null)
+            _instance.ReleaseSession(clearOnServer: true);
+    }
+
+    private void Bind(string userId, string sessionId)
+    {
+        _userId = userId;
+        _sessionId = sessionId;
+        _heartbeatTimer = 0f;
+        _isActive = true;
+
+        _lastActiveRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{_userId}/Session/LastActive");
+        _lastActiveRef.SetValueAsync(ServerValue.Timestamp);
+    }
+
+    private void Update()
+    {
+        if (!_isActive) return;
+
+        _heartbeatTimer += Time.unscaledDeltaTime;
+        if (_heartbeatTimer >= 4f)
+        {
+            _heartbeatTimer = 0f;
+            if (_lastActiveRef != null)
+            {
+                _lastActiveRef.SetValueAsync(ServerValue.Timestamp);
+            }
+        }
+    }
+
+    private void ReleaseSession(bool clearOnServer)
+    {
+        if (!_isActive) return;
+        _isActive = false;
+
+        if (clearOnServer && !string.IsNullOrEmpty(_userId))
+        {
+            string targetUid = _userId;
+            string expectedSession = _sessionId;
+            var userRef = FirebaseDatabase.DefaultInstance.GetReference($"Users/{targetUid}");
+
+            userRef.Child("Session").RunTransaction(mutableData =>
+            {
+                if (mutableData.Value != null && mutableData.HasChild("ActiveSessionId"))
+                {
+                    string serverSession = mutableData.Child("ActiveSessionId").Value?.ToString();
+                    if (serverSession == expectedSession)
+                    {
+                        mutableData.Value = null;
+                        return TransactionResult.Success(mutableData);
+                    }
+                }
+                return TransactionResult.Abort();
+            });
+
+            userRef.Child("Presence/Status").SetValueAsync((int)OnlineStatus.Offline);
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        ReleaseSession(clearOnServer: true);
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
+    }
 }

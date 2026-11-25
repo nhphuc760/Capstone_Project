@@ -1,36 +1,40 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Firebase.Database;
-using Fusion;
 using Newtonsoft.Json;
-using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class RoomDatabaseManager : MonoBehaviour
 {
     public static RoomDatabaseManager Instance { get; private set; }
-    Room _currentRoom;
+    private Room _currentRoom;
     public Room CurrentRoom => _currentRoom;
     public bool DestroyOnLoad = false;
     public static event System.Action<Room> OnRoomStateChanged;
 
+    private DatabaseReference _listeningRoomRef;
+
     private void Awake()
     {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(this.gameObject);
             return;
         }
         Instance = this;
-        if(!DestroyOnLoad)
+        if (!DestroyOnLoad)
         {
             DontDestroyOnLoad(this.gameObject);
         }
     }
 
-
     public async UniTask<Room> CreateRoom(string roomName = null, int maxPlayerCount = 2)
     {
+        if (_currentRoom != null)
+        {
+            await LeaveRoom();
+        }
+
         var @ref = FirebaseManager.RealtimeDB.reference.Child("Lobbies").Push();
         Debug.Log("RoomID: " + @ref.Key);
         Room room = new Room
@@ -40,21 +44,28 @@ public class RoomDatabaseManager : MonoBehaviour
             Status = RoomStatus.Waiting,
             MaxPlayerCount = maxPlayerCount,
             RoomName = roomName,
-            Members = new System.Collections.Generic.List<string>()
-
+            Members = new List<string>()
         };
         _currentRoom = room;
         await @ref.SetRawJsonValueAsync(JsonConvert.SerializeObject(room));
         await @ref.OnDisconnect().RemoveValue();
+
+        if (!string.IsNullOrEmpty(roomName))
+        {
+            var codeRef = FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomName}");
+            await codeRef.SetValueAsync(room.RoomID);
+            await codeRef.OnDisconnect().RemoveValue();
+        }
+
         OnRoomStateChanged?.Invoke(_currentRoom);
         return room;
     }
 
     public async UniTask AddMembers(string memberID)
     {
-        if (string.IsNullOrEmpty(memberID))
+        if (string.IsNullOrEmpty(memberID) || CurrentRoom == null)
         {
-            Debug.LogWarning("MemberID is null or empty");
+            Debug.LogWarning("MemberID is null or CurrentRoom is null");
             return;
         }
         if (CurrentRoom.Members.Count == CurrentRoom.MaxPlayerCount || CurrentRoom.Status == RoomStatus.Full)
@@ -71,20 +82,14 @@ public class RoomDatabaseManager : MonoBehaviour
                 Debug.LogWarning("Room is full");
             }
             string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
-            Debug.Log("RoomJson: " + memberJson);
             await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Members").SetRawJsonValueAsync(memberJson);
-        }
-        else
-        {
-            Debug.Log("Member has in room");
         }
     }
 
     public async UniTask RemoveMembers(string memberID)
     {
-        if (string.IsNullOrEmpty(memberID))
+        if (string.IsNullOrEmpty(memberID) || CurrentRoom == null)
         {
-            Debug.LogWarning("MemberID is null or empty");
             return;
         }
         if (CurrentRoom.Members.Contains(memberID))
@@ -92,30 +97,28 @@ public class RoomDatabaseManager : MonoBehaviour
             CurrentRoom.Members.Remove(memberID);
             if (CurrentRoom.Members.Count < CurrentRoom.MaxPlayerCount)
             {
-               UpdateStatus(RoomStatus.Ready).Forget();
+                UpdateStatus(RoomStatus.Ready).Forget();
             }
             string memberJson = JsonConvert.SerializeObject(CurrentRoom.Members);
             await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Members").SetRawJsonValueAsync(memberJson);
         }
-        return;
     }
 
     public async UniTask UpdateStatus(RoomStatus status)
     {
+        if (CurrentRoom == null) return;
         CurrentRoom.Status = status;
         await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{CurrentRoom.RoomID}/Status").SetValueAsync((int)status);
         Debug.Log("UpdateStatus: " + status.ToString());
     }
 
-
-
-
     public async UniTask JoinRoom(string roomID)
     {
-        //FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomID}").ValueChanged += RoomChangedHandle;
-        //OnRoomStateChanged?.Invoke(_currentRoom);
-        //Debug.Log("Join success");
-        //await UniTask.CompletedTask;
+        if (_listeningRoomRef != null)
+        {
+            _listeningRoomRef.ValueChanged -= RoomChangedHandle;
+            _listeningRoomRef = null;
+        }
 
         var roomRef = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomID}");
         var snapshot = await roomRef.GetValueAsync();
@@ -124,36 +127,55 @@ public class RoomDatabaseManager : MonoBehaviour
             Room joinedRoom = JsonConvert.DeserializeObject<Room>(snapshot.GetRawJsonValue());
             if (joinedRoom != null)
             {
-                joinedRoom.Members ??= new System.Collections.Generic.List<string>();
+                joinedRoom.Members ??= new List<string>();
                 _currentRoom = joinedRoom;
             }
         }
 
-        roomRef.ValueChanged -= RoomChangedHandle;
-        roomRef.ValueChanged += RoomChangedHandle;
+        _listeningRoomRef = roomRef;
+        _listeningRoomRef.ValueChanged += RoomChangedHandle;
         OnRoomStateChanged?.Invoke(_currentRoom);
         Debug.Log("Join success");
     }
 
     public async UniTask LeaveRoom()
     {
-        if (_currentRoom == null) return;
-        string roomId = _currentRoom.RoomID;
-        string hostId = _currentRoom.HostID;
+        if (_listeningRoomRef != null)
+        {
+            _listeningRoomRef.ValueChanged -= RoomChangedHandle;
+            _listeningRoomRef = null;
+        }
 
-        FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomId}").ValueChanged -= RoomChangedHandle;
+        if (_currentRoom == null) return;
+
+        // Xóa cache phòng cục bộ ngay lập tức trước khi await để không đè lên phòng mới tạo
+        Room leavingRoom = _currentRoom;
+        _currentRoom = null;
+        OnRoomStateChanged?.Invoke(null);
+
+        string roomId = leavingRoom.RoomID;
+        string hostId = leavingRoom.HostID;
+        string roomName = leavingRoom.RoomName;
 
         if (hostId == FirebaseManager.UserID)
         {
-            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomId}").RemoveValueAsync();
-        }
-        else
-        {
-            await RemoveMembers(FirebaseManager.UserID);
-        }
+            var lobbyRef = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomId}");
+            await lobbyRef.OnDisconnect().Cancel();
+            await lobbyRef.RemoveValueAsync();
 
-        _currentRoom = null;
-        OnRoomStateChanged?.Invoke(null);
+            if (!string.IsNullOrEmpty(roomName))
+            {
+                var codeRef = FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomName}");
+                await codeRef.OnDisconnect().Cancel();
+                await codeRef.RemoveValueAsync();
+            }
+        }
+        else if (leavingRoom.Members != null && leavingRoom.Members.Contains(FirebaseManager.UserID))
+        {
+            leavingRoom.Members.Remove(FirebaseManager.UserID);
+            string memberJson = JsonConvert.SerializeObject(leavingRoom.Members);
+            await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomId}/Members").SetRawJsonValueAsync(memberJson);
+        }
 
         if (NetworkDataManager.Instance != null)
         {
@@ -163,24 +185,27 @@ public class RoomDatabaseManager : MonoBehaviour
         Debug.Log("Leave success");
     }
 
-
-
-    void RoomChangedHandle(object sender, ValueChangedEventArgs args)
+    private void RoomChangedHandle(object sender, ValueChangedEventArgs args)
     {
-        if (args.Snapshot.Exists)
+        bool exists = args.Snapshot != null && args.Snapshot.Exists;
+        string rawJson = exists ? args.Snapshot.GetRawJsonValue() : null;
+
+        UniTask.Post(() =>
         {
-            string rawJson = args.Snapshot.GetRawJsonValue();
-            Room newRoom = JsonConvert.DeserializeObject<Room>(rawJson);
-            if (newRoom != null)
+            if (exists && !string.IsNullOrEmpty(rawJson))
             {
-                newRoom.Members ??= new System.Collections.Generic.List<string>();
-                _currentRoom = newRoom;
-                OnRoomStateChanged?.Invoke(_currentRoom);
+                Room newRoom = JsonConvert.DeserializeObject<Room>(rawJson);
+                if (newRoom != null)
+                {
+                    newRoom.Members ??= new List<string>();
+                    _currentRoom = newRoom;
+                    OnRoomStateChanged?.Invoke(_currentRoom);
+                }
             }
-        }
-        else
-        {
-            LeaveRoom().Forget();
-        }
+            else if (_currentRoom != null)
+            {
+                LeaveRoom().Forget();
+            }
+        });
     }
 }

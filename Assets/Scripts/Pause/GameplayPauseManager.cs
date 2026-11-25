@@ -30,6 +30,7 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
     private bool _isHost;
     private PlayerRef _hostPlayerRef = PlayerRef.None;
     private bool _isLeavingMatch;
+    private bool _isMatchEnded;
     private CursorLockMode _previousLockMode;
     private bool _previousCursorVisible;
 
@@ -42,6 +43,7 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
         }
         Instance = this;
         IsPaused = false;
+        _isMatchEnded = false;
 
         if (pauseRootPanel != null) pauseRootPanel.SetActive(false);
 
@@ -58,7 +60,7 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
             _runner.AddCallbacks(this);
 
             _isSinglePlay = _runner.GameMode == GameMode.Single
-                            || (_runner.SessionInfo.IsValid && _runner.SessionInfo.MaxPlayers <= 1);
+                            || (_runner.SessionInfo.IsValid && _runner.SessionInfo.MaxPlayers == 1);
             _isHost = _isSinglePlay || _runner.IsServer || _runner.IsSharedModeMasterClient;
 
             if (!_isSinglePlay)
@@ -105,6 +107,8 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
             }
         }
 
+        if (_isMatchEnded) return;
+
         bool escPressed = Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
         if (!escPressed) return;
 
@@ -116,7 +120,7 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
 
     public void PauseGame()
     {
-        if (_isLeavingMatch || IsPaused) return;
+        if (_isLeavingMatch || _isMatchEnded || IsPaused) return;
         IsPaused = true;
 
         _previousLockMode = Cursor.lockState;
@@ -145,10 +149,33 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
         Cursor.visible = _previousCursorVisible;
     }
 
+    /// <summary>
+    /// Gán trực tiếp vào sự kiện OnClick() của nút thoát trên cả 2 UI GameWin và GameOver.
+    /// </summary>
+    public void ExitToChooseType()
+    {
+        LeaveMatchAsync().Forget();
+    }
+
+    /// <summary>
+    /// Gọi khi trận đấu kết thúc (lúc bật bảng GameWin hoặc GameOver) để mở khóa chuột và chặn phím Esc.
+    /// </summary>
+    public void OnMatchEnded()
+    {
+        _isMatchEnded = true;
+        if (IsPaused)
+            ResumeGame();
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
     private void TriggerHostLeftReturn()
     {
         if (_isLeavingMatch) return;
-        LobbyReadyManager.PendingDisconnectNotice = "Host has left the room";
+        if (!_isMatchEnded)
+            LobbyReadyManager.PendingDisconnectNotice = "Host has left the room";
+
         LeaveMatchAsync().Forget();
     }
 
@@ -191,6 +218,8 @@ public class GameplayPauseManager : MonoBehaviour, INetworkRunnerCallbacks
                     }
                     catch { /* Runner đã đóng */ }
                 }
+                Destroy(_runner.gameObject);
+                _runner = null;
             }
 
             await SceneManager.LoadSceneAsync(chooseTypeSceneName, LoadSceneMode.Single);

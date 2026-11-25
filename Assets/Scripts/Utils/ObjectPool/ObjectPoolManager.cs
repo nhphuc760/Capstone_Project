@@ -6,6 +6,7 @@ public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Ins;
     public bool DonDestroy = true;
+
     [System.Serializable]
     public class PoolData
     {
@@ -17,8 +18,8 @@ public class ObjectPoolManager : MonoBehaviour
 
     [SerializeField] private List<PoolData> poolsData;
 
-    private Dictionary<string, ObjectPool<GameObject>> pools
-        = new Dictionary<string, ObjectPool<GameObject>>();
+    private readonly Dictionary<string, ObjectPool<GameObject>> pools = new Dictionary<string, ObjectPool<GameObject>>();
+    private readonly Dictionary<string, GameObject> prefabsByKey = new Dictionary<string, GameObject>();
 
     private void Awake()
     {
@@ -39,20 +40,22 @@ public class ObjectPoolManager : MonoBehaviour
     {
         foreach (var data in poolsData)
         {
+            prefabsByKey[data.key] = data.prefab;
+            GameObject prefabRef = data.prefab;
+
             ObjectPool<GameObject> pool = new ObjectPool<GameObject>
             (
                 createFunc: () =>
                 {
-                    GameObject obj = Instantiate(data.prefab);
+                    GameObject obj = Instantiate(prefabRef);
                     obj.SetActive(false);
                     return obj;
                 },
-
                 actionOnGet: (obj) =>
                 {
-                    obj.SetActive(true);
+                    if (obj != null)
+                        obj.SetActive(true);
                 },
-
                 actionOnRelease: (obj) =>
                 {
                     if (obj != null)
@@ -61,13 +64,12 @@ public class ObjectPoolManager : MonoBehaviour
                         obj.transform.SetParent(transform, false);
                     }
                 },
-
                 actionOnDestroy: (obj) =>
                 {
-                    Destroy(obj);
+                    if (obj != null)
+                        Destroy(obj);
                 },
-
-                collectionCheck: true,
+                collectionCheck: false,
                 defaultCapacity: data.defaultCapacity,
                 maxSize: data.maxSize
             );
@@ -85,13 +87,21 @@ public class ObjectPoolManager : MonoBehaviour
         }
 
         GameObject obj = pools[key].Get();
-        obj.transform.SetParent(parent, worldPositionStays);
+
+        // Nếu object trong pool đã bị hủy do đổi scene (Canvas cũ bị destroy), tạo bản mới từ prefab gốc
+        if (obj == null && prefabsByKey.TryGetValue(key, out GameObject prefab) && prefab != null)
+        {
+            obj = Instantiate(prefab);
+            obj.SetActive(true);
+        }
+
+        if (obj != null)
+            obj.transform.SetParent(parent, worldPositionStays);
+
         return obj;
     }
-    public GameObject Get(
-        string key,
-        Vector3 position,
-        Quaternion rotation)
+
+    public GameObject Get(string key, Vector3 position, Quaternion rotation)
     {
         if (!pools.ContainsKey(key))
         {
@@ -101,14 +111,25 @@ public class ObjectPoolManager : MonoBehaviour
 
         GameObject obj = pools[key].Get();
 
-        obj.transform.position = position;
-        obj.transform.rotation = rotation;
+        if (obj == null && prefabsByKey.TryGetValue(key, out GameObject prefab) && prefab != null)
+        {
+            obj = Instantiate(prefab);
+            obj.SetActive(true);
+        }
+
+        if (obj != null)
+        {
+            obj.transform.position = position;
+            obj.transform.rotation = rotation;
+        }
 
         return obj;
     }
 
     public void Release(string key, GameObject obj)
     {
+        if (obj == null) return;
+
         if (!pools.ContainsKey(key))
         {
             Debug.LogError($"Pool {key} does not exist!");

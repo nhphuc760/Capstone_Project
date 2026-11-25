@@ -17,36 +17,60 @@ public class InviteNotificationPresenter : MonoBehaviour
 
     private void Awake()
     {
-        if (container == null)
-        {
-            Canvas parentCanvas = GetComponentInParent<Canvas>();
-            Canvas rootCanvas = parentCanvas != null ? parentCanvas.rootCanvas : FindAnyObjectByType<Canvas>();
-            if (rootCanvas != null)
-            {
-                Transform existing = rootCanvas.transform.Find("ContainerInvite");
-                if (existing != null)
-                {
-                    existing.gameObject.SetActive(true);
-                    container = existing.GetComponent<RectTransform>();
-                }
-                else
-                {
-                    var go = new GameObject("ContainerInvite", typeof(RectTransform));
-                    container = go.GetComponent<RectTransform>();
-                    container.SetParent(rootCanvas.transform, false);
-                }
+        EnsureContainer();
+    }
 
-                container.anchorMin = Vector2.zero;
-                container.anchorMax = Vector2.one;
-                container.offsetMin = Vector2.zero;
-                container.offsetMax = Vector2.zero;
-                container.SetAsLastSibling();
+    private RectTransform EnsureContainer()
+    {
+        if (container != null && container.gameObject != null)
+            return container;
+
+        Canvas targetCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
+
+        if (targetCanvas == null)
+        {
+            Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (Canvas c in allCanvases)
+            {
+                if (c.isRootCanvas && c.renderMode == RenderMode.ScreenSpaceOverlay && c.gameObject.scene.IsValid())
+                {
+                    targetCanvas = c;
+                    break;
+                }
             }
+            if (targetCanvas == null && allCanvases.Length > 0)
+                targetCanvas = allCanvases[0].rootCanvas;
         }
+
+        if (targetCanvas != null)
+        {
+            Transform existing = targetCanvas.transform.Find("ContainerInvite");
+            if (existing != null)
+            {
+                existing.gameObject.SetActive(true);
+                container = existing.GetComponent<RectTransform>();
+            }
+            else
+            {
+                var go = new GameObject("ContainerInvite", typeof(RectTransform));
+                container = go.GetComponent<RectTransform>();
+                container.SetParent(targetCanvas.transform, false);
+            }
+
+            container.anchorMin = Vector2.zero;
+            container.anchorMax = Vector2.one;
+            container.offsetMin = Vector2.zero;
+            container.offsetMax = Vector2.zero;
+            container.SetAsLastSibling();
+        }
+
+        return container;
     }
 
     private void OnEnable()
     {
+        EnsureContainer();
+
         _addInviteBinding ??= new EventBinding<InviteEvent.OnAddInviteArgs>(OnAddInvite);
         _removeInviteBinding ??= new EventBinding<InviteEvent.OnRemoveInviteArgs>(OnRemoveInvite);
         _addJoinReqBinding ??= new EventBinding<OnAddJoinRequestEvent>(OnAddJoinRequest);
@@ -57,7 +81,6 @@ public class InviteNotificationPresenter : MonoBehaviour
         EventBus<OnAddJoinRequestEvent>.Register(_addJoinReqBinding);
         EventBus<OnRemoveJoinRequestEvent>.Register(_removeJoinReqBinding);
 
-        // Hiển thị các lời mời / yêu cầu xin vào phòng đã tới trước khi UI kịp OnEnable
         var inviteMgr = NetworkDataManager.Instance?.inviteManager;
         if (inviteMgr != null)
         {
@@ -71,6 +94,7 @@ public class InviteNotificationPresenter : MonoBehaviour
             }
         }
     }
+
     private void OnDisable()
     {
         if (_addInviteBinding != null)
@@ -81,6 +105,16 @@ public class InviteNotificationPresenter : MonoBehaviour
             EventBus<OnAddJoinRequestEvent>.Deregister(_addJoinReqBinding);
         if (_removeJoinReqBinding != null)
             EventBus<OnRemoveJoinRequestEvent>.Deregister(_removeJoinReqBinding);
+
+        // Giải phóng các popup đang mở trước khi scene bị unload để tránh ObjectPool bị hủy theo Canvas
+        foreach (var kvp in _activePopups)
+        {
+            if (kvp.Value != null && ObjectPoolManager.Ins != null)
+            {
+                ObjectPoolManager.Ins.Release(INVITEELEMENT_KEY, kvp.Value.gameObject);
+            }
+        }
+        _activePopups.Clear();
     }
 
     private void OnAddInvite(InviteEvent.OnAddInviteArgs args)
@@ -118,7 +152,7 @@ public class InviteNotificationPresenter : MonoBehaviour
         if (_activePopups.TryGetValue(key, out var popup) && popup != null)
         {
             _activePopups.Remove(key);
-            if (popup.gameObject.activeSelf)
+            if (popup.gameObject.activeSelf && ObjectPoolManager.Ins != null)
                 ObjectPoolManager.Ins.Release(INVITEELEMENT_KEY, popup.gameObject);
         }
     }
@@ -127,39 +161,59 @@ public class InviteNotificationPresenter : MonoBehaviour
     {
         if (ObjectPoolManager.Ins == null) return;
 
-        if (NetworkDataManager.Instance != null)
-            await NetworkDataManager.Instance.LoadPresence(targetUserID);
+        // Đặt chỗ key ngay để tránh trùng popup khi đang load presence
+        _activePopups[key] = null;
 
-        GameObject obj = ObjectPoolManager.Ins.Get(INVITEELEMENT_KEY, container, false);
-        if (obj == null || !obj.TryGetComponent<InviteElementUI>(out var ui))
-            return;
-
-        _activePopups[key] = ui;
-
-        Presence userPresence = NetworkDataManager.Instance?.GetPresenceUser(targetUserID);
-        Sprite userAvatar = NetworkDataManager.Instance?.GetAvatarUser(targetUserID);
-
-        string displayName = userPresence != null
-            ? $"{userPresence.Name} #{userPresence.Tag}"
-            : "Người chơi";
-
-        string titleText = isJoinRequest
-            ? $"<b>{displayName}</b> xin vào phòng của bạn"
-            : $"<b>{displayName}</b> mời bạn vào phòng";
-
-        Sprite finalAvatar = userAvatar != null ? userAvatar : defaultAvatar;
-
-        bool isAccepted = await ui.Show(titleText, finalAvatar);
-
-        _activePopups.Remove(key);
-
-        if (NetworkDataManager.Instance?.inviteManager != null)
+        try
         {
-            InviteStatus reply = isAccepted ? InviteStatus.Accepted : InviteStatus.Rejected;
-            if (isJoinRequest)
-                await NetworkDataManager.Instance.inviteManager.ReplyJoinRequest(targetUserID, reply);
-            else
-                await NetworkDataManager.Instance.inviteManager.RepplyInvite(targetUserID, reply);
+            if (NetworkDataManager.Instance != null)
+                await NetworkDataManager.Instance.LoadPresence(targetUserID);
+
+            if (this == null || !isActiveAndEnabled)
+                return;
+
+            RectTransform targetContainer = EnsureContainer();
+            if (targetContainer == null)
+                return;
+
+            GameObject obj = ObjectPoolManager.Ins.Get(INVITEELEMENT_KEY, targetContainer, false);
+            if (obj == null || !obj.TryGetComponent<InviteElementUI>(out var ui))
+                return;
+
+            _activePopups[key] = ui;
+
+            Presence userPresence = NetworkDataManager.Instance?.GetPresenceUser(targetUserID);
+            Sprite userAvatar = NetworkDataManager.Instance?.GetAvatarUser(targetUserID);
+
+            string displayName = userPresence != null
+                ? $"{userPresence.Name} #{userPresence.Tag}"
+                : "Người chơi";
+
+            string titleText = isJoinRequest
+                ? $"<b>{displayName}</b> xin vào phòng của bạn"
+                : $"<b>{displayName}</b> mời bạn vào phòng";
+
+            Sprite finalAvatar = userAvatar != null ? userAvatar : defaultAvatar;
+
+            bool isAccepted = await ui.Show(titleText, finalAvatar);
+
+            _activePopups.Remove(key);
+
+            if (NetworkDataManager.Instance?.inviteManager != null)
+            {
+                InviteStatus reply = isAccepted ? InviteStatus.Accepted : InviteStatus.Rejected;
+                if (isJoinRequest)
+                    await NetworkDataManager.Instance.inviteManager.ReplyJoinRequest(targetUserID, reply);
+                else
+                    await NetworkDataManager.Instance.inviteManager.RepplyInvite(targetUserID, reply);
+            }
+        }
+        finally
+        {
+            if (_activePopups.TryGetValue(key, out var currentUi) && currentUi == null)
+            {
+                _activePopups.Remove(key);
+            }
         }
     }
 }

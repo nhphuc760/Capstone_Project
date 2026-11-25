@@ -23,6 +23,7 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
 
     private NetworkRunner activeRunner;
     private string currentCode = "";
+    private bool isLeavingLobby;
 
     public static bool IsSinglePlaySession(NetworkRunner runner)
     {
@@ -37,6 +38,7 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
 
         return false;
     }
+
     private async void Start()
     {
         activeRunner = FindFirstObjectByType<NetworkRunner>();
@@ -52,10 +54,14 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
         if (btnLeaveRoom != null)
             btnLeaveRoom.onClick.AddListener(() => LeaveLobbyAsync().Forget());
 
-        // Cập nhật mã phòng trước khi màn hình sáng lên để không bị lộ text mẫu
+        // Cập nhật trạng thái InParty để bạn bè ngoài ChooseType thấy "In Lobby" và nút Request
+        if (!IsSinglePlaySession(activeRunner) && NetworkDataManager.Instance != null)
+        {
+            NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.InParty).Forget();
+        }
+
         RefreshLobbyDisplay();
 
-        // Giữ nguyên luồng FadeOut có sẵn của scene
         if (SceneController.Instance != null)
         {
             await SceneController.Instance.NewTransitionPlan()
@@ -152,6 +158,9 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
 
     private async UniTaskVoid LeaveLobbyAsync()
     {
+        if (isLeavingLobby) return;
+        isLeavingLobby = true;
+
         if (SceneController.Instance != null)
         {
             await SceneController.Instance.NewTransitionPlan()
@@ -162,7 +171,6 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
         if (RoomDatabaseManager.Instance != null)
             await RoomDatabaseManager.Instance.LeaveRoom();
 
-        // Đảm bảo trạng thái luôn trả về Online kể cả khi CurrentRoom đã null
         if (NetworkDataManager.Instance != null)
             await NetworkDataManager.Instance.UpdateMyOnlineStatus(OnlineStatus.Online);
 
@@ -170,9 +178,18 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
             activeRunner = FindFirstObjectByType<NetworkRunner>();
 
         if (activeRunner != null)
-            await activeRunner.Shutdown();
+        {
+            activeRunner.RemoveCallbacks(this);
+            if (activeRunner.IsRunning)
+            {
+                try { await activeRunner.Shutdown(); }
+                catch { }
+            }
+            Destroy(activeRunner.gameObject);
+            activeRunner = null;
+        }
 
-        SceneManager.LoadScene(chooseTypeSceneName, LoadSceneMode.Single);
+        await SceneManager.LoadSceneAsync(chooseTypeSceneName, LoadSceneMode.Single);
         await UniTask.Yield();
 
         if (SceneController.Instance != null)

@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using TMPro;
 using Fusion;
+using Fusion.Photon.Realtime;
 using Fusion.Sockets;
 using Cysharp.Threading.Tasks;
 
@@ -12,6 +15,9 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
 {
     [Header("Photon Fusion")]
     [SerializeField] private FusionBootstrap fusionBootstrap;
+    [SerializeField] private string lobbySceneName = "LobbyScene";
+    [Tooltip("Khóa cố định Region Photon (vd: asia, jp, sg) để Host và Client luôn gặp nhau sau khi rời trận.")]
+    [SerializeField] private string defaultPhotonRegion = "asia";
 
     [Header("Cards")]
     [SerializeField] private ModeCardItem[] modeCards;
@@ -30,19 +36,24 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField] private TextMeshProUGUI txtErrorTitle;
     [SerializeField] private TextMeshProUGUI txtErrorMessage;
     [SerializeField] private Button btnCloseError;
-    [SerializeField] private float connectTimeoutSeconds = 8f;
+    [SerializeField] private float connectTimeoutSeconds = 12f;
 
     private ModeCardItem joinCardRef;
     private NetworkRunner trackedRunner;
     private bool isConnecting;
     private const string ROOM_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+    private void OnEnable()
+    {
+        isConnecting = false;
+        trackedRunner = null;
+    }
+
     private void Start()
     {
-        if (fusionBootstrap == null)
-            fusionBootstrap = FindAnyObjectByType<FusionBootstrap>();
+        if (fusionBootstrap == null || fusionBootstrap.RunnerPrefab == null)
+            fusionBootstrap = FindValidFusionBootstrap();
 
-        // Ép chế độ Manual để ẩn UI debug mặc định của FusionBootstrap
         if (fusionBootstrap != null)
         {
             fusionBootstrap.StartMode = FusionBootstrap.StartModes.Manual;
@@ -91,7 +102,6 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
 
     private void Update()
     {
-        // Ưu tiên đóng Panel báo lỗi trước nếu đang mở
         if (errorPanel != null && errorPanel.activeSelf)
         {
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
@@ -105,6 +115,17 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         {
             HideJoinInputBar();
         }
+    }
+
+    private FusionBootstrap FindValidFusionBootstrap()
+    {
+        var bootstraps = FindObjectsByType<FusionBootstrap>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < bootstraps.Length; i++)
+        {
+            if (bootstraps[i] != null && bootstraps[i].RunnerPrefab != null)
+                return bootstraps[i];
+        }
+        return bootstraps.Length > 0 ? bootstraps[0] : null;
     }
 
     private void HandleCardHovered(ModeCardItem hoveredCard)
@@ -193,18 +214,23 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         HideJoinInputBar();
         StartFusionSession(GameMode.Client, roomCode.Trim().ToUpper()).Forget();
     }
+
     private async UniTaskVoid StartFusionSession(GameMode mode, string sessionName)
     {
-        if (fusionBootstrap == null)
+        if (fusionBootstrap == null || fusionBootstrap.RunnerPrefab == null)
+            fusionBootstrap = FindValidFusionBootstrap();
+
+        if (fusionBootstrap == null || fusionBootstrap.RunnerPrefab == null)
         {
-            Debug.LogError("[ModeSelect] Không tìm thấy FusionBootstrap trong Scene!");
+            Debug.LogError("[ModeSelect] Không tìm thấy FusionBootstrap hoặc RunnerPrefab hợp lệ!");
             return;
         }
 
         isConnecting = true;
+        sessionName = sessionName.Trim().ToUpper();
 
-        // Đảm bảo FusionBootstrap ở trạng thái sẵn sàng trước mỗi lần Host/Join
-        ResetFusionBootstrapState();
+        // 1. Dọn sạch toàn bộ NetworkRunner cũ và đợi hoàn tất trước khi tạo phiên mới
+        await CleanupStaleRunnersAsync();
 
         if (SceneController.Instance != null)
         {
@@ -213,106 +239,134 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
                                           .Perform();
         }
 
-        // Lưu mã phòng để hiển thị trong Lobby/In-game cho Host chia sẻ với bạn bè
+        // 2. Đồng bộ Firebase & khóa cứng Region Photon
+        string targetRegion = string.IsNullOrWhiteSpace(defaultPhotonRegion) ? "asia" : defaultPhotonRegion.Trim().ToLower();
+        if (mode == GameMode.Client)
+        {
+            string hostRegion = await SyncFirebaseRoomAsync(isHost: false, sessionName);
+            if (!string.IsNullOrEmpty(hostRegion))
+                targetRegion = hostRegion.Trim().ToLower();
+        }
+        else if (mode == GameMode.Host)
+        {
+            await SyncFirebaseRoomAsync(isHost: true, sessionName, targetRegion);
+        }
+
+        FusionAppSettings customAppSettings = BuildFixedRegionSettings(targetRegion);
+
         PlayerPrefs.SetString("CurrentRoomID", sessionName);
         PlayerPrefs.Save();
 
-        // Truyền mã phòng vào FusionBootstrap rồi kích hoạt đúng chế độ
-        fusionBootstrap.DefaultRoomName = sessionName;
+        // 3. Khởi tạo trực tiếp NetworkRunner mới (không phụ thuộc state cũ của FusionBootstrap)
+        NetworkRunner runner = Instantiate(fusionBootstrap.RunnerPrefab);
+        runner.name = $"NetworkRunner_{mode}_{sessionName}";
+        runner.ProvideInput = true;
+        trackedRunner = runner;
 
-        Debug.Log($"[ModeSelect] Gọi FusionBootstrap -> Mode: {mode} | Room ID: {sessionName}");
+        runner.RemoveCallbacks(this);
+        runner.AddCallbacks(this);
 
-        switch (mode)
+        int lobbyBuildIndex = SceneUtility.GetBuildIndexByScenePath(lobbySceneName);
+        if (lobbyBuildIndex < 0)
+            lobbyBuildIndex = SceneManager.GetActiveScene().buildIndex + 1;
+
+        INetworkSceneManager sceneManager = runner.GetComponent<INetworkSceneManager>()
+                                            ?? runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
+
+        var startArgs = new StartGameArgs
         {
-            case GameMode.Single:
-                fusionBootstrap.StartSinglePlayer();
-                break;
+            GameMode = mode,
+            SessionName = sessionName,
+            Scene = SceneRef.FromIndex(lobbyBuildIndex),
+            SceneManager = sceneManager,
+            PlayerCount = mode == GameMode.Single ? 1 : 4,
+            CustomPhotonAppSettings = customAppSettings
+        };
 
-            case GameMode.Host:
-                fusionBootstrap.StartHost();
-                SyncFirebaseRoomOptional(isHost: true, sessionName).Forget();
-                break;
+        Debug.Log($"[ModeSelect] Bắt đầu StartGame -> Mode: {mode} | Room Code: {sessionName} | FixedRegion: {targetRegion}");
 
-            case GameMode.Client:
-                fusionBootstrap.StartClient();
-                SyncFirebaseRoomOptional(isHost: false, sessionName).Forget();
-                break;
+        StartGameResult startResult;
+        try
+        {
+            startResult = await runner.StartGame(startArgs);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[ModeSelect] Ngoại lệ StartGame ({sessionName}): {ex.Message}");
+            await HandleSessionFailedAsync("CONNECTION ERROR", "Unable to start network session. Please try again.");
+            return;
         }
 
-        // Đợi 1 frame để FusionBootstrap khởi tạo NetworkRunner rồi gắn theo dõi
-        await UniTask.Yield();
-        trackedRunner = FindActiveRunner();
-        if (trackedRunner != null)
+        if (!isConnecting) return;
+
+        if (!startResult.Ok)
         {
-            trackedRunner.RemoveCallbacks(this);
-            trackedRunner.AddCallbacks(this);
+            Debug.LogError($"[ModeSelect] Kết nối thất bại tới phòng '{sessionName}' (Mode: {mode}, Reason: {startResult.ShutdownReason}).");
+            string title = mode == GameMode.Client ? "ROOM NOT FOUND" : "HOST FAILED";
+            string msg = startResult.ShutdownReason == ShutdownReason.GameNotFound
+                ? $"Room \"{sessionName}\" does not exist or has already closed."
+                : $"Unable to connect ({startResult.ShutdownReason}).";
+
+            await HandleSessionFailedAsync(title, msg);
+            return;
         }
 
-        MonitorSessionStartAsync(mode, sessionName).Forget();
+        var info = runner.SessionInfo;
+        string actualRegion = !string.IsNullOrEmpty(info.Region) ? info.Region.Trim().ToLower() : targetRegion;
+        Debug.Log($"[ModeSelect] Kết nối thành công -> Mode: {mode} | Room: {info.Name} | Region: {actualRegion} | Players: {info.PlayerCount}/{info.MaxPlayers}");
+
+        if (mode == GameMode.Host)
+        {
+            await SyncFirebaseRoomAsync(isHost: true, sessionName, actualRegion);
+        }
+
+        isConnecting = false;
     }
 
-    private NetworkRunner FindActiveRunner()
+    private FusionAppSettings BuildFixedRegionSettings(string region)
     {
-        var runners = FindObjectsByType<NetworkRunner>(FindObjectsSortMode.None);
-        for (int i = 0; i < runners.Length; i++)
-        {
-            if (runners[i] != null && runners[i].gameObject.activeInHierarchy && !runners[i].IsShutdown)
-                return runners[i];
-        }
-        return null;
+        FusionAppSettings copy = PhotonAppSettings.Global != null && PhotonAppSettings.Global.AppSettings != null
+            ? PhotonAppSettings.Global.AppSettings.GetCopy()
+            : new FusionAppSettings();
+
+        copy.FixedRegion = region;
+
+        if (PhotonAppSettings.Global != null && PhotonAppSettings.Global.AppSettings != null)
+            PhotonAppSettings.Global.AppSettings.FixedRegion = region;
+
+        return copy;
     }
 
-    private async UniTaskVoid MonitorSessionStartAsync(GameMode mode, string roomCode)
+    private async UniTask CleanupStaleRunnersAsync()
     {
-        float elapsed = 0f;
+        var runnerSet = new HashSet<NetworkRunner>(
+            FindObjectsByType<NetworkRunner>(FindObjectsInactive.Include, FindObjectsSortMode.None));
 
-        while (isConnecting)
+        foreach (var activeInstance in NetworkRunner.Instances.ToList())
         {
-            await UniTask.Yield();
-            elapsed += Time.unscaledDeltaTime;
-
-            if (trackedRunner == null)
-                trackedRunner = FindActiveRunner();
-
-            // FusionBootstrap không khởi tạo được runner hoặc runner bị tắt do lỗi/không tìm thấy phòng
-            if (trackedRunner == null || trackedRunner.IsShutdown)
-            {
-                string title = mode == GameMode.Client ? "ROOM NOT FOUND" : "HOST FAILED";
-                string msg = mode == GameMode.Client
-                    ? $"Room \"{roomCode}\" does not exist or has already closed."
-                    : "Could not start host session. Check Initial Scene in Prototype Network Start.";
-
-                await HandleSessionFailedAsync(title, msg);
-                return;
-            }
-
-            // Đã vào phiên thành công (Host/Single mở server xong hoặc Client kết nối vào server xong)
-            bool isReady = (mode == GameMode.Client)
-                ? (trackedRunner.IsConnectedToServer && trackedRunner.SessionInfo.IsValid)
-                : (trackedRunner.IsRunning && trackedRunner.SessionInfo.IsValid);
-
-            if (isReady)
-            {
-                if (mode == GameMode.Host && RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
-                {
-                    RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready).Forget();
-                }
-                isConnecting = false;
-                return;
-            }
-
-            // Quá thời gian chờ mà vẫn chưa vào được
-            if (elapsed >= connectTimeoutSeconds)
-            {
-                string title = mode == GameMode.Client ? "CONNECTION TIMEOUT" : "HOST TIMEOUT";
-                string msg = mode == GameMode.Client
-                    ? $"Could not join room \"{roomCode}\". Please check the code and try again."
-                    : "Timed out while creating room. Please try again.";
-
-                await HandleSessionFailedAsync(title, msg);
-                return;
-            }
+            if (activeInstance != null)
+                runnerSet.Add(activeInstance);
         }
+
+        bool destroyedAny = false;
+        foreach (var r in runnerSet)
+        {
+            if (r == null) continue;
+
+            r.RemoveCallbacks(this);
+            if (!r.IsShutdown)
+            {
+                try { await r.Shutdown(); }
+                catch { /* Bỏ qua nếu runner đã đóng */ }
+            }
+            Destroy(r.gameObject);
+            destroyedAny = true;
+        }
+
+        trackedRunner = null;
+
+        if (destroyedAny)
+            await UniTask.DelayFrame(2);
     }
 
     private async UniTask HandleSessionFailedAsync(string title, string message)
@@ -324,12 +378,18 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         {
             trackedRunner.RemoveCallbacks(this);
             if (!trackedRunner.IsShutdown)
-                await trackedRunner.Shutdown();
+            {
+                try { await trackedRunner.Shutdown(); }
+                catch { }
+            }
             Destroy(trackedRunner.gameObject);
             trackedRunner = null;
         }
 
-        ResetFusionBootstrapState();
+        if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
+        {
+            await RoomDatabaseManager.Instance.LeaveRoom();
+        }
 
         if (SceneController.Instance != null && SceneController.Instance.loadingOverlay != null)
         {
@@ -337,18 +397,6 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         }
 
         ShowErrorPanel(title, message);
-    }
-
-    private void ResetFusionBootstrapState()
-    {
-        if (fusionBootstrap == null) return;
-
-        // Đưa _currentStage của FusionBootstrap về Stage.Disconnected (0) để lần bấm Host/Join tiếp theo hoạt động bình thường
-        var stageField = typeof(FusionBootstrap).GetField("_currentStage", BindingFlags.Instance | BindingFlags.NonPublic);
-        if (stageField != null && stageField.FieldType.IsEnum)
-        {
-            stageField.SetValue(fusionBootstrap, System.Enum.ToObject(stageField.FieldType, 0));
-        }
     }
 
     public void ShowErrorPanel(string title, string message)
@@ -375,51 +423,68 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
         }
     }
 
-    private async UniTaskVoid SyncFirebaseRoomOptional(bool isHost, string roomCode)
+    private async UniTask<string> SyncFirebaseRoomAsync(bool isHost, string roomCode, string activeRegion = null)
     {
-        if (RoomDatabaseManager.Instance == null || FirebaseManager.RealtimeDB.reference == null) return;
+        if (RoomDatabaseManager.Instance == null || FirebaseManager.RealtimeDB.reference == null)
+            return null;
+
         try
         {
             if (isHost)
             {
-                //Room room = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
                 Room room = RoomDatabaseManager.Instance.CurrentRoom;
-                if (room == null || room.RoomName != roomCode)
+                if (room == null || room.RoomName != roomCode || room.HostID != FirebaseManager.UserID)
                 {
                     room = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
                 }
                 if (room != null)
+                {
+                    await RoomDatabaseManager.Instance.UpdateStatus(RoomStatus.Ready);
                     await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomCode}").SetValueAsync(room.RoomID);
+                    if (!string.IsNullOrEmpty(activeRegion))
+                    {
+                        await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{room.RoomID}/Region").SetValueAsync(activeRegion);
+                    }
+                }
+                return activeRegion;
             }
             else
             {
                 var snap = await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomCode}").GetValueAsync();
                 if (snap.Exists && snap.Value != null)
                 {
-                    await RoomDatabaseManager.Instance.JoinRoom(snap.Value.ToString());
+                    string roomId = snap.Value.ToString();
+                    await RoomDatabaseManager.Instance.JoinRoom(roomId);
                     await RoomDatabaseManager.Instance.AddMembers(FirebaseManager.UserID);
+
+                    var regionSnap = await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{roomId}/Region").GetValueAsync();
+                    if (regionSnap.Exists && regionSnap.Value != null)
+                        return regionSnap.Value.ToString();
                 }
             }
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogWarning("[ModeSelect] Bỏ qua đồng bộ Firebase (đang test offline): " + e.Message);
+            Debug.LogWarning("[ModeSelect] Bỏ qua đồng bộ Firebase: " + e.Message);
         }
+
+        return null;
     }
 
     private string GenerateRoomCode(int length)
     {
         char[] chars = new char[length];
         for (int i = 0; i < length; i++)
-            chars[i] = ROOM_CHARS[Random.Range(0, ROOM_CHARS.Length)];
+            chars[i] = ROOM_CHARS[UnityEngine.Random.Range(0, ROOM_CHARS.Length)];
         return new string(chars);
     }
 
     #region INetworkRunnerCallbacks
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
-        if (!isConnecting) return;
+        if (!isConnecting || runner != trackedRunner) return;
 
+        Debug.LogError($"[ModeSelect] OnShutdown với lý do: {shutdownReason}");
         string msg = shutdownReason == ShutdownReason.GameNotFound
             ? "Room does not exist. Please check your room code."
             : $"Unable to join room ({shutdownReason}).";
@@ -429,7 +494,7 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
     {
-        if (!isConnecting) return;
+        if (!isConnecting || runner != trackedRunner) return;
         HandleSessionFailedAsync("CONNECTION FAILED", $"Could not connect to server ({reason}).").Forget();
     }
 
@@ -444,7 +509,7 @@ public class ModeSelectCardManager : MonoBehaviour, INetworkRunnerCallbacks
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
     public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
-    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, System.ArraySegment<byte> data) { }
+    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
     public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
     public void OnSceneLoadDone(NetworkRunner runner) { }
     public void OnSceneLoadStart(NetworkRunner runner) { }

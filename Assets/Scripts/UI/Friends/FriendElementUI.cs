@@ -29,14 +29,32 @@ public class FriendElementUI : MonoBehaviour
 
     private void OnEnable()
     {
-        RoomDatabaseManager.OnRoomStateChanged += HandleRoomStateChanged;
+        SubscribeEvents();
         if (!string.IsNullOrEmpty(userID))
+        {
+            RefreshPresenceIfMissingAsync().Forget();
             UpdateUI();
+        }
     }
 
     private void OnDisable()
     {
+        UnsubscribeEvents();
+    }
+
+    private void SubscribeEvents()
+    {
+        UnsubscribeEvents();
+        RoomDatabaseManager.OnRoomStateChanged += HandleRoomStateChanged;
+        if (NetworkDataManager.Instance?.friendManager != null)
+            NetworkDataManager.Instance.friendManager.OnPresenceChanged += HandlePresenceChanged;
+    }
+
+    private void UnsubscribeEvents()
+    {
         RoomDatabaseManager.OnRoomStateChanged -= HandleRoomStateChanged;
+        if (NetworkDataManager.Instance?.friendManager != null)
+            NetworkDataManager.Instance.friendManager.OnPresenceChanged -= HandlePresenceChanged;
     }
 
     private void HandleRoomStateChanged(Room room)
@@ -45,8 +63,26 @@ public class FriendElementUI : MonoBehaviour
             UpdateUI();
     }
 
+    private void HandlePresenceChanged(string changedUserID)
+    {
+        if (!string.IsNullOrEmpty(userID) && changedUserID == userID)
+            UpdateUI();
+    }
+
+    private async UniTaskVoid RefreshPresenceIfMissingAsync()
+    {
+        if (NetworkDataManager.Instance == null || string.IsNullOrEmpty(userID)) return;
+        if (NetworkDataManager.Instance.GetPresenceUser(userID) == null)
+        {
+            await NetworkDataManager.Instance.LoadPresence(userID);
+            if (this != null && gameObject.activeInHierarchy)
+                UpdateUI();
+        }
+    }
+
     private void OnDestroy()
     {
+        UnsubscribeEvents();
         UnsubscribeButtons();
     }
 
@@ -82,13 +118,14 @@ public class FriendElementUI : MonoBehaviour
     {
         this.userID = userID;
         this.isInviting = false;
+        this.isRequesting = false;
 
-        RoomDatabaseManager.OnRoomStateChanged -= HandleRoomStateChanged;
-        RoomDatabaseManager.OnRoomStateChanged += HandleRoomStateChanged;
+        SubscribeEvents();
 
         if (invite != null) invite.interactable = true;
         if (requestJoin != null) requestJoin.interactable = true;
 
+        RefreshPresenceIfMissingAsync().Forget();
         UpdateUI();
     }
 
@@ -164,8 +201,8 @@ public class FriendElementUI : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userID)) return;
 
-        Presence presence = NetworkDataManager.Instance.GetPresenceUser(userID);
-        Sprite avt = NetworkDataManager.Instance.GetAvatarUser(userID);
+        Presence presence = NetworkDataManager.Instance?.GetPresenceUser(userID);
+        Sprite avt = NetworkDataManager.Instance?.GetAvatarUser(userID);
 
         if (avatar != null)
             avatar.sprite = avt != null ? avt : defaultAvatar;

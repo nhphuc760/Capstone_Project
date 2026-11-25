@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
+using Firebase.Database;
 using UnityEngine;
 using Fusion;
 
@@ -23,7 +22,6 @@ public class InviteManager
     private Dictionary<string, Invite> pendingInvite = new();
     readonly string myID;
 
-    // Quản lý Join Request (xin vào phòng)
     private readonly Dictionary<string, Invite> pendingJoinRequests = new();
     private readonly Dictionary<string, CountDownTimer> joinRequestTimers = new();
     private Action unsubscribeIncomingJoinRequests;
@@ -71,15 +69,41 @@ public class InviteManager
         switch (status)
         {
             case InviteStatus.Accepted:
-                var lobbyRef = FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{invite.RoomID}");
-                var roomSnapshot = await lobbyRef.GetValueAsync();
+                string targetRoomId = invite.RoomID;
+                string fallbackCode = invite.RoomCode?.Trim().ToUpper();
 
-                if (!roomSnapshot.Exists)
+                if (string.IsNullOrEmpty(targetRoomId) && !string.IsNullOrEmpty(fallbackCode))
                 {
-                    Debug.LogError("[Receiver] Phòng không tồn tại trên hệ thống database.");
+                    var codeSnap = await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{fallbackCode}").GetValueAsync();
+                    if (codeSnap.Exists && codeSnap.Value != null)
+                        targetRoomId = codeSnap.Value.ToString();
+                }
+
+                DataSnapshot roomSnapshot = null;
+                if (!string.IsNullOrEmpty(targetRoomId))
+                {
+                    roomSnapshot = await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{targetRoomId}").GetValueAsync();
+                }
+
+                if ((roomSnapshot == null || !roomSnapshot.Exists) && !string.IsNullOrEmpty(fallbackCode))
+                {
+                    var codeSnap = await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{fallbackCode}").GetValueAsync();
+                    if (codeSnap.Exists && codeSnap.Value != null)
+                    {
+                        targetRoomId = codeSnap.Value.ToString();
+                        roomSnapshot = await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{targetRoomId}").GetValueAsync();
+                    }
+                }
+
+                if (roomSnapshot == null || !roomSnapshot.Exists)
+                {
+                    Debug.LogError($"[Receiver] Phòng không tồn tại trên hệ thống database (RoomID: {targetRoomId}, Code: {fallbackCode}).");
+                    await InviteDatabase.RemoveInvite(myID, senderID);
                     receiver.RemoveInvite(senderID);
                     return;
                 }
+
+                invite.RoomID = targetRoomId;
 
                 var currentRoomStatus = (RoomStatus)Convert.ToInt32(roomSnapshot.Child("Status").Value);
                 if (currentRoomStatus == RoomStatus.Full || currentRoomStatus == RoomStatus.InGame || currentRoomStatus == RoomStatus.Error)
@@ -90,35 +114,39 @@ public class InviteManager
                     return;
                 }
 
-                await InviteDatabase.UpdateStatus(senderID, InviteStatus.Accepted);
+                await InviteDatabase.UpdateStatus(myID, senderID, InviteStatus.Accepted);
 
                 if (currentRoomStatus == RoomStatus.Waiting)
                 {
-                    Debug.Log("[Receiver] Phòng đang WAITING. Chờ Host khởi tạo Session...");
-                    var waitResult = await InviteDatabase.WaitRoomInit(invite.RoomID);
-                    if (waitResult != RoomStatus.Ready)
-                    {
-                        Debug.LogError("[Receiver] Khởi tạo phòng thất bại hoặc quá giờ chờ đợi.");
-                        receiver.RemoveInvite(senderID);
-                        return;
-                    }
+                    await UniTask.Delay(400);
                 }
 
-                string roomCode = !string.IsNullOrEmpty(invite.RoomCode)
-                    ? invite.RoomCode
-                    : roomSnapshot.Child("RoomName").Value?.ToString();
+                string dbRoomName = roomSnapshot.Child("RoomName").Value?.ToString();
+                string roomCode = !string.IsNullOrEmpty(dbRoomName) ? dbRoomName : fallbackCode;
+                roomCode = roomCode?.Trim().ToUpper();
 
-                await RoomDatabaseManager.Instance.JoinRoom(invite.RoomID);
-                await RoomDatabaseManager.Instance.AddMembers(myID);
+                if (string.IsNullOrEmpty(roomCode))
+                {
+                    Debug.LogError("[Receiver] Mã phòng trống, không thể kết nối.");
+                    receiver.RemoveInvite(senderID);
+                    return;
+                }
+
+                await FirebaseManager.RealtimeDB.reference
+                    .Child($"RoomCodes/{roomCode}")
+                    .SetValueAsync(invite.RoomID);
+
+                await InviteDatabase.RemoveInvite(myID, senderID);
                 receiver.RemoveInvite(senderID);
 
+                Debug.Log($"[Receiver] Đang kết nối vào phòng mã: {roomCode}");
                 await ConnectToLobbySessionAsync(roomCode);
                 break;
 
             case InviteStatus.Rejected:
-                await InviteDatabase.UpdateStatus(senderID, InviteStatus.Rejected);
+                await InviteDatabase.UpdateStatus(myID, senderID, InviteStatus.Rejected);
                 await UniTask.Delay(500);
-                await InviteDatabase.RemoveInvite(FirebaseManager.UserID, senderID);
+                await InviteDatabase.RemoveInvite(myID, senderID);
                 receiver.RemoveInvite(senderID);
                 break;
         }
@@ -126,9 +154,6 @@ public class InviteManager
 
     // ==================== JOIN REQUEST FLOW ====================
 
-    /// <summary>
-    /// Người chơi bên ngoài bấm Request Join trên thẻ bạn bè đang In Lobby.
-    /// </summary>
     public async UniTask<bool> SendJoinRequestAsync(string targetFriendID)
     {
         if (string.IsNullOrEmpty(targetFriendID)) return false;
@@ -175,25 +200,34 @@ public class InviteManager
             StopOutgoingJoinRequestListener();
         });
 
-        unsubscribeOutgoingJoinRequestReply = InviteDatabase.ListenJoinRequestReplyWithCode(targetRoom.HostID, myID, async (status, confirmedRoomCode) =>
+        unsubscribeOutgoingJoinRequestReply = InviteDatabase.ListenJoinRequestReplyWithCode(targetRoom.HostID, myID, (status, confirmedRoomCode) =>
         {
-            if (status == InviteStatus.Accepted)
+            UniTask.Void(async () =>
             {
-                string finalCode = !string.IsNullOrEmpty(confirmedRoomCode) ? confirmedRoomCode : targetRoom.RoomName;
-                Debug.Log($"[JoinRequest] Host đã ACCEPT! Đang vào phòng mã: {finalCode}");
-                StopOutgoingJoinRequestListener();
-                await InviteDatabase.RemoveJoinRequest(targetRoom.HostID, myID);
+                if (status == InviteStatus.Accepted)
+                {
+                    string finalCode = !string.IsNullOrEmpty(confirmedRoomCode) ? confirmedRoomCode : targetRoom.RoomName;
+                    finalCode = finalCode?.Trim().ToUpper();
+                    Debug.Log($"[JoinRequest] Host đã ACCEPT! Đang vào phòng mã: {finalCode}");
+                    StopOutgoingJoinRequestListener();
+                    await InviteDatabase.RemoveJoinRequest(targetRoom.HostID, myID);
 
-                await RoomDatabaseManager.Instance.JoinRoom(targetRoom.RoomID);
-                await RoomDatabaseManager.Instance.AddMembers(myID);
-                await ConnectToLobbySessionAsync(finalCode);
-            }
-            else if (status == InviteStatus.Rejected)
-            {
-                Debug.Log("[JoinRequest] Host đã từ chối yêu cầu xin vào phòng.");
-                StopOutgoingJoinRequestListener();
-                await InviteDatabase.RemoveJoinRequest(targetRoom.HostID, myID);
-            }
+                    if (!string.IsNullOrEmpty(finalCode) && !string.IsNullOrEmpty(targetRoom.RoomID))
+                    {
+                        await FirebaseManager.RealtimeDB.reference
+                            .Child($"RoomCodes/{finalCode}")
+                            .SetValueAsync(targetRoom.RoomID);
+                    }
+
+                    await ConnectToLobbySessionAsync(finalCode);
+                }
+                else if (status == InviteStatus.Rejected)
+                {
+                    Debug.Log("[JoinRequest] Host đã từ chối yêu cầu xin vào phòng.");
+                    StopOutgoingJoinRequestListener();
+                    await InviteDatabase.RemoveJoinRequest(targetRoom.HostID, myID);
+                }
+            });
         });
 
         return true;
@@ -201,52 +235,65 @@ public class InviteManager
 
     private void ListenIncomingJoinRequests()
     {
-        unsubscribeIncomingJoinRequests = InviteDatabase.ListenIncomingJoinRequests((requesterID, request) =>
+        unsubscribeIncomingJoinRequests = InviteDatabase.ListenIncomingJoinRequests(myID, (requesterID, request) =>
         {
-            if (request == null)
-            {
-                RemoveIncomingJoinRequest(requesterID);
-                return;
-            }
-
-            // Chỉ Host đang ở trong đúng phòng đó mới nhận popup duyệt
-            var currentRoom = RoomDatabaseManager.Instance?.CurrentRoom;
-            if (currentRoom == null || currentRoom.HostID != myID || currentRoom.RoomID != request.RoomID)
-            {
-                return;
-            }
-
-            if (pendingJoinRequests.ContainsKey(requesterID))
-            {
-                pendingJoinRequests[requesterID] = request;
-            }
-            else
-            {
-                pendingJoinRequests.Add(requesterID, request);
-                EventBus<OnAddJoinRequestEvent>.Raise(new OnAddJoinRequestEvent { requesterID = requesterID });
-            }
-
-            if (joinRequestTimers.TryGetValue(requesterID, out CountDownTimer existingTimer))
-            {
-                existingTimer.RestartTimer();
-            }
-            else
-            {
-                CountDownTimer timer = new CountDownTimer(30);
-                timer.Start().OnExpired(() =>
-                {
-                    Debug.Log($"[JoinRequest] Yêu cầu xin vào phòng từ {requesterID} đã hết hạn.");
-                    InviteDatabase.RemoveJoinRequest(myID, requesterID).Forget();
-                    RemoveIncomingJoinRequest(requesterID);
-                });
-                joinRequestTimers[requesterID] = timer;
-            }
+            UniTask.Post(() => HandleIncomingJoinRequestOnMainThreadAsync(requesterID, request).Forget());
         });
     }
 
-    /// <summary>
-    /// Host bấm Accept hoặc Decline trên popup xin vào phòng.
-    /// </summary>
+    private async UniTaskVoid HandleIncomingJoinRequestOnMainThreadAsync(string requesterID, Invite request)
+    {
+        if (request == null)
+        {
+            RemoveIncomingJoinRequest(requesterID);
+            return;
+        }
+
+        if (request.Status != InviteStatus.Pending)
+            return;
+
+        var currentRoom = RoomDatabaseManager.Instance?.CurrentRoom;
+        bool isValidHostRoom = currentRoom != null && currentRoom.HostID == myID && currentRoom.RoomID == request.RoomID;
+
+        // Dự phòng nếu CurrentRoom vừa đồng bộ chậm: đối chiếu trực tiếp trên Firebase
+        if (!isValidHostRoom && !string.IsNullOrEmpty(request.RoomID))
+        {
+            var snap = await FirebaseManager.RealtimeDB.reference.Child($"Lobbies/{request.RoomID}").GetValueAsync();
+            if (snap.Exists && snap.Child("HostID").Value?.ToString() == myID)
+            {
+                isValidHostRoom = true;
+            }
+        }
+
+        if (!isValidHostRoom)
+            return;
+
+        if (pendingJoinRequests.ContainsKey(requesterID))
+        {
+            RemoveIncomingJoinRequest(requesterID);
+        }
+
+        pendingJoinRequests[requesterID] = request;
+        Debug.Log($"[JoinRequest] Nhận yêu cầu xin vào phòng từ {requesterID} (RoomCode: {request.RoomCode})");
+        EventBus<OnAddJoinRequestEvent>.Raise(new OnAddJoinRequestEvent { requesterID = requesterID });
+
+        if (joinRequestTimers.TryGetValue(requesterID, out CountDownTimer existingTimer))
+        {
+            existingTimer.RestartTimer();
+        }
+        else
+        {
+            CountDownTimer timer = new CountDownTimer(30);
+            timer.Start().OnExpired(() =>
+            {
+                Debug.Log($"[JoinRequest] Yêu cầu xin vào phòng từ {requesterID} đã hết hạn.");
+                InviteDatabase.RemoveJoinRequest(myID, requesterID).Forget();
+                RemoveIncomingJoinRequest(requesterID);
+            });
+            joinRequestTimers[requesterID] = timer;
+        }
+    }
+
     public async UniTask ReplyJoinRequest(string requesterID, InviteStatus status)
     {
         if (!pendingJoinRequests.TryGetValue(requesterID, out Invite request))
@@ -258,7 +305,7 @@ public class InviteManager
         {
             if (currentRoom == null || currentRoom.HostID != myID || currentRoom.Status == RoomStatus.Full)
             {
-                await InviteDatabase.UpdateJoinRequestStatus(requesterID, InviteStatus.Rejected);
+                await InviteDatabase.UpdateJoinRequestStatus(myID, requesterID, InviteStatus.Rejected);
                 await UniTask.Delay(400);
                 await InviteDatabase.RemoveJoinRequest(myID, requesterID);
                 RemoveIncomingJoinRequest(requesterID);
@@ -266,16 +313,28 @@ public class InviteManager
             }
 
             var activeRunner = UnityEngine.Object.FindAnyObjectByType<NetworkRunner>();
-            string liveRoomCode = (activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid && !string.IsNullOrEmpty(activeRunner.SessionInfo.Name))
+            string liveCode = (activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid)
                 ? activeRunner.SessionInfo.Name
-                : currentRoom.RoomName;
+                : null;
 
-            await InviteDatabase.AcceptJoinRequestWithRoomCode(requesterID, liveRoomCode);
+            string validRoomCode = !string.IsNullOrEmpty(liveCode)
+                ? liveCode
+                : (!string.IsNullOrEmpty(currentRoom.RoomName) ? currentRoom.RoomName : request.RoomCode);
+            validRoomCode = validRoomCode?.Trim().ToUpper();
+
+            if (!string.IsNullOrEmpty(validRoomCode) && !string.IsNullOrEmpty(currentRoom.RoomID))
+            {
+                await FirebaseManager.RealtimeDB.reference
+                    .Child($"RoomCodes/{validRoomCode}")
+                    .SetValueAsync(currentRoom.RoomID);
+            }
+
+            await InviteDatabase.AcceptJoinRequestWithRoomCode(myID, requesterID, validRoomCode);
             RemoveIncomingJoinRequest(requesterID);
         }
         else if (status == InviteStatus.Rejected)
         {
-            await InviteDatabase.UpdateJoinRequestStatus(requesterID, InviteStatus.Rejected);
+            await InviteDatabase.UpdateJoinRequestStatus(myID, requesterID, InviteStatus.Rejected);
             await UniTask.Delay(500);
             await InviteDatabase.RemoveJoinRequest(myID, requesterID);
             RemoveIncomingJoinRequest(requesterID);
@@ -331,9 +390,6 @@ public class InviteManager
         }
     }
 
-    /// <summary>
-    /// Hàm hủy đăng ký toàn bộ Event & giải phóng bộ nhớ.
-    /// </summary>
     public void Dispose()
     {
         sender?.Dispose();

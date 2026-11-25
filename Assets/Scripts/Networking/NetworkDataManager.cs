@@ -46,21 +46,30 @@ public class NetworkDataManager : MonoBehaviour
         isSessionClosed = false;
         activeSessionId = Guid.NewGuid().ToString("N");
 
+        // Dọn sạch phiên cũ nếu trước đó vừa đăng xuất
+        friendManager?.CleanUp();
+        inviteManager?.Dispose();
+        userPresence.Clear();
+        userAvatar.Clear();
+
+        // Khóa cố định UserID cho cửa sổ hiện tại để tránh ParrelSync ghi đè
+        string currentUid = FirebaseManager.UserID;
+        FirebaseManager.SetUserID(currentUid);
+
         FirebaseDatabase.DefaultInstance.GoOnline();
-        @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{FirebaseManager.UserID}");
+        @ref = FirebaseManager.RealtimeDB.reference.Child($"Users/{currentUid}");
 
         friendManager = new FriendManager();
-        inviteManager = new InviteManager(FirebaseManager.UserID);
+        inviteManager = new InviteManager(currentUid);
 
         JObject obj = JObject.Parse(jsonUserSnapshot);
         string presenceJson = obj["Presence"]?.ToString();
         myPresence = JsonConvert.DeserializeObject<Presence>(presenceJson);
 
-        await LoadPresence(FirebaseManager.UserID, myPresence);
+        await LoadPresence(currentUid, myPresence);
         myPresence.Status = OnlineStatus.Online;
         await UpdateMyPresence(myPresence);
 
-        // Đăng ký hook OnDisconnect + theo dõi kết nối mạng + bật nhịp Heartbeat
         await RegisterSessionAndOnDisconnectAsync();
         ListenConnectionState();
         StartHeartbeat();
@@ -72,7 +81,6 @@ public class NetworkDataManager : MonoBehaviour
     {
         if (@ref == null || isSessionClosed) return;
 
-        // 1. Khi mất kết nối / tắt ngang -> Server Firebase tự set Offline và xóa Session
         var disconnectUpdates = new Dictionary<string, object>
         {
             ["Presence/Status"] = (int)OnlineStatus.Offline,
@@ -81,7 +89,6 @@ public class NetworkDataManager : MonoBehaviour
         };
         await @ref.OnDisconnect().UpdateChildren(disconnectUpdates);
 
-        // 2. Ghi nhận phiên hoạt động hiện tại bằng Timestamp của Server
         var activeUpdates = new Dictionary<string, object>
         {
             ["Presence/Status"] = (int)OnlineStatus.Online,
@@ -106,7 +113,6 @@ public class NetworkDataManager : MonoBehaviour
 
         if (args.Snapshot != null && args.Snapshot.Exists && Convert.ToBoolean(args.Snapshot.Value))
         {
-            // Mỗi lần mạng tự kết nối lại, đăng ký lại OnDisconnect để không bị mất hook
             RegisterSessionAndOnDisconnectAsync().Forget();
         }
     }
@@ -136,9 +142,6 @@ public class NetworkDataManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Có thể gọi hàm này trước khi SignOut nếu bấm nút Logout chủ động
-    /// </summary>
     public async UniTask ShutdownSessionAsync()
     {
         if (isSessionClosed) return;
@@ -164,6 +167,10 @@ public class NetworkDataManager : MonoBehaviour
         }
 
         friendManager?.CleanUp();
+        inviteManager?.Dispose();
+        userPresence.Clear();
+        userAvatar.Clear();
+        FirebaseManager.ClearUserID();
     }
 
     public async UniTask UpdateMyPresence(Presence presence)
@@ -216,34 +223,38 @@ public class NetworkDataManager : MonoBehaviour
         if (presenceSnapshot.Exists)
         {
             var presence = JsonConvert.DeserializeObject<Presence>(presenceSnapshot.GetRawJsonValue());
-            SetPresenceUser(userID, presence);
-            var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
-            SetAvatarUser(userID, avt);
+            if (presence != null)
+            {
+                // Nếu listener realtime đã cập nhật trong lúc chờ GetValueAsync thì giữ bản mới nhất
+                if (!userPresence.ContainsKey(userID))
+                    SetPresenceUser(userID, presence);
+
+                var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
+                SetAvatarUser(userID, avt);
+            }
         }
     }
 
     public async UniTask LoadPresence(string userID, Presence presence)
     {
-        if (userPresence.ContainsKey(userID))
-            return;
-
+        if (presence == null) return;
+        SetPresenceUser(userID, presence);
         var avt = await ImgbbUploader.GetAvatar(presence.AvatarUrl);
         SetAvatarUser(userID, avt);
-        SetPresenceUser(userID, presence);
     }
 
     public async UniTask UpddatePresenceData(string userID, Presence newPre)
     {
-        if (!userPresence.ContainsKey(userID))
-            return;
+        if (newPre == null) return;
 
         Presence oldPre = GetPresenceUser(userID);
-        if (oldPre.AvatarUrl != newPre.AvatarUrl)
+        SetPresenceUser(userID, newPre);
+
+        if (oldPre == null || oldPre.AvatarUrl != newPre.AvatarUrl)
         {
             var avt = await ImgbbUploader.GetAvatar(newPre.AvatarUrl);
             SetAvatarUser(userID, avt);
         }
-        SetPresenceUser(userID, newPre);
     }
 
     private void CloseConnectionImmediately()
@@ -259,8 +270,8 @@ public class NetworkDataManager : MonoBehaviour
         }
 
         friendManager?.CleanUp();
+        inviteManager?.Dispose();
 
-        // Ép đóng socket Firebase ngay lập tức để server kích hoạt OnDisconnect() mà không chờ timeout
         if (@ref != null)
         {
             FirebaseDatabase.DefaultInstance.GoOffline();
