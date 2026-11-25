@@ -12,6 +12,11 @@ public class PlayerInputProvider : MonoBehaviour, INetworkRunnerCallbacks
 
     private void Update()
     {
+        if (GameplayPauseManager.IsPaused)
+    {
+        _accumulatedInput = default;
+        return;
+    }
         if (_isReset)
         {
             _isReset = false;

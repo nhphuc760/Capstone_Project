@@ -19,7 +19,6 @@ public class FriendElementUI : MonoBehaviour
     private string userID;
     private bool isInviting;
     private bool isRequesting;
-    // Thêm biến theo dõi trạng thái đang ở trong Lobby
     private bool _lastInLobbyState;
     private float _lobbyCheckTimer;
 
@@ -51,7 +50,6 @@ public class FriendElementUI : MonoBehaviour
         UnsubscribeButtons();
     }
 
-    // Thêm Update để tự động bật nút Invite ngay khi Host vào phòng xong
     private void Update()
     {
         if (string.IsNullOrEmpty(userID)) return;
@@ -70,23 +68,14 @@ public class FriendElementUI : MonoBehaviour
 
     private bool IsLocalPlayerInLobby()
     {
-        //if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
-        //    return true;
-
-        //var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
-        //return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
-
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "LobbyScene")
-        return false;
+            return false;
 
         var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
         if (LobbyUIManager.IsSinglePlaySession(activeRunner))
             return false;
 
-        if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null)
-            return true;
-
-        return activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
+        return true;
     }
 
     public void Init(string userID)
@@ -106,21 +95,18 @@ public class FriendElementUI : MonoBehaviour
     public async void OnInviteClick()
     {
         if (isInviting || string.IsNullOrEmpty(userID)) return;
+
         var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
         if (LobbyUIManager.IsSinglePlaySession(activeRunner) || !IsLocalPlayerInLobby())
         {
             Debug.LogWarning("[FriendUI] Chế độ Single hoặc chưa vào phòng Multiplayer, không thể mời bạn bè!");
             return;
         }
-        //if (RoomDatabaseManager.Instance == null || RoomDatabaseManager.Instance.CurrentRoom == null)
-        if (!IsLocalPlayerInLobby())
-        {
-            Debug.LogWarning("[FriendUI] Bạn cần tạo hoặc vào phòng Lobby trước khi mời bạn bè!");
-            return;
-        }
+
+        if (NetworkDataManager.Instance?.inviteManager == null) return;
 
         isInviting = true;
-        invite.interactable = false;
+        if (invite != null) invite.interactable = false;
         if (inviteButtonText != null) inviteButtonText.text = "INVITED ✓";
 
         try
@@ -142,9 +128,6 @@ public class FriendElementUI : MonoBehaviour
 
     public async void OnRequestJoinClick()
     {
-        //if (string.IsNullOrEmpty(userID)) return;
-        //Debug.Log($"[UI] Xin gia nhập Party của {userID}");
-
         if (isRequesting || string.IsNullOrEmpty(userID)) return;
         if (NetworkDataManager.Instance?.inviteManager == null) return;
 
@@ -189,16 +172,16 @@ public class FriendElementUI : MonoBehaviour
 
         if (presence == null)
         {
-            nameTag.text = "Đang tải...";
-            status.text = "Offline".ToColor(Color.gray);
+            if (nameTag != null) nameTag.text = "Đang tải...";
+            if (status != null) status.text = "Offline".ToColor(Color.gray);
             if (statusDot != null) statusDot.color = Color.gray;
-            invite.gameObject.SetActive(false);
-            requestJoin.gameObject.SetActive(false);
+            if (invite != null) invite.gameObject.SetActive(false);
+            if (requestJoin != null) requestJoin.gameObject.SetActive(false);
             return;
         }
 
-        nameTag.text = $"{presence.Name} <color=#9AA6B2>#{presence.Tag}</color>";
-        status.text = GetStatusText(presence.Status);
+        if (nameTag != null) nameTag.text = $"{presence.Name} <color=#9AA6B2>#{presence.Tag}</color>";
+        if (status != null) status.text = GetStatusText(presence.Status);
         if (statusDot != null) statusDot.color = GetStatusColor(presence.Status);
 
         TriggerButtonWithOnlineStatus(presence.Status);
@@ -244,11 +227,6 @@ public class FriendElementUI : MonoBehaviour
 
     private void TriggerButtonWithOnlineStatus(OnlineStatus onlineStatus)
     {
-        //bool isLocalInLobby = RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null;
-        //var activeRunner = UnityEngine.Object.FindAnyObjectByType<Fusion.NetworkRunner>();
-        //bool isRunnerInLobby = activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid;
-        //bool isLocalInLobby = (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null) || isRunnerInLobby;
-
         bool isLocalInLobby = IsLocalPlayerInLobby();
         _lastInLobbyState = isLocalInLobby;
 
@@ -259,33 +237,28 @@ public class FriendElementUI : MonoBehaviour
             switch (onlineStatus)
             {
                 case OnlineStatus.Online:
-                    invite.gameObject.SetActive(isLocalInLobby);
+                    if (invite != null) invite.gameObject.SetActive(isLocalInLobby);
                     if (inviteButtonText != null && !isInviting) inviteButtonText.text = "INVITE";
-                    requestJoin.gameObject.SetActive(false);
+                    if (requestJoin != null) requestJoin.gameObject.SetActive(false);
                     break;
 
                 case OnlineStatus.InMatch:
-                    invite.gameObject.SetActive(false);
-                    requestJoin.gameObject.SetActive(false);
+                    if (invite != null) invite.gameObject.SetActive(false);
+                    if (requestJoin != null) requestJoin.gameObject.SetActive(false);
                     break;
 
                 case OnlineStatus.InParty:
-                    //bool canRequestJoin = true;
-                    //if (RoomDatabaseManager.Instance != null && RoomDatabaseManager.Instance.CurrentRoom != null && RoomDatabaseManager.Instance.CurrentRoom.Members.Contains(userID))
-                    //{
-                    //    canRequestJoin = false;
-                    //}
                     bool canRequestJoin = !isLocalInLobby;
-                    invite.gameObject.SetActive(false);
-                    requestJoin.gameObject.SetActive(canRequestJoin);
+                    if (invite != null) invite.gameObject.SetActive(false);
+                    if (requestJoin != null) requestJoin.gameObject.SetActive(canRequestJoin);
                     break;
             }
         }
         else
         {
             transform.SetAsLastSibling();
-            invite.gameObject.SetActive(false);
-            requestJoin.gameObject.SetActive(false);
+            if (invite != null) invite.gameObject.SetActive(false);
+            if (requestJoin != null) requestJoin.gameObject.SetActive(false);
         }
     }
 }

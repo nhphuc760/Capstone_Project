@@ -298,6 +298,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
 
     private void Update()
     {
+        if (GameplayPauseManager.IsPaused) return;
         // Không chạy raycast Tooltip / BuildSystem / phím cheat khi đang ở LobbyScene hoặc chưa init xong
         if (SceneManager.GetActiveScene().name == "LobbyScene") return;
         if (!_isGameplayInitialized) return;

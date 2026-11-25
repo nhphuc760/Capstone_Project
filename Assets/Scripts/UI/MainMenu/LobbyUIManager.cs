@@ -27,10 +27,15 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
     public static bool IsSinglePlaySession(NetworkRunner runner)
     {
         if (runner == null || !runner.IsRunning)
+            return false;
+
+        if (runner.GameMode == GameMode.Single)
             return true;
 
-        return runner.GameMode == GameMode.Single
-               || (runner.SessionInfo.IsValid && runner.SessionInfo.MaxPlayers <= 1);
+        if (runner.SessionInfo.IsValid && runner.SessionInfo.MaxPlayers == 1)
+            return true;
+
+        return false;
     }
     private async void Start()
     {
@@ -108,9 +113,14 @@ public class LobbyUIManager : MonoBehaviour, INetworkRunnerCallbacks
 
         if (activeRunner != null && activeRunner.SessionInfo.IsValid)
         {
-            currentCode = activeRunner.SessionInfo.Name;
+            currentCode = !string.IsNullOrEmpty(activeRunner.SessionInfo.Name)
+                ? activeRunner.SessionInfo.Name
+                : (RoomDatabaseManager.Instance?.CurrentRoom?.RoomName ?? PlayerPrefs.GetString("CurrentRoomID", "-----"));
+
             int count = activeRunner.ActivePlayers.Count();
-            int max = activeRunner.SessionInfo.MaxPlayers;
+            int max = activeRunner.SessionInfo.MaxPlayers > 0
+                ? activeRunner.SessionInfo.MaxPlayers
+                : 4;
 
             if (txtPlayerCount != null)
                 txtPlayerCount.text = $"Players: {count}/{max}";

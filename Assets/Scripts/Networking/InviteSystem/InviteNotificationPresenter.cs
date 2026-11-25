@@ -56,8 +56,21 @@ public class InviteNotificationPresenter : MonoBehaviour
         EventBus<InviteEvent.OnRemoveInviteArgs>.Register(_removeInviteBinding);
         EventBus<OnAddJoinRequestEvent>.Register(_addJoinReqBinding);
         EventBus<OnRemoveJoinRequestEvent>.Register(_removeJoinReqBinding);
-    }
 
+        // Hiển thị các lời mời / yêu cầu xin vào phòng đã tới trước khi UI kịp OnEnable
+        var inviteMgr = NetworkDataManager.Instance?.inviteManager;
+        if (inviteMgr != null)
+        {
+            foreach (var kvp in inviteMgr.GetPendingInvites())
+            {
+                OnAddInvite(new InviteEvent.OnAddInviteArgs { senderID = kvp.Key });
+            }
+            foreach (var kvp in inviteMgr.GetPendingJoinRequests())
+            {
+                OnAddJoinRequest(new OnAddJoinRequestEvent { requesterID = kvp.Key });
+            }
+        }
+    }
     private void OnDisable()
     {
         if (_addInviteBinding != null)
@@ -112,6 +125,11 @@ public class InviteNotificationPresenter : MonoBehaviour
 
     private async UniTaskVoid ShowPopupAsync(string key, string targetUserID, bool isJoinRequest)
     {
+        if (ObjectPoolManager.Ins == null) return;
+
+        if (NetworkDataManager.Instance != null)
+            await NetworkDataManager.Instance.LoadPresence(targetUserID);
+
         GameObject obj = ObjectPoolManager.Ins.Get(INVITEELEMENT_KEY, container, false);
         if (obj == null || !obj.TryGetComponent<InviteElementUI>(out var ui))
             return;

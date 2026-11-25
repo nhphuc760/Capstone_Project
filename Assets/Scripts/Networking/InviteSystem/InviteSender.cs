@@ -27,35 +27,39 @@ public class InviteSender
             Debug.LogWarning("[InviteSender] Đang ở chế độ Single Play, không thể gửi lời mời.");
             return;
         }
+
+        string liveSessionCode = (activeRunner != null && activeRunner.IsRunning && activeRunner.SessionInfo.IsValid)
+            ? activeRunner.SessionInfo.Name
+            : null;
+
         var dateTime = await FirebaseManager.RealtimeDB.GetUnixSeverTimespan();
         var currentRoom = RoomDatabaseManager.Instance.CurrentRoom;
         if (currentRoom == null)
         {
-            //currentRoom = await RoomDatabaseManager.Instance.CreateRoom();
-            string roomCode = GenerateRoomCode(5);
+            string roomCode = !string.IsNullOrEmpty(liveSessionCode) ? liveSessionCode : GenerateRoomCode(5);
             currentRoom = await RoomDatabaseManager.Instance.CreateRoom(roomCode, 4);
             await FirebaseManager.RealtimeDB.reference.Child($"RoomCodes/{roomCode}").SetValueAsync(currentRoom.RoomID);
         }
-        else if (currentRoom.Members.Contains(receiverId))
+        else if (currentRoom.Members != null && currentRoom.Members.Contains(receiverId))
         {
             return;
         }
 
+        string finalRoomCode = !string.IsNullOrEmpty(liveSessionCode) ? liveSessionCode : currentRoom.RoomName;
+
         Invite invite = new Invite()
         {
             RoomID = currentRoom.RoomID,
-            RoomCode = currentRoom.RoomName,
+            RoomCode = finalRoomCode,
             SenderID = myId,
             Status = InviteStatus.Pending,
             CreateAt = dateTime == 0 ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : dateTime,
         };
-        bool isNew = await InviteDatabase.CreateOrUpdateInReceiver(receiverId, invite);
+
+        await InviteDatabase.CreateOrUpdateInReceiver(receiverId, invite);
         pendingInvites[receiverId] = invite;
-        if (isNew)
-        {
-            Debug.Log($"[Sender] Đã gửi lời mời mới tới {receiverId}. Bắt đầu lắng nghe phản hồi.");
-            StartListening(receiverId, invite);
-        }
+        Debug.Log($"[Sender] Đã gửi lời mời tới {receiverId} (RoomCode: {finalRoomCode}).");
+        StartListening(receiverId, invite);
     }
 
     private void StartListening(string receiverId, Invite invite)
