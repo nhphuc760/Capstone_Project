@@ -62,6 +62,11 @@ public class AuctionSesstionUI : MonoBehaviour
         ClearInput();
         SetMinMaxInput();
         Util.Core.Utils.IntervalLoop(UpdateTimeHistoryTrading, (int)(updateTimeTradingInterval * 1000), token: updateTimeHistoryToken.Token).Forget();
+        if(BackgroundMusicManager.Instance != null)
+        {
+            BackgroundMusicManager.Instance.OnTradingOpen();
+        }
+
     }
 
     private void OnDisable()
@@ -71,7 +76,10 @@ public class AuctionSesstionUI : MonoBehaviour
             updateTimeHistoryToken.Cancel();
             updateTimeHistoryToken = null;
         }
-
+        if (BackgroundMusicManager.Instance != null)
+        {
+            BackgroundMusicManager.Instance.OnTradingClose();
+        }
     }
 
     private void OnDestroy()

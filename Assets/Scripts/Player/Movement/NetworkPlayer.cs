@@ -120,6 +120,10 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
 
     public bool IsTargetable => IsAlive;
 
+
+    [SerializeField] NetworkQuestSys questSystem;
+
+
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -152,7 +156,7 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
         {
             Local = this;
         }
-
+        questSystem ??= GetComponent<NetworkQuestSys>();
         // Chặn toàn bộ HUD, Camera gameplay và trọng lực khi đang ở LobbyScene
         if (SceneManager.GetActiveScene().name == "LobbyScene")
         {
@@ -438,15 +442,33 @@ public class NetworkPlayer : NetworkBehaviour, IAffector, ITakedamageable, IMons
                 resourcePlayer.Electric += amount;
                 break;
         }
+        questSystem?.AddResourceProgress(type, amount);
+        OnResourceGathered?.Invoke(type, amount);
+
     }
 
-    public void AddResource(NetworkResourcePlayer resouces)
+    public void AddResource(NetworkResourcePlayer resources)
     {
         if (!HasStateAuthority) return;
-        resourcePlayer.Wood += resouces.Wood;
-        resourcePlayer.Stone += resouces.Stone;
-        resourcePlayer.GoldOre += resouces.GoldOre;
-        resourcePlayer.Electric += resouces.Electric;
+
+        // Add resources
+        resourcePlayer.Wood += resources.Wood;
+        resourcePlayer.Stone += resources.Stone;
+        resourcePlayer.GoldOre += resources.GoldOre;
+        resourcePlayer.Electric += resources.Electric;
+
+        // Update Quest Progress
+        if (resources.Wood > 0)
+            questSystem?.AddResourceProgress(ResourceType.Wood, resources.Wood);
+
+        if (resources.Stone > 0)
+            questSystem?.AddResourceProgress(ResourceType.Stone, resources.Stone);
+
+        if (resources.GoldOre > 0)
+            questSystem?.AddResourceProgress(ResourceType.Gold, resources.GoldOre);
+
+        if (resources.Electric > 0)
+            questSystem?.AddResourceProgress(ResourceType.Electric, resources.Electric);
     }
 
     public void ComsumpResource(NetworkResourcePlayer resource)

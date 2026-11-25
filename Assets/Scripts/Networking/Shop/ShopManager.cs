@@ -23,6 +23,9 @@ public class ShopManager : NetworkBehaviour
 
     public List<PlayerRef> BannedLists => bannedLists.ToList();
 
+
+    public HashSet<PlayerRef> finishedQuest = new HashSet<PlayerRef>();
+
     public override void Spawned()
     {
         Debug.Log(playerInSide.ToString());
@@ -114,6 +117,8 @@ public class ShopManager : NetworkBehaviour
         AddPlayerInsided();
         RPC_SetActiveShop(true);
         auctionManager.StartAuctionSession(GameManager.Instance.DayNightManager != null ? GameManager.Instance.DayNightManager.TimeRemainingToDayTime() : 60f);
+        if(BackgroundMusicManager.Instance != null)
+            BackgroundMusicManager.Instance.OnDayStart();
     }
 
     
@@ -124,6 +129,8 @@ public class ShopManager : NetworkBehaviour
         playerInSide.Clear();
         RPC_SetActiveShop(false);
         auctionManager.EndAuctionSession();
+        if (BackgroundMusicManager.Instance != null)
+            BackgroundMusicManager.Instance.OnNightStart();
         //Add item trading
     }
 

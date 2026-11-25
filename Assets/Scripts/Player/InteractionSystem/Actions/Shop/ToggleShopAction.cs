@@ -3,8 +3,15 @@ using UnityEngine;
 
 public class ToggleShopAction : InteractionAction
 {
+    [SerializeField] ShopManager shopManager;
     public override bool OnCanInteract(in InteractionContext ctx, out string reason)
     {
+        if (!shopManager.finishedQuest.Contains(ctx.Interactor.Object.InputAuthority))
+        {
+            reason = "";
+            return false;
+        }
+
         var shop = ctx.Target.GetComponentInParent<ShopManager>();
         if (shop != null && shop.IsValid(ctx.Player))
         {

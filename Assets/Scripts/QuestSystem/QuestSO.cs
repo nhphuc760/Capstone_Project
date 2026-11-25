@@ -7,6 +7,15 @@ public enum QuestCategory
     Random
 }
 
+public class RewardQuest
+{
+
+}
+
+
+
+
+
 [CreateAssetMenu(fileName = "NewQuest", menuName = "Quest/Quest Data")]
 public class QuestSO : ScriptableObject
 {

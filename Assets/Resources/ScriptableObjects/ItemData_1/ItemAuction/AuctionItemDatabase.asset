@@ -15,7 +15,7 @@ MonoBehaviour:
   auctionDatabase:
   - ItemSO: {fileID: 11400000, guid: aee773e1e5d6950498a7e9a42a500682, type: 2}
     Amount: 5
-    StartingValue: 1
+    StartingValue: 100
   - ItemSO: {fileID: 11400000, guid: c3c4639cd64053e4baf5abff25c0ec43, type: 2}
     Amount: 1
     StartingValue: 9000

@@ -79,8 +79,10 @@ public class NetworkQuestRewardManager : NetworkBehaviour
         }
 
         // Bước 1: Chọn phần thưởng nếu chưa chọn
+
         if (!_rewardChosen)
         {
+
             if (!TrySelectRandomReward(quest, out ItemSO reward))
             {
                 Debug.LogWarning(
@@ -195,7 +197,7 @@ public class NetworkQuestRewardManager : NetworkBehaviour
                 continue;
 
             // Chỉ nhận Valuable Item
-            if (item.ItemType != ItemType.Valuable)
+            if (item.ItemType != ItemType.Consumable)
                 continue;
 
             // Item ID phải hợp lệ

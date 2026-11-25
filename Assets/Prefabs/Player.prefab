@@ -3120,7 +3120,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1760601178821256207}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
+  m_LocalRotation: {x: 0.5, y: -0, z: -0, w: 0.8660254}
   m_LocalPosition: {x: 0, y: 6.000254, z: -2.5000002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3626,6 +3626,8 @@ GameObject:
   - component: {fileID: 6148496610991257368}
   - component: {fileID: 2205163480747497676}
   - component: {fileID: 8007318029164384940}
+  - component: {fileID: -7590253018429970828}
+  - component: {fileID: 3338473634975029218}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3692,6 +3694,7 @@ MonoBehaviour:
   suggestTarget: {fileID: -4642978615242726096}
   doorPrefab:
     RawGuidValue: d2fcbdbbd1972d7499a34dc8e90159db
+  questSystem: {fileID: 9053022945002887609}
 --- !u!114 &-4642978615242726096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3743,6 +3746,8 @@ MonoBehaviour:
   - {fileID: 4076327860458310933}
   - {fileID: 6148496610991257368}
   - {fileID: 2205163480747497676}
+  - {fileID: -7590253018429970828}
+  - {fileID: 3338473634975029218}
   - {fileID: 3210318161609772509}
   - {fileID: 6912120905335120596}
   - {fileID: 8893701886593952330}
@@ -4114,6 +4119,40 @@ MonoBehaviour:
   targetRenderer: {fileID: 7870886116827748439}
   rootBone: {fileID: 2533260470969312404}
   database: {fileID: 11400000, guid: 49710c1349eea204f88013659b7057b2, type: 2}
+--- !u!114 &-7590253018429970828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06270b684598782408ce0ed8a1c609eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerQuestTracker
+  questSystem: {fileID: 9053022945002887609}
+  guiPosition: {x: 10, y: 110}
+  guiWidth: 300
+  lineHeight: 30
+  padding: 12
+  showQuestID: 0
+  showObjectiveProgress: 1
+--- !u!114 &3338473634975029218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940834710420241431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2493a2576dde9ed44b652b57e4e4ff32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkQuestRewardManager
+  questSystem: {fileID: 9053022945002887609}
+  inventory: {fileID: 8000677038320043257}
+  enableDebugLog: 1
 --- !u!1 &2017936969440827881
 GameObject:
   m_ObjectHideFlags: 0
@@ -37044,7 +37083,7 @@ Transform:
   m_GameObject: {fileID: 7013656208592019952}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: -0, z: -0, w: 0.8660254}
-  m_LocalPosition: {x: 0, y: 6.000254, z: -2.5000002}
+  m_LocalPosition: {x: 0, y: 6.0002546, z: -2.5000002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

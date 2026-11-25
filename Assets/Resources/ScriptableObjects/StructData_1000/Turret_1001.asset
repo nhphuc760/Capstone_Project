@@ -46,8 +46,6 @@ MonoBehaviour:
               Value: 6
             - Key: 1
               Value: 12
-            - Key: 5
-              Value: 5.5
         upgradeRequirement:
         - rid: 2672765847051698268
     - rid: 2672765847051698268
@@ -69,8 +67,6 @@ MonoBehaviour:
               Value: 1
             - Key: 4
               Value: 6
-            - Key: 5
-              Value: 6
             - Key: 1
               Value: 19
         upgradeRequirement:
@@ -88,8 +84,6 @@ MonoBehaviour:
               Value: 7
             - Key: 1
               Value: 28
-            - Key: 5
-              Value: 7
         upgradeRequirement: []
     - rid: 2672765847051698274
       type: {class: ResourceRequirement, ns: , asm: Assembly-CSharp}
@@ -115,8 +109,6 @@ MonoBehaviour:
               Value: 0.7
             - Key: 1
               Value: 4
-            - Key: 5
-              Value: 5
             - Key: 4
               Value: 5
         upgradeRequirement:
@@ -150,8 +142,6 @@ MonoBehaviour:
               Value: 5.5
             - Key: 1
               Value: 7
-            - Key: 5
-              Value: 5
         upgradeRequirement:
         - rid: 2680167813166923851
         - rid: 2672765847051698276

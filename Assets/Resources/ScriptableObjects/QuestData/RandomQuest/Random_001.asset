@@ -10,12 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8e535356e1c3914d8db371e40b70fb9, type: 3}
-  m_Name: FixedQuest-03
+  m_Name: Random_001
   m_EditorClassIdentifier: Assembly-CSharp::QuestSO
-  questID: 
-  questName: 
+  questID: RANDOM_001
+  questName: "Thu th\u1EADp v\xE0ng"
   description: 
-  questCategory: 0
-  objectives: []
-  rewardItems: []
+  questCategory: 1
+  objectives:
+  - objectiveID: R001
+    description: "Thu th\u1EADp v\xE0ng"
+    objectiveType: 0
+    collectTargetType: 1
+    targetItem: {fileID: 0}
+    targetResource: 2
+    targetID: 
+    requiredAmount: 100
+  rewardItems:
+  - {fileID: 11400000, guid: 2b1fc4cbd1315f34b98daac8b57d5219, type: 2}
   rewardAmount: 1

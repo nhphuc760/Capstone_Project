@@ -70,6 +70,23 @@ public class SnowmanNPC : MonoBehaviour
     public void ToggleShopUI()
     {       
         ShopUI?.SetActive(!ShopUI.activeSelf);
+        if(ShopUI.activeSelf)
+        {
+            if(BackgroundMusicManager.Instance != null)
+            {
+                BackgroundMusicManager.Instance.OnShopOpen();
+            }
+        }
+        else
+        {
+            if (BackgroundMusicManager.Instance != null)
+            {
+                BackgroundMusicManager.Instance.OnShopClose();
+            }
+
+        }
+
+
     }
 
 }

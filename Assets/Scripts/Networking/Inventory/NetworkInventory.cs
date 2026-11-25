@@ -58,7 +58,7 @@ public class NetworkInventory : NetworkBehaviour
     private void Update()
     {
         // Test nhanh
-        if (Input.GetKeyDown(KeyCode.Q) && Object.HasStateAuthority)
+        if (Input.GetKeyDown(KeyCode.L) && Object.HasStateAuthority)
         {
             TryAddItem(1, 1);
             TryAddItem(3, 1);

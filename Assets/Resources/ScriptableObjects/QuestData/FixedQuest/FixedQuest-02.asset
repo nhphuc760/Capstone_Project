@@ -12,10 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e535356e1c3914d8db371e40b70fb9, type: 3}
   m_Name: FixedQuest-02
   m_EditorClassIdentifier: Assembly-CSharp::QuestSO
-  questID: 
-  questName: 
+  questID: FIXED_002
+  questName: "Thu th\u1EADp \u0111\xE1"
   description: 
   questCategory: 0
-  objectives: []
+  objectives:
+  - objectiveID: COLLECT_STONE
+    description: 
+    objectiveType: 0
+    collectTargetType: 1
+    targetItem: {fileID: 0}
+    targetResource: 1
+    targetID: 
+    requiredAmount: 300
   rewardItems: []
   rewardAmount: 1

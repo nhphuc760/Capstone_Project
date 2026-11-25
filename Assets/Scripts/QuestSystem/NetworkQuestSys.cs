@@ -23,8 +23,16 @@ public struct NetworkObjective : INetworkStruct
     public NetworkString<_32> ObjectiveID;
     public NetworkString<_32> TargetID;
 
+    // Collect Item
     public int TargetItemID;
 
+    // Collect Target Type: Item hoặc Resource
+    public byte CollectTargetType;
+
+    // Collect Resource
+    public byte TargetResource;
+
+    // Objective Type: Collect hoặc Defeat
     public byte Type;
 
     public int CurrentAmount;
@@ -60,6 +68,46 @@ public class NetworkQuestSys : NetworkBehaviour
     private NetworkArray<NetworkString<_32>> CompletedQuestIDs => default;
     [Networked, Capacity(10)]
     public NetworkArray<NetworkObjective> Objectives => default;
+
+
+    #region RESOURCE OBJECTIVE
+
+    public void AddResourceProgress(ResourceType resourceType, int amount)
+    {
+        // Chỉ State Authority được cập nhật Quest
+        if (!HasStateAuthority)
+            return;
+
+        if (Status != QuestStatus.InProgress || amount <= 0)
+            return;
+
+        // Duyệt toàn bộ Objective của Quest hiện tại
+        for (int i = 0; i < _objectiveCount; i++)
+        {
+            NetworkObjective objective = Objectives[i];
+
+            // Bỏ qua Objective đã hoàn thành
+            if (objective.Completed)
+                continue;
+
+            // Chỉ nhận Collect Objective
+            if (objective.Type != (byte)ObjectiveType.Collect)
+                continue;
+
+            // Chỉ nhận Resource Objective
+            if (objective.CollectTargetType != (byte)CollectTargetType.Resource)
+                continue;
+
+            // Kiểm tra đúng loại tài nguyên
+            if (objective.TargetResource != (byte)resourceType)
+                continue;
+
+            // Cộng tiến độ
+            ApplyProgress(i, amount);
+        }
+    }
+
+    #endregion
 
     #region PUBLIC PROPERTIES
     public QuestDatabase Database => questDatabase;
@@ -377,10 +425,24 @@ public class NetworkQuestSys : NetworkBehaviour
             {
                 case ObjectiveType.Collect:
 
-                    if (data.targetItem == null)
+                    if (data.collectTargetType == CollectTargetType.Item)
+                    {
+                        if (data.targetItem == null)
+                        {
+                            Debug.LogError(
+                                $"[Quest] Collect Item has no TargetItem: {data.objectiveID}"
+                            );
+                            return false;
+                        }
+                    }
+                    else if (data.collectTargetType == CollectTargetType.Resource)
+                    {
+                        // Resource không cần ItemSO.
+                    }
+                    else
                     {
                         Debug.LogError(
-                            $"[Quest] Collect Objective has no TargetItem: {data.objectiveID}"
+                            $"[Quest] Invalid CollectTargetType: {data.objectiveID}"
                         );
                         return false;
                     }
@@ -453,19 +515,30 @@ public class NetworkQuestSys : NetworkBehaviour
                 ObjectiveID = data.objectiveID,
 
                 TargetID = data.objectiveType == ObjectiveType.Defeat
-                    ? data.targetID
-                    : string.Empty,
+        ? data.targetID
+        : string.Empty,
 
-                TargetItemID = data.objectiveType == ObjectiveType.Collect
-                    ? data.targetItem.ItemId
-                    : 0,
+                // Item ID
+                TargetItemID =
+        data.objectiveType == ObjectiveType.Collect &&
+        data.collectTargetType == CollectTargetType.Item
+            ? data.targetItem.ItemId
+            : 0,
+
+                // Collect Target Type
+                CollectTargetType = data.objectiveType == ObjectiveType.Collect ? (byte)data.collectTargetType : (byte)0,
+
+                // Resource Type
+                TargetResource =
+        data.objectiveType == ObjectiveType.Collect &&
+        data.collectTargetType == CollectTargetType.Resource
+            ? (byte)data.targetResource
+            : (byte)0,
 
                 Type = (byte)data.objectiveType,
 
                 CurrentAmount = 0,
-
                 RequiredAmount = data.requiredAmount,
-
                 Completed = false
             };
 
@@ -690,6 +763,9 @@ public class NetworkQuestSys : NetworkBehaviour
                 continue;
 
             if (objective.Type != (byte)ObjectiveType.Collect)
+                continue;
+
+            if (objective.CollectTargetType != (byte)CollectTargetType.Item)
                 continue;
 
             if (objective.TargetItemID != itemID)
